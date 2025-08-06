@@ -6,11 +6,9 @@ node_modules
 # testing
 coverage
 
-# next.js
-.next/
-out/
-build
+# build
 dist/
+build/
 
 # misc
 .DS_Store
@@ -29,12 +27,5 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# turbo
-.turbo
-
-# vercel
-.vercel
-
 # typescript
-*.tsbuildinfo
-next-env.d.ts
+*.tsbuildinfo 
