@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { Separator } from "@/components/ui/separator";
+import Link from 'next/link';
+import { Separator } from '@/components/ui/separator';
 
 export function Footer() {
   return (
@@ -30,4 +30,4 @@ export function Footer() {
       </div>
     </footer>
   );
-} 
+}

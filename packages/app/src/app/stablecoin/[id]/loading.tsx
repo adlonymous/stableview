@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function StablecoinLoading() {
   return (
@@ -36,7 +36,7 @@ export default function StablecoinLoading() {
             </div>
           </CardHeader>
         </Card>
-        
+
         <Card className="bg-neutral-900 border-neutral-800">
           <CardHeader className="pb-1 px-4 pt-4">
             <div className="flex items-start gap-3">
@@ -48,7 +48,7 @@ export default function StablecoinLoading() {
             </div>
           </CardHeader>
         </Card>
-        
+
         <Card className="bg-neutral-900 border-neutral-800">
           <CardHeader className="pb-1 px-4 pt-4">
             <div className="flex items-start gap-3">
@@ -88,7 +88,7 @@ export default function StablecoinLoading() {
                   </div>
                 ))}
               </div>
-              
+
               <div className="space-y-4">
                 {[...Array(3)].map((_, i) => (
                   <div key={i}>
@@ -103,4 +103,4 @@ export default function StablecoinLoading() {
       </div>
     </div>
   );
-} 
+}

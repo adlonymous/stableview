@@ -4,4 +4,4 @@ const nextConfig = {
   transpilePackages: ['@stableview/core'],
 };
 
-export default nextConfig; 
+export default nextConfig;

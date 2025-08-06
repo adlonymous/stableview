@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { ArrowDownAZ, ArrowDownUp, ArrowUpAZ, ArrowUpDown, DollarSign, Users } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { ArrowDownAZ, ArrowDownUp, ArrowUpAZ, ArrowUpDown, DollarSign, Users } from 'lucide-react';
 
 export type SortOption = 'name' | 'marketCap' | 'uniqueAddresses' | 'transactionVolume';
 export type SortDirection = 'asc' | 'desc';
@@ -22,14 +22,14 @@ export function StablecoinSort({ sort, onSortChange }: StablecoinSortProps) {
       // Toggle direction if same sort option
       onSortChange({
         sortBy,
-        direction: sort.direction === 'asc' ? 'desc' : 'asc'
+        direction: sort.direction === 'asc' ? 'desc' : 'asc',
       });
     } else {
       // Default to descending for market cap and volume, ascending for name
       const defaultDirection = sortBy === 'name' ? 'asc' : 'desc';
       onSortChange({
         sortBy,
-        direction: defaultDirection
+        direction: defaultDirection,
       });
     }
   };
@@ -50,13 +50,17 @@ export function StablecoinSort({ sort, onSortChange }: StablecoinSortProps) {
 
     // Active sort
     if (sortOption === 'name') {
-      return sort.direction === 'asc' 
-        ? <ArrowUpAZ className="h-4 w-4" /> 
-        : <ArrowDownAZ className="h-4 w-4" />;
+      return sort.direction === 'asc' ? (
+        <ArrowUpAZ className="h-4 w-4" />
+      ) : (
+        <ArrowDownAZ className="h-4 w-4" />
+      );
     } else {
-      return sort.direction === 'asc' 
-        ? <ArrowUpDown className="h-4 w-4" /> 
-        : <ArrowDownUp className="h-4 w-4" />;
+      return sort.direction === 'asc' ? (
+        <ArrowUpDown className="h-4 w-4" />
+      ) : (
+        <ArrowDownUp className="h-4 w-4" />
+      );
     }
   };
 
@@ -100,4 +104,4 @@ export function StablecoinSort({ sort, onSortChange }: StablecoinSortProps) {
       </Button>
     </div>
   );
-} 
+}

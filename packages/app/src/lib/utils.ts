@@ -1,8 +1,8 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { Stablecoin } from "@/types/stablecoin";
-import { StablecoinFilter } from "@/components/stablecoin/stablecoin-filters";
-import { SortOption, SortDirection } from "@/components/stablecoin/stablecoin-sort";
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { Stablecoin } from '@/types/stablecoin';
+import { StablecoinFilter } from '@/components/stablecoin/stablecoin-filters';
+import { SortOption, SortDirection } from '@/components/stablecoin/stablecoin-sort';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -18,24 +18,24 @@ export function formatCurrency(value: number): string {
     const billions = value / 1000000000;
     return `$${billions.toFixed(Math.min(2, billions % 1 === 0 ? 0 : 1))}B`;
   }
-  
+
   // For values greater than or equal to 1 million
   if (value >= 1000000) {
     const millions = value / 1000000;
     return `$${millions.toFixed(Math.min(2, millions % 1 === 0 ? 0 : 1))}M`;
   }
-  
+
   // For values greater than or equal to 1 thousand
   if (value >= 1000) {
     const thousands = value / 1000;
     return `$${thousands.toFixed(Math.min(1, thousands % 1 === 0 ? 0 : 1))}K`;
   }
-  
+
   // For values less than 1 thousand
-  return formatNumber(value, { 
-    style: 'currency', 
+  return formatNumber(value, {
+    style: 'currency',
     currency: 'USD',
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   });
 }
 
@@ -45,35 +45,38 @@ export function formatCompactNumber(value: number): string {
     const billions = value / 1000000000;
     return `${billions.toFixed(Math.min(2, billions % 1 === 0 ? 0 : 1))}B`;
   }
-  
+
   // For values greater than or equal to 1 million
   if (value >= 1000000) {
     const millions = value / 1000000;
     return `${millions.toFixed(Math.min(2, millions % 1 === 0 ? 0 : 1))}M`;
   }
-  
+
   // For values greater than or equal to 1 thousand
   if (value >= 1000) {
     const thousands = value / 1000;
     return `${thousands.toFixed(Math.min(1, thousands % 1 === 0 ? 0 : 1))}K`;
   }
-  
+
   // For values less than 1 thousand
-  return formatNumber(value, { 
+  return formatNumber(value, {
     notation: 'standard',
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   });
 }
 
 export function formatPercentage(value: number): string {
-  return formatNumber(value, { 
+  return formatNumber(value, {
     style: 'percent',
-    maximumFractionDigits: 2
+    maximumFractionDigits: 2,
   });
 }
 
-export function filterStablecoins(stablecoins: Stablecoin[], filters: StablecoinFilter): Stablecoin[] {
-  return stablecoins.filter((stablecoin) => {
+export function filterStablecoins(
+  stablecoins: Stablecoin[],
+  filters: StablecoinFilter
+): Stablecoin[] {
+  return stablecoins.filter(stablecoin => {
     // Filter by token program
     if (filters.tokenProgram && stablecoin.tokenProgram !== filters.tokenProgram) {
       return false;
@@ -93,7 +96,7 @@ export function filterStablecoins(stablecoins: Stablecoin[], filters: Stablecoin
     if (filters.minMarketCap && stablecoin.marketCap < filters.minMarketCap) {
       return false;
     }
-    
+
     // Filter by pegged asset
     if (filters.peggedAsset && stablecoin.peggedAsset !== filters.peggedAsset) {
       return false;
@@ -103,7 +106,11 @@ export function filterStablecoins(stablecoins: Stablecoin[], filters: Stablecoin
   });
 }
 
-export function sortStablecoins(stablecoins: Stablecoin[], sortBy: SortOption, direction: SortDirection): Stablecoin[] {
+export function sortStablecoins(
+  stablecoins: Stablecoin[],
+  sortBy: SortOption,
+  direction: SortDirection
+): Stablecoin[] {
   return [...stablecoins].sort((a, b) => {
     let comparison = 0;
 

@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { Stablecoin } from "@/types/stablecoin";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { formatCompactNumber, formatCurrency } from "@/lib/utils";
-import Link from "next/link";
-import Image from "next/image";
-import { ExternalLink, Info, BarChart3, Users, DollarSign } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Stablecoin } from '@/types/stablecoin';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { formatCompactNumber, formatCurrency } from '@/lib/utils';
+import Link from 'next/link';
+import Image from 'next/image';
+import { ExternalLink, Info, BarChart3, Users, DollarSign } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface StablecoinDetailProps {
   stablecoin: Stablecoin;
@@ -46,19 +46,31 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
         </div>
 
         <div className="flex flex-wrap gap-3 md:ml-auto">
-          <Button asChild variant="outline" className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white">
+          <Button
+            asChild
+            variant="outline"
+            className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+          >
             <Link href={stablecoin.solscanLink} target="_blank" rel="noopener noreferrer">
               <span>Solscan</span>
               <ExternalLink className="ml-2 h-4 w-4" />
             </Link>
           </Button>
-          <Button asChild variant="outline" className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white">
+          <Button
+            asChild
+            variant="outline"
+            className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+          >
             <Link href={stablecoin.artemisLink} target="_blank" rel="noopener noreferrer">
               <span>Artemis</span>
               <ExternalLink className="ml-2 h-4 w-4" />
             </Link>
           </Button>
-          <Button asChild variant="outline" className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white">
+          <Button
+            asChild
+            variant="outline"
+            className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+          >
             <Link href={stablecoin.assetReservesLink} target="_blank" rel="noopener noreferrer">
               <span>Reserves</span>
               <ExternalLink className="ml-2 h-4 w-4" />
@@ -84,7 +96,7 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
             </div>
           </CardHeader>
         </Card>
-        
+
         <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all">
           <CardHeader className="pb-1 px-4 pt-4">
             <div className="flex items-start gap-3">
@@ -100,7 +112,7 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
             </div>
           </CardHeader>
         </Card>
-        
+
         <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all">
           <CardHeader className="pb-1 px-4 pt-4">
             <div className="flex items-start gap-3">
@@ -138,7 +150,7 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
             Volume Analysis
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="details" className="mt-4">
           <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all">
             <CardContent className="pt-4 px-5 pb-4">
@@ -148,23 +160,23 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                     <h3 className="text-sm font-medium text-neutral-400 mb-1">Token</h3>
                     <p className="text-white">{stablecoin.token}</p>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-sm font-medium text-neutral-400 mb-1">Pegged Asset</h3>
                     <p className="text-white">{stablecoin.peggedAsset}</p>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-sm font-medium text-neutral-400 mb-1">Issuer</h3>
                     <p className="text-white">{stablecoin.issuer}</p>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-sm font-medium text-neutral-400 mb-1">Token Program</h3>
                     <p className="text-white">{stablecoin.tokenProgram}</p>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div>
                     <div className="flex items-center gap-2">
@@ -180,19 +192,25 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                         </Tooltip>
                       </TooltipProvider>
                     </div>
-                    <p className="text-white font-mono text-sm truncate">{stablecoin.tokenAddress}</p>
+                    <p className="text-white font-mono text-sm truncate">
+                      {stablecoin.tokenAddress}
+                    </p>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-sm font-medium text-neutral-400 mb-1">Mint Authority</h3>
                     <p className="text-white">{stablecoin.mintAuthority}</p>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-sm font-medium text-neutral-400 mb-1">Networks Live On</h3>
                     <div className="flex flex-wrap gap-2 mt-1">
-                      {stablecoin.networksLiveOn.map((network) => (
-                        <Badge key={network} variant="secondary" className="bg-neutral-800 text-neutral-200">
+                      {stablecoin.networksLiveOn.map(network => (
+                        <Badge
+                          key={network}
+                          variant="secondary"
+                          className="bg-neutral-800 text-neutral-200"
+                        >
                           {network}
                         </Badge>
                       ))}
@@ -200,26 +218,36 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                   </div>
                 </div>
               </div>
-              
+
               <Separator className="my-5 bg-neutral-800" />
-              
+
               <div className="space-y-5">
                 <div>
                   <h3 className="text-sm font-medium text-neutral-400 mb-2">Bridging Mechanisms</h3>
                   <div className="flex flex-wrap gap-2">
-                    {stablecoin.bridgingMechanisms.map((mechanism) => (
-                      <Badge key={mechanism} variant="outline" className="border-neutral-700 text-neutral-300">
+                    {stablecoin.bridgingMechanisms.map(mechanism => (
+                      <Badge
+                        key={mechanism}
+                        variant="outline"
+                        className="border-neutral-700 text-neutral-300"
+                      >
                         {mechanism}
                       </Badge>
                     ))}
                   </div>
                 </div>
-                
+
                 <div>
-                  <h3 className="text-sm font-medium text-neutral-400 mb-2">Redemption Mechanisms</h3>
+                  <h3 className="text-sm font-medium text-neutral-400 mb-2">
+                    Redemption Mechanisms
+                  </h3>
                   <div className="flex flex-wrap gap-2">
-                    {stablecoin.redemptionMechanisms.map((mechanism) => (
-                      <Badge key={mechanism} variant="outline" className="border-neutral-700 text-neutral-300">
+                    {stablecoin.redemptionMechanisms.map(mechanism => (
+                      <Badge
+                        key={mechanism}
+                        variant="outline"
+                        className="border-neutral-700 text-neutral-300"
+                      >
                         {mechanism}
                       </Badge>
                     ))}
@@ -229,7 +257,7 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="volume" className="mt-4">
           <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all">
             <CardHeader className="px-5 pt-4 pb-3">
@@ -266,7 +294,7 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                   </div>
                 </div>
               </div>
-              
+
               <div className="mt-6 h-64 w-full bg-neutral-800 rounded-md flex items-center justify-center">
                 <p className="text-neutral-400">Transaction volume chart would be displayed here</p>
               </div>
@@ -276,4 +304,4 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
       </Tabs>
     </div>
   );
-} 
+}

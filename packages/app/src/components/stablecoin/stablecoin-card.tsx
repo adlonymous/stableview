@@ -1,13 +1,20 @@
-"use client";
+'use client';
 
-import { Stablecoin } from "@/types/stablecoin";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { formatCompactNumber, formatCurrency } from "@/lib/utils";
-import Link from "next/link";
-import Image from "next/image";
-import { ChevronRight } from "lucide-react";
+import { Stablecoin } from '@/types/stablecoin';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { formatCompactNumber, formatCurrency } from '@/lib/utils';
+import Link from 'next/link';
+import Image from 'next/image';
+import { ChevronRight } from 'lucide-react';
 
 interface StablecoinCardProps {
   stablecoin: Stablecoin;
@@ -42,16 +49,22 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
           <div className="grid grid-cols-1 gap-3">
             <div className="space-y-1">
               <p className="text-xs text-neutral-400">Market Cap</p>
-              <p className="font-medium text-white text-sm truncate">{formatCurrency(stablecoin.marketCap)}</p>
+              <p className="font-medium text-white text-sm truncate">
+                {formatCurrency(stablecoin.marketCap)}
+              </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <p className="text-xs text-neutral-400">Holders</p>
-                <p className="font-medium text-white text-sm">{formatCompactNumber(stablecoin.uniqueAddresses)}</p>
+                <p className="font-medium text-white text-sm">
+                  {formatCompactNumber(stablecoin.uniqueAddresses)}
+                </p>
               </div>
               <div className="space-y-1">
                 <p className="text-xs text-neutral-400">Daily Volume</p>
-                <p className="font-medium text-white text-sm truncate">{formatCurrency(stablecoin.transactionVolume.daily)}</p>
+                <p className="font-medium text-white text-sm truncate">
+                  {formatCurrency(stablecoin.transactionVolume.daily)}
+                </p>
               </div>
             </div>
           </div>
@@ -71,4 +84,4 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
       </CardFooter>
     </Card>
   );
-} 
+}

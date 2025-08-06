@@ -1,19 +1,27 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { StablecoinCard } from "@/components/stablecoin/stablecoin-card";
-import { mockStablecoins } from "@/lib/mock-data";
-import { StablecoinFilters, StablecoinFilter } from "@/components/stablecoin/stablecoin-filters";
-import { StablecoinSort, StablecoinSort as StablecoinSortType } from "@/components/stablecoin/stablecoin-sort";
-import { filterStablecoins, getUniqueIssuers, getUniqueNetworks, getUniquePeggedAssets, sortStablecoins } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
-import { Stablecoin } from "@/types/stablecoin";
+import { useState } from 'react';
+import { StablecoinCard } from '@/components/stablecoin/stablecoin-card';
+import { mockStablecoins } from '@/lib/mock-data';
+import { StablecoinFilters, StablecoinFilter } from '@/components/stablecoin/stablecoin-filters';
+import {
+  StablecoinSort,
+  StablecoinSort as StablecoinSortType,
+} from '@/components/stablecoin/stablecoin-sort';
+import {
+  filterStablecoins,
+  getUniqueIssuers,
+  getUniqueNetworks,
+  getUniquePeggedAssets,
+  sortStablecoins,
+} from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 export default function StablecoinsPage() {
   const [filters, setFilters] = useState<StablecoinFilter>({});
   const [sort, setSort] = useState<StablecoinSortType>({
     sortBy: 'marketCap',
-    direction: 'desc'
+    direction: 'desc',
   });
 
   // Get unique values for filter options
@@ -33,21 +41,21 @@ export default function StablecoinsPage() {
           Comprehensive list of stablecoins on the Solana blockchain
         </p>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Filters sidebar */}
         <div className="lg:col-span-1">
           <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-4 sticky top-24">
-            <StablecoinFilters 
-              filters={filters} 
-              onFilterChange={setFilters} 
-              issuers={issuers} 
+            <StablecoinFilters
+              filters={filters}
+              onFilterChange={setFilters}
+              issuers={issuers}
               networks={networks}
               peggedAssets={peggedAssets}
             />
           </div>
         </div>
-        
+
         {/* Main content */}
         <div className="lg:col-span-3 space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -56,12 +64,12 @@ export default function StablecoinsPage() {
             </div>
             <StablecoinSort sort={sort} onSortChange={setSort} />
           </div>
-          
+
           <Separator className="bg-neutral-800" />
-          
+
           {filteredStablecoins.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-              {sortedStablecoins.map((stablecoin) => (
+              {sortedStablecoins.map(stablecoin => (
                 <StablecoinCard key={stablecoin.id} stablecoin={stablecoin} />
               ))}
             </div>
@@ -74,4 +82,4 @@ export default function StablecoinsPage() {
       </div>
     </div>
   );
-} 
+}

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCompactNumber, formatCurrency, formatPercentage } from "@/lib/utils";
-import { ArrowUpRight, BarChart3, Users, DollarSign, PieChart } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatCompactNumber, formatCurrency, formatPercentage } from '@/lib/utils';
+import { ArrowUpRight, BarChart3, Users, DollarSign, PieChart } from 'lucide-react';
 
 interface StatsOverviewProps {
   totalMarketCap: number;
@@ -48,12 +48,12 @@ export function StatsOverview({
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-0 pl-[60px]">
             <div className="text-sm text-emerald-400 flex items-center">
-              <ArrowUpRight className="h-4 w-4 mr-1" />
-              +{formatPercentage(yearOverYearGrowth / 100)} YoY
+              <ArrowUpRight className="h-4 w-4 mr-1" />+{formatPercentage(yearOverYearGrowth / 100)}{' '}
+              YoY
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all">
           <CardHeader className="pb-1 px-4 pt-4">
             <div className="flex items-start gap-3">
@@ -74,7 +74,7 @@ export function StatsOverview({
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all">
           <CardHeader className="pb-1 px-4 pt-4">
             <div className="flex items-start gap-3">
@@ -90,12 +90,10 @@ export function StatsOverview({
             </div>
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-0 pl-[60px]">
-            <div className="text-sm text-neutral-400">
-              Across {stablecoinCount} stablecoins
-            </div>
+            <div className="text-sm text-neutral-400">Across {stablecoinCount} stablecoins</div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all">
           <CardHeader className="pb-1 px-4 pt-4">
             <div className="flex items-start gap-3">
@@ -104,9 +102,7 @@ export function StatsOverview({
               </div>
               <div className="space-y-1">
                 <CardDescription className="text-neutral-400">Market Share</CardDescription>
-                <CardTitle className="text-2xl text-white">
-                  {dominantStablecoin}
-                </CardTitle>
+                <CardTitle className="text-2xl text-white">{dominantStablecoin}</CardTitle>
               </div>
             </div>
           </CardHeader>
@@ -117,7 +113,7 @@ export function StatsOverview({
           </CardContent>
         </Card>
       </div>
-      
+
       <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all">
         <CardHeader className="px-5 pt-5 pb-3">
           <div className="flex items-center gap-2">
@@ -157,4 +153,4 @@ export function StatsOverview({
       </Card>
     </div>
   );
-} 
+}

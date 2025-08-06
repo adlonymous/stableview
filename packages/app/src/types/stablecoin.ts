@@ -8,17 +8,17 @@ export interface Stablecoin {
   tokenProgram: 'SPL Token' | 'Token 2022';
   tokenAddress: string;
   mintAuthority: string;
-  
+
   // Mechanism Info
   bridgingMechanisms: string[];
   networksLiveOn: string[];
   redemptionMechanisms: string[];
-  
+
   // Links
   solscanLink: string;
   artemisLink: string;
   assetReservesLink: string;
-  
+
   // Quantitative Data
   marketCap: number;
   uniqueAddresses: number;
@@ -27,10 +27,10 @@ export interface Stablecoin {
     monthly: number;
     yearly: number;
   };
-  
+
   // Summary
   executiveSummary: string;
-  
+
   // Optional image
   logoUrl?: string;
-} 
+}

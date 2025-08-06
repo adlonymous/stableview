@@ -1,18 +1,16 @@
-import { StablecoinCard } from "@/components/stablecoin/stablecoin-card";
-import { StatsOverview } from "@/components/stablecoin/stats-overview";
-import { mockStablecoins, solanaStablecoinStats } from "@/lib/mock-data";
+import { StablecoinCard } from '@/components/stablecoin/stablecoin-card';
+import { StatsOverview } from '@/components/stablecoin/stats-overview';
+import { mockStablecoins, solanaStablecoinStats } from '@/lib/mock-data';
 
 export default function Home() {
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 max-w-7xl">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-white">Solana Stablecoin Dashboard</h1>
-        <p className="text-neutral-400">
-          Track and analyze stablecoins on the Solana blockchain
-        </p>
+        <p className="text-neutral-400">Track and analyze stablecoins on the Solana blockchain</p>
       </div>
-      
-      <StatsOverview 
+
+      <StatsOverview
         totalMarketCap={solanaStablecoinStats.totalMarketCap}
         totalUniqueUsers={solanaStablecoinStats.totalUniqueUsers}
         totalTransactionVolume={solanaStablecoinStats.totalTransactionVolume}
@@ -22,7 +20,7 @@ export default function Home() {
         dominantStablecoinShare={solanaStablecoinStats.dominantStablecoinShare}
         yearOverYearGrowth={solanaStablecoinStats.yearOverYearGrowth}
       />
-      
+
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-white">Popular Stablecoins</h2>
@@ -30,9 +28,9 @@ export default function Home() {
             View all stablecoins →
           </a>
         </div>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockStablecoins.slice(0, 3).map((stablecoin) => (
+          {mockStablecoins.slice(0, 3).map(stablecoin => (
             <StablecoinCard key={stablecoin.id} stablecoin={stablecoin} />
           ))}
         </div>

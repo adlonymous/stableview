@@ -1,6 +1,6 @@
-import { StablecoinDetail } from "@/components/stablecoin/stablecoin-detail";
-import { mockStablecoins } from "@/lib/mock-data";
-import { notFound } from "next/navigation";
+import { StablecoinDetail } from '@/components/stablecoin/stablecoin-detail';
+import { mockStablecoins } from '@/lib/mock-data';
+import { notFound } from 'next/navigation';
 
 interface StablecoinPageProps {
   params: {
@@ -9,12 +9,12 @@ interface StablecoinPageProps {
 }
 
 export default function StablecoinPage({ params }: StablecoinPageProps) {
-  const stablecoin = mockStablecoins.find((coin) => coin.id === params.id);
-  
+  const stablecoin = mockStablecoins.find(coin => coin.id === params.id);
+
   if (!stablecoin) {
     notFound();
   }
-  
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-7xl">
       <StablecoinDetail stablecoin={stablecoin} />
@@ -23,7 +23,7 @@ export default function StablecoinPage({ params }: StablecoinPageProps) {
 }
 
 export function generateStaticParams() {
-  return mockStablecoins.map((stablecoin) => ({
+  return mockStablecoins.map(stablecoin => ({
     id: stablecoin.id,
   }));
-} 
+}

@@ -8,4 +8,4 @@ export default function AdminDashboard() {
       <p className="text-gray-500">This is a placeholder for the admin dashboard.</p>
     </div>
   );
-} 
+}
