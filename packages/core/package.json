@@ -2,8 +2,26 @@
   "name": "@stableview/core",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./client": {
+      "import": "./dist/client/index.js",
+      "types": "./dist/client/index.d.ts"
+    },
+    "./server": {
+      "import": "./dist/server/index.js",
+      "types": "./dist/server/index.d.ts"
+    }
+  },
+  "bin": {
+    "fetch-metrics": "./dist/scripts/fetch-metrics.js"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -11,10 +29,24 @@
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\"",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "fetch-metrics": "node dist/scripts/fetch-metrics.js"
+  },
+  "dependencies": {
+    "@trpc/client": "^11.0.0-next-beta.294",
+    "@trpc/server": "^11.0.0-next-beta.294",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.30.4",
+    "postgres": "^3.4.3",
+    "superjson": "^2.2.1",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20",
+    "drizzle-kit": "^0.21.3",
     "eslint": "^8.56.0",
     "prettier": "^3.2.5",
     "typescript": "^5"

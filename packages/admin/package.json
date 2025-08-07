@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 3001",
+    "dev": "next dev --port 3003",
     "build": "next build",
     "start": "next start --port 3001",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
@@ -14,9 +14,15 @@
   },
   "dependencies": {
     "@stableview/core": "workspace:*",
+    "@tanstack/react-query": "^5.84.1",
+    "@trpc/client": "^11.4.4",
+    "@trpc/react-query": "^11.4.4",
+    "@trpc/server": "^11.4.4",
     "next": "15.4.5",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "superjson": "^2.2.2",
+    "webpack": "^5.101.0"
   },
   "devDependencies": {
     "@types/node": "^20",
