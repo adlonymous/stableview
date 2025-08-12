@@ -24,7 +24,7 @@ export const coreApi = {
   },
 
   // Create new stablecoin
-  async createStablecoin(data: any) {
+  async createStablecoin(data: NewStablecoin) {
     const response = await fetch(`${CORE_API_URL}/api/stablecoins`, {
       method: 'POST',
       headers: {
@@ -39,7 +39,7 @@ export const coreApi = {
   },
 
   // Update stablecoin
-  async updateStablecoin(id: number, data: any) {
+  async updateStablecoin(id: number, data: Partial<NewStablecoin>) {
     const response = await fetch(`${CORE_API_URL}/api/stablecoins/${id}`, {
       method: 'PUT',
       headers: {
@@ -85,7 +85,7 @@ export const mockStablecoins = [
     executiveSummary: 'USD Coin (USDC) is a fully collateralized US dollar stablecoin.',
     logoUrl: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png',
     createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z'
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 2,
@@ -105,10 +105,10 @@ export const mockStablecoins = [
     executiveSummary: 'Tether (USDT) is a stablecoin pegged to the US dollar.',
     logoUrl: 'https://cryptologos.cc/logos/tether-usdt-logo.png',
     createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z'
-  }
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
 ];
 
 // Export types based on the mock data structure
-export type Stablecoin = typeof mockStablecoins[0];
-export type NewStablecoin = Omit<Stablecoin, 'id' | 'createdAt' | 'updatedAt'>; 
+export type Stablecoin = (typeof mockStablecoins)[0];
+export type NewStablecoin = Omit<Stablecoin, 'id' | 'createdAt' | 'updatedAt'>;

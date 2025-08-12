@@ -227,7 +227,10 @@ export default function NewStablecoinPage() {
             </div>
 
             <div>
-              <label htmlFor="transactionVolume30d" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="transactionVolume30d"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Transaction Volume (30d)
               </label>
               <input
@@ -243,7 +246,10 @@ export default function NewStablecoinPage() {
             </div>
 
             <div>
-              <label htmlFor="transactionCountDaily" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="transactionCountDaily"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Transaction Count (Daily)
               </label>
               <input
@@ -295,7 +301,7 @@ export default function NewStablecoinPage() {
                       src={formData.logoUrl}
                       alt="Logo preview"
                       className="h-8 w-8 rounded-full object-cover"
-                      onError={(e) => {
+                      onError={e => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
                       }}
@@ -314,7 +320,7 @@ export default function NewStablecoinPage() {
                 id="executiveSummary"
                 rows={3}
                 value={formData.executiveSummary}
-                onChange={(e) => setFormData(prev => ({ ...prev, executiveSummary: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, executiveSummary: e.target.value }))}
                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 placeholder="Brief description of the stablecoin..."
               />
@@ -340,4 +346,4 @@ export default function NewStablecoinPage() {
       </form>
     </div>
   );
-} 
+}

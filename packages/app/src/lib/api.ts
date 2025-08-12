@@ -2,21 +2,50 @@ import { Stablecoin } from '@/types/stablecoin';
 
 const CORE_API_BASE_URL = process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:3004';
 
+// Helper function to get the full API URL
+function getApiUrl(endpoint: string): string {
+  // If the endpoint starts with http, use it as-is
+  if (endpoint.startsWith('http')) {
+    return endpoint;
+  }
+
+  // Otherwise, prepend the base URL
+  return `${CORE_API_BASE_URL}${endpoint}`;
+}
+
 export class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string
+  ) {
     super(message);
     this.name = 'ApiError';
   }
 }
 
 async function fetchApi<T>(endpoint: string): Promise<T> {
-  const response = await fetch(`${CORE_API_BASE_URL}${endpoint}`);
-  
-  if (!response.ok) {
-    throw new ApiError(response.status, `API request failed: ${response.statusText}`);
+  const url = getApiUrl(endpoint);
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new ApiError(response.status, `API request failed: ${response.statusText}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    // Provide more helpful error messages for common issues
+    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+      console.error(`Network error when calling ${url}. This might be due to:`, {
+        'CORS issues': 'Check if your backend allows requests from the ngrok domain',
+        'Backend not running': 'Ensure your backend is running on localhost:3004',
+        'Wrong API URL': `Current API base URL: ${CORE_API_BASE_URL}`,
+        'Ngrok configuration': 'Make sure your ngrok is properly configured',
+      });
+    }
+    throw error;
   }
-  
-  return response.json();
 }
 
 export async function fetchStablecoins(): Promise<Stablecoin[]> {
@@ -101,7 +130,9 @@ export async function fetchDashboardStatsWithFallback(): Promise<DashboardStats>
       totalMarketCap: solanaStablecoinStats.totalMarketCap,
       totalSupply: solanaStablecoinStats.totalMarketCap.toString(),
       totalTransactionVolume: solanaStablecoinStats.totalTransactionVolume,
-      totalDailyTransactions: (solanaStablecoinStats.totalTransactionVolume.daily / 1000).toString(), // Convert to daily transactions
+      totalDailyTransactions: (
+        solanaStablecoinStats.totalTransactionVolume.daily / 1000
+      ).toString(), // Convert to daily transactions
       totalDailyActiveUsers: solanaStablecoinStats.totalUniqueUsers.toString(),
       stablecoinCount: solanaStablecoinStats.stablecoinCount,
       dominantStablecoin: solanaStablecoinStats.dominantStablecoin,
@@ -110,4 +141,4 @@ export async function fetchDashboardStatsWithFallback(): Promise<DashboardStats>
       yearOverYearGrowth: solanaStablecoinStats.yearOverYearGrowth,
     };
   }
-} 
+}

@@ -4,4 +4,4 @@
 export * from './metrics-fetcher.js';
 
 // Artemis client
-export * from './artemis-client.js'; 
+export * from './artemis-client.js';

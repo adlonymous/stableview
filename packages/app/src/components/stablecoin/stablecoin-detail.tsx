@@ -126,7 +126,9 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                 <DollarSign className="h-4 w-4 text-neutral-400" />
               </div>
               <div className="space-y-1">
-                <CardDescription className="text-neutral-400">Daily Transaction Count</CardDescription>
+                <CardDescription className="text-neutral-400">
+                  Daily Transaction Count
+                </CardDescription>
                 <CardTitle className="text-2xl text-white">
                   {formatCompactNumber(parseFloat(stablecoin.transactionCountDaily))}
                 </CardTitle>

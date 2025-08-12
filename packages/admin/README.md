@@ -19,6 +19,7 @@ This is the admin dashboard for the StableView platform, built with Next.js and 
 ## Getting Started
 
 1. **Start the Core API** (from root directory):
+
    ```bash
    pnpm start:api
    # or for development
@@ -26,6 +27,7 @@ This is the admin dashboard for the StableView platform, built with Next.js and 
    ```
 
 2. **Start the Admin Dashboard**:
+
    ```bash
    pnpm dev:admin
    ```
@@ -89,4 +91,4 @@ interface Stablecoin {
 1. **Core API not responding**: Check if the core API is running on port 3004
 2. **Database connection issues**: Verify PostgreSQL is running and configured in core package
 3. **CORS issues**: The core API has CORS enabled for all origins in development
-4. **Fallback behavior**: If the core API is unavailable, the dashboard will use mock data 
+4. **Fallback behavior**: If the core API is unavailable, the dashboard will use mock data

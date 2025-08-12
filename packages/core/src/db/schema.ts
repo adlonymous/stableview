@@ -1,4 +1,13 @@
-import { pgTable, serial, text, varchar, timestamp, numeric, json, boolean } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  serial,
+  text,
+  varchar,
+  timestamp,
+  numeric,
+  json,
+  boolean,
+} from 'drizzle-orm/pg-core';
 
 /**
  * Stablecoins table schema
@@ -13,32 +22,34 @@ export const stablecoins = pgTable('stablecoins', {
   tokenProgram: varchar('token_program', { length: 50 }).notNull(),
   tokenAddress: varchar('token_address', { length: 255 }).notNull(),
   mintAuthority: varchar('mint_authority', { length: 255 }).notNull(),
-  
+
   // Arrays stored as JSON
   bridgingMechanisms: json('bridging_mechanisms').$type<string[]>().default([]),
   networksLiveOn: json('networks_live_on').$type<string[]>().default([]),
   redemptionMechanisms: json('redemption_mechanisms').$type<string[]>().default([]),
-  
+
   // Links
   solscanLink: text('solscan_link'),
   artemisLink: text('artemis_link'),
   assetReservesLink: text('asset_reserves_link'),
-  
+
   // Quantitative Data
   transactionVolume30d: numeric('transaction_volume_30d', { precision: 38, scale: 2 }).default('0'),
-  transactionCountDaily: numeric('transaction_count_daily', { precision: 38, scale: 0 }).default('0'),
+  transactionCountDaily: numeric('transaction_count_daily', { precision: 38, scale: 0 }).default(
+    '0'
+  ),
   totalSupply: numeric('total_supply', { precision: 38, scale: 2 }).default('0'),
   dailyActiveUsers: numeric('daily_active_users', { precision: 38, scale: 0 }).default('0'),
-  
+
   // Additional metrics
   price: numeric('price', { precision: 10, scale: 6 }).default('1'),
-  
+
   // Summary
   executiveSummary: text('executive_summary'),
-  
+
   // Optional image
   logoUrl: text('logo_url'),
-  
+
   // Timestamps
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -63,4 +74,4 @@ export const apiSources = pgTable('api_sources', {
 export type Stablecoin = typeof stablecoins.$inferSelect;
 export type NewStablecoin = typeof stablecoins.$inferInsert;
 export type ApiSource = typeof apiSources.$inferSelect;
-export type NewApiSource = typeof apiSources.$inferInsert; 
+export type NewApiSource = typeof apiSources.$inferInsert;

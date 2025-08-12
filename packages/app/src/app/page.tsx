@@ -7,7 +7,7 @@ export default async function Home() {
     fetchStablecoinsWithFallback(),
     fetchDashboardStatsWithFallback(),
   ]);
-  
+
   const popularStablecoins = stablecoins.slice(0, 3);
 
   return (
@@ -21,11 +21,7 @@ export default async function Home() {
         totalMarketCap={dashboardStats.totalMarketCap}
         totalUniqueUsers={parseInt(dashboardStats.totalDailyActiveUsers)}
         totalTransactionVolume={dashboardStats.totalTransactionVolume}
-        percentageOfSolanaVolume={dashboardStats.percentageOfSolanaVolume}
         stablecoinCount={dashboardStats.stablecoinCount}
-        dominantStablecoin={dashboardStats.dominantStablecoin}
-        dominantStablecoinShare={dashboardStats.dominantStablecoinShare}
-        yearOverYearGrowth={dashboardStats.yearOverYearGrowth}
       />
 
       <div className="space-y-4">

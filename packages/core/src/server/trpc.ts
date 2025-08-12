@@ -1,19 +1,20 @@
-import { initTRPC, TRPCError } from '@trpc/server';
+import { initTRPC } from '@trpc/server';
 import { Context } from './context.js';
 import { ZodError } from 'zod';
+import superjson from 'superjson';
 
 /**
  * Initialize tRPC backend
  * This is where we configure tRPC and integrate with other libraries
  */
 const t = initTRPC.context<Context>().create({
+  transformer: superjson,
   errorFormatter({ shape, error }) {
     return {
       ...shape,
       data: {
         ...shape.data,
-        zodError:
-          error.cause instanceof ZodError ? error.cause.flatten() : null,
+        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
       },
     };
   },
@@ -29,7 +30,7 @@ export const publicProcedure = t.procedure;
  * Create middleware to check if user is authenticated
  * This is a placeholder for future authentication logic
  */
-const isAuthed = t.middleware(({ ctx, next }) => {
+const isAuthed = t.middleware(({ next }) => {
   // In a real app, you would check if the user is authenticated
   // For now, we'll just assume they are
   const user = { id: '1', name: 'Admin' };
@@ -45,4 +46,4 @@ const isAuthed = t.middleware(({ ctx, next }) => {
 /**
  * Protected procedure - requires authentication
  */
-export const protectedProcedure = t.procedure.use(isAuthed); 
+export const protectedProcedure = t.procedure.use(isAuthed);

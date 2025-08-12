@@ -1,8 +1,8 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatCompactNumber, formatCurrency, formatPercentage } from '@/lib/utils';
-import { ArrowUpRight, BarChart3, Users, DollarSign, PieChart } from 'lucide-react';
+import { formatCompactNumber, formatCurrency } from '@/lib/utils';
+import { BarChart3, Users, DollarSign } from 'lucide-react';
 
 interface StatsOverviewProps {
   totalMarketCap: number;
@@ -12,22 +12,14 @@ interface StatsOverviewProps {
     monthly: number;
     yearly: number;
   };
-  percentageOfSolanaVolume: number;
   stablecoinCount: number;
-  dominantStablecoin: string;
-  dominantStablecoinShare: number;
-  yearOverYearGrowth: number;
 }
 
 export function StatsOverview({
   totalMarketCap,
   totalUniqueUsers,
   totalTransactionVolume,
-  percentageOfSolanaVolume,
   stablecoinCount,
-  dominantStablecoin,
-  dominantStablecoinShare,
-  yearOverYearGrowth,
 }: StatsOverviewProps) {
   return (
     <div className="space-y-6">
@@ -98,9 +90,7 @@ export function StatsOverview({
             </div>
           </CardHeader>
           <CardContent className="px-4 pb-4 pt-0 pl-[60px]">
-            <div className="text-sm text-neutral-400">
-              Daily transaction volume
-            </div>
+            <div className="text-sm text-neutral-400">Daily transaction volume</div>
           </CardContent>
         </Card>
       </div>

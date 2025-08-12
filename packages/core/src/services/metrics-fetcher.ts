@@ -3,6 +3,7 @@ import { apiSources, stablecoins } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import * as dotenv from 'dotenv';
 import { createArtemisClient } from './artemis-client.js';
+import type { ApiSource } from '../db/schema.js';
 
 // Load environment variables
 dotenv.config();
@@ -18,10 +19,7 @@ export class MetricsFetcher {
     try {
       console.log('Starting metrics fetch for all stablecoins...');
 
-      const sources = await this.db
-        .select()
-        .from(apiSources)
-        .where(eq(apiSources.isActive, true));
+      const sources = await this.db.select().from(apiSources).where(eq(apiSources.isActive, true));
 
       // Fallback to Artemis default if no sources configured
       const useDefaultArtemis = !Array.isArray(sources) || sources.length === 0;
@@ -34,7 +32,8 @@ export class MetricsFetcher {
         try {
           const baseUrl = useDefaultArtemis
             ? 'https://data-svc.artemisxyz.com'
-            : (sources.find((s: any) => s.name?.toLowerCase().includes('artemis'))?.url || 'https://data-svc.artemisxyz.com');
+            : sources.find((s: ApiSource) => s.name?.toLowerCase().includes('artemis'))?.url ||
+              'https://data-svc.artemisxyz.com';
 
           const artemis = createArtemisClient(baseUrl);
 
@@ -62,7 +61,9 @@ export class MetricsFetcher {
 
           // Update the last fetched timestamp for the Artemis source if present
           if (!useDefaultArtemis) {
-            const artemisSource = sources.find((s: any) => s.name?.toLowerCase().includes('artemis'));
+            const artemisSource = sources.find((s: ApiSource) =>
+              s.name?.toLowerCase().includes('artemis')
+            );
             if (artemisSource) {
               await this.db
                 .update(apiSources)
@@ -87,4 +88,4 @@ export class MetricsFetcher {
 
 export function createMetricsFetcher(): MetricsFetcher {
   return new MetricsFetcher();
-} 
+}

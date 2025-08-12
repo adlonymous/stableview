@@ -1,21 +1,10 @@
 import { inferAsyncReturnType } from '@trpc/server';
-import { CreateFastifyContextOptions } from '@trpc/server/adapters/fastify';
-import { CreateExpressContextOptions } from '@trpc/server/adapters/express';
 import { createDb } from '../db/index.js';
-
-/**
- * Creates context for tRPC procedures
- * This can be used with any HTTP adapter (Express, Fastify, etc.)
- */
-interface CreateContextOptions {
-  // Add any additional context options here
-  // For example, authentication data
-}
 
 /**
  * Inner context creation function - used by both HTTP and direct API access
  */
-export async function createContextInner(opts: CreateContextOptions = {}) {
+export async function createContextInner() {
   // Create database connection
   const db = createDb();
 
@@ -28,35 +17,31 @@ export async function createContextInner(opts: CreateContextOptions = {}) {
 /**
  * Context for Express adapter
  */
-export async function createExpressContext(
-  opts: CreateExpressContextOptions,
-): Promise<inferAsyncReturnType<typeof createContextInner>> {
+export async function createExpressContext(): Promise<
+  inferAsyncReturnType<typeof createContextInner>
+> {
   // For API handlers, we can access the request and response objects
-  const { req, res } = opts;
+  // const { req, res } = opts;
 
   // You can add authentication logic here
   // const session = await getSession(req);
 
-  return await createContextInner({
-    // session,
-  });
+  return await createContextInner();
 }
 
 /**
  * Context for Fastify adapter
  */
-export async function createFastifyContext(
-  opts: CreateFastifyContextOptions,
-): Promise<inferAsyncReturnType<typeof createContextInner>> {
+export async function createFastifyContext(): Promise<
+  inferAsyncReturnType<typeof createContextInner>
+> {
   // For API handlers, we can access the request and reply objects
-  const { req, res } = opts;
+  // const { req, res } = opts;
 
   // You can add authentication logic here
   // const session = await getSession(req);
 
-  return await createContextInner({
-    // session,
-  });
+  return await createContextInner();
 }
 
 /**
@@ -69,4 +54,4 @@ export async function createDirectContext() {
 /**
  * Type helper for context
  */
-export type Context = inferAsyncReturnType<typeof createContextInner>; 
+export type Context = inferAsyncReturnType<typeof createContextInner>;

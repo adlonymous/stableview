@@ -145,4 +145,4 @@ The tRPC API includes the following routes:
 - `stablecoin.getBySlug`: Get a stablecoin by slug
 - `stablecoin.create`: Create a new stablecoin (protected)
 - `stablecoin.update`: Update an existing stablecoin (protected)
-- `stablecoin.delete`: Delete a stablecoin (protected) 
+- `stablecoin.delete`: Delete a stablecoin (protected)

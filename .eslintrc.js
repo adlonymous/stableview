@@ -12,6 +12,12 @@ module.exports = {
     browser: true,
     es2021: true,
   },
+  ignorePatterns: [
+    '**/dist/**',
+    '**/build/**',
+    '**/node_modules/**',
+    '**/.next/**',
+  ],
   overrides: [
     {
       files: ['packages/app/**/*.ts', 'packages/app/**/*.tsx'],

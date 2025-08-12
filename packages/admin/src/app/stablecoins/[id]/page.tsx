@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 import { useStablecoin } from '../../../hooks/useStablecoins';
 
 export default function StablecoinDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -67,7 +66,7 @@ export default function StablecoinDetailPage({ params }: { params: Promise<{ id:
                 src={stablecoin.logoUrl}
                 alt={`${stablecoin.name} logo`}
                 className="h-12 w-12 rounded-full object-cover"
-                onError={(e) => {
+                onError={e => {
                   // Fallback to placeholder if image fails to load
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
@@ -76,7 +75,9 @@ export default function StablecoinDetailPage({ params }: { params: Promise<{ id:
                 }}
               />
             ) : null}
-            <div className={`h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center ${stablecoin.logoUrl ? 'hidden' : ''}`}>
+            <div
+              className={`h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center ${stablecoin.logoUrl ? 'hidden' : ''}`}
+            >
               <span className="text-blue-600 font-medium text-lg">
                 {stablecoin.slug.slice(0, 2).toUpperCase()}
               </span>
@@ -88,9 +89,7 @@ export default function StablecoinDetailPage({ params }: { params: Promise<{ id:
 
       <div className="bg-white shadow overflow-hidden sm:rounded-lg">
         <div className="px-4 py-5 sm:px-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Stablecoin Information
-          </h3>
+          <h3 className="text-lg leading-6 font-medium text-gray-900">Stablecoin Information</h3>
           <p className="mt-1 max-w-2xl text-sm text-gray-500">
             Details about {stablecoin.name} ({stablecoin.slug})
           </p>
@@ -113,9 +112,9 @@ export default function StablecoinDetailPage({ params }: { params: Promise<{ id:
               <dt className="text-sm font-medium text-gray-500">Logo URL</dt>
               <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                 {stablecoin.logoUrl ? (
-                  <a 
-                    href={stablecoin.logoUrl} 
-                    target="_blank" 
+                  <a
+                    href={stablecoin.logoUrl}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-800 break-all"
                   >
@@ -173,4 +172,4 @@ export default function StablecoinDetailPage({ params }: { params: Promise<{ id:
       </div>
     </div>
   );
-} 
+}

@@ -1,3 +1,3 @@
 'use client';
 
-export { useStablecoins, useCreateStablecoin, useStablecoin } from './useStablecoins'; 
+export { useStablecoins, useCreateStablecoin, useStablecoin } from './useStablecoins';

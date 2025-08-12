@@ -179,9 +179,7 @@ export function StablecoinFilters({
                 {filters.tokenProgram}
                 <X
                   className="h-3 w-3 cursor-pointer"
-                  onClick={() =>
-                    handleTokenProgramChange(filters.tokenProgram as string)
-                  }
+                  onClick={() => handleTokenProgramChange(filters.tokenProgram as string)}
                 />
               </Badge>
             )}

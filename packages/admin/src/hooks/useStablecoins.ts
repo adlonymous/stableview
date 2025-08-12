@@ -97,4 +97,4 @@ export function useCreateStablecoin() {
   };
 
   return { createStablecoin, isSubmitting, error };
-} 
+}

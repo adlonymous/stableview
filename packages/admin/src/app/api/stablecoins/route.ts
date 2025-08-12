@@ -46,12 +46,11 @@ export async function GET() {
     } catch (apiError) {
       console.warn('Core API failed, using mock data:', apiError);
     }
-    
+
     // Fall back to mock data if core API is not available
     console.log('Using mock data for stablecoins');
     return NextResponse.json(mockStablecoins);
-    
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching stablecoins:', error);
     // Return mock data as fallback even if there's an error
     return NextResponse.json(mockStablecoins);
@@ -61,7 +60,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    
+
     // Try to save to core API first
     try {
       const response = await fetch(`${config.coreApi.url}/api/stablecoins`, {
@@ -72,7 +71,7 @@ export async function POST(request: Request) {
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(config.coreApi.timeout),
       });
-      
+
       if (response.ok) {
         const result = await response.json();
         console.log('Successfully created stablecoin via core API');
@@ -81,7 +80,7 @@ export async function POST(request: Request) {
     } catch (apiError) {
       console.warn('Core API failed, using mock storage:', apiError);
     }
-    
+
     // Fall back to mock storage if core API is not available
     const newStablecoin = {
       ...body,
@@ -89,18 +88,14 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    
+
     // Add to mock data (in a real app, this would be temporary)
     mockStablecoins.push(newStablecoin);
-    
+
     console.log('Created stablecoin using mock storage:', newStablecoin);
     return NextResponse.json(newStablecoin, { status: 201 });
-    
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating stablecoin:', error);
-    return NextResponse.json(
-      { error: 'Failed to create stablecoin' }, 
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to create stablecoin' }, { status: 500 });
   }
-} 
+}

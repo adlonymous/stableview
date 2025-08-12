@@ -7,10 +7,9 @@ dotenv.config();
 export const VERSION = '0.1.0';
 
 // Browser-safe exports
-export const isBrowser = typeof globalThis !== 'undefined' && 
-                         typeof process === 'undefined' || 
-                         (typeof process !== 'undefined' && 
-                          process.env?.BROWSER === 'true');
+export const isBrowser =
+  (typeof globalThis !== 'undefined' && typeof process === 'undefined') ||
+  (typeof process !== 'undefined' && process.env?.BROWSER === 'true');
 
 // Import and re-export database functions
 export { createDb, schema } from './db/index.js';

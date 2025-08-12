@@ -9,10 +9,10 @@ import { createMetricsFetcher } from '../services/metrics-fetcher.js';
 async function main() {
   try {
     console.log('Starting metrics fetch job...');
-    
+
     const metricsFetcher = createMetricsFetcher();
     await metricsFetcher.fetchAllMetrics();
-    
+
     console.log('Metrics fetch job completed successfully.');
     process.exit(0);
   } catch (error) {
@@ -22,4 +22,4 @@ async function main() {
 }
 
 // Run the main function
-main(); 
+main();

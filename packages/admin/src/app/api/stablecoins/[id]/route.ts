@@ -33,7 +33,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   try {
     const { id } = await params;
     const numericId = Number(id);
-    
+
     // Try to get data from the core API first
     try {
       const response = await fetch(`${config.coreApi.url}/api/stablecoins/${numericId}`, {
@@ -47,19 +47,18 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     } catch (apiError) {
       console.warn('Core API failed, using mock data:', apiError);
     }
-    
+
     // Fall back to mock data if core API is not available
     const mockItem = mockStablecoins.find(coin => coin.id === numericId);
     if (mockItem) {
       console.log(`Using mock data for stablecoin ID ${numericId}`);
       return NextResponse.json(mockItem);
     }
-    
+
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching stablecoin by id:', error);
-    
+
     // Try to return mock data as last resort
     try {
       const { id } = await params;
@@ -71,7 +70,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     } catch (paramError) {
       console.error('Error parsing params:', paramError);
     }
-    
+
     return NextResponse.json({ error: 'Failed to fetch stablecoin' }, { status: 500 });
   }
-} 
+}
