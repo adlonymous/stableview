@@ -16,26 +16,29 @@ export function formatCurrency(value: number): string {
   // For values greater than or equal to 1 billion
   if (value >= 1000000000) {
     const billions = value / 1000000000;
-    return `$${billions.toFixed(Math.min(2, billions % 1 === 0 ? 0 : 1))}B`;
+    // Always show 2 decimal places for better precision
+    return `$${billions.toFixed(2)}B`;
   }
 
   // For values greater than or equal to 1 million
   if (value >= 1000000) {
     const millions = value / 1000000;
-    return `$${millions.toFixed(Math.min(2, millions % 1 === 0 ? 0 : 1))}M`;
+    // Always show 2 decimal places for better precision
+    return `$${millions.toFixed(2)}M`;
   }
 
   // For values greater than or equal to 1 thousand
   if (value >= 1000) {
     const thousands = value / 1000;
-    return `$${thousands.toFixed(Math.min(1, thousands % 1 === 0 ? 0 : 1))}K`;
+    // Show 1 decimal place for thousands
+    return `$${thousands.toFixed(1)}K`;
   }
 
   // For values less than 1 thousand
   return formatNumber(value, {
     style: 'currency',
     currency: 'USD',
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 2,
   });
 }
 
@@ -43,25 +46,28 @@ export function formatCompactNumber(value: number): string {
   // For values greater than or equal to 1 billion
   if (value >= 1000000000) {
     const billions = value / 1000000000;
-    return `${billions.toFixed(Math.min(2, billions % 1 === 0 ? 0 : 1))}B`;
+    // Always show 2 decimal places for better precision
+    return `${billions.toFixed(2)}B`;
   }
 
   // For values greater than or equal to 1 million
   if (value >= 1000000) {
     const millions = value / 1000000;
-    return `${millions.toFixed(Math.min(2, millions % 1 === 0 ? 0 : 1))}M`;
+    // Always show 2 decimal places for better precision
+    return `${millions.toFixed(2)}M`;
   }
 
   // For values greater than or equal to 1 thousand
   if (value >= 1000) {
     const thousands = value / 1000;
-    return `${thousands.toFixed(Math.min(1, thousands % 1 === 0 ? 0 : 1))}K`;
+    // Show 1 decimal place for thousands
+    return `${thousands.toFixed(1)}K`;
   }
 
-  // For values less than 1 thousand
+  // For values less than 1 thousand, show up to 2 decimal places
   return formatNumber(value, {
     notation: 'standard',
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 2,
   });
 }
 
@@ -87,13 +93,8 @@ export function filterStablecoins(
       return false;
     }
 
-    // Filter by network
-    if (filters.networksLiveOn && !stablecoin.networksLiveOn.includes(filters.networksLiveOn)) {
-      return false;
-    }
-
-    // Filter by market cap
-    if (filters.minMarketCap && stablecoin.marketCap < filters.minMarketCap) {
+    // Filter by market cap (using total supply as proxy)
+    if (filters.minMarketCap && parseFloat(stablecoin.totalSupply) < filters.minMarketCap) {
       return false;
     }
 
@@ -119,13 +120,13 @@ export function sortStablecoins(
         comparison = a.name.localeCompare(b.name);
         break;
       case 'marketCap':
-        comparison = a.marketCap - b.marketCap;
+        comparison = parseFloat(a.totalSupply) - parseFloat(b.totalSupply);
         break;
       case 'uniqueAddresses':
-        comparison = a.uniqueAddresses - b.uniqueAddresses;
+        comparison = parseFloat(a.dailyActiveUsers) - parseFloat(b.dailyActiveUsers);
         break;
       case 'transactionVolume':
-        comparison = a.transactionVolume.daily - b.transactionVolume.daily;
+        comparison = parseFloat(a.transactionVolume30d) - parseFloat(b.transactionVolume30d);
         break;
     }
 
@@ -135,11 +136,6 @@ export function sortStablecoins(
 
 export function getUniqueIssuers(stablecoins: Stablecoin[]): string[] {
   return Array.from(new Set(stablecoins.map(coin => coin.issuer)));
-}
-
-export function getUniqueNetworks(stablecoins: Stablecoin[]): string[] {
-  const allNetworks = stablecoins.flatMap(coin => coin.networksLiveOn);
-  return Array.from(new Set(allNetworks));
 }
 
 export function getUniquePeggedAssets(stablecoins: Stablecoin[]): string[] {

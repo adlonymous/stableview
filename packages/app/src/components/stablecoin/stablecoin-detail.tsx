@@ -46,36 +46,42 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
         </div>
 
         <div className="flex flex-wrap gap-3 md:ml-auto">
-          <Button
-            asChild
-            variant="outline"
-            className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
-          >
-            <Link href={stablecoin.solscanLink} target="_blank" rel="noopener noreferrer">
-              <span>Solscan</span>
-              <ExternalLink className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
-          >
-            <Link href={stablecoin.artemisLink} target="_blank" rel="noopener noreferrer">
-              <span>Artemis</span>
-              <ExternalLink className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
-          >
-            <Link href={stablecoin.assetReservesLink} target="_blank" rel="noopener noreferrer">
-              <span>Reserves</span>
-              <ExternalLink className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+          {stablecoin.solscanLink && (
+            <Button
+              asChild
+              variant="outline"
+              className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+            >
+              <Link href={stablecoin.solscanLink} target="_blank" rel="noopener noreferrer">
+                <span>Solscan</span>
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          )}
+          {stablecoin.artemisLink && (
+            <Button
+              asChild
+              variant="outline"
+              className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+            >
+              <Link href={stablecoin.artemisLink} target="_blank" rel="noopener noreferrer">
+                <span>Artemis</span>
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          )}
+          {stablecoin.assetReservesLink && (
+            <Button
+              asChild
+              variant="outline"
+              className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+            >
+              <Link href={stablecoin.assetReservesLink} target="_blank" rel="noopener noreferrer">
+                <span>Reserves</span>
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -85,12 +91,12 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
           <CardHeader className="pb-1 px-4 pt-4">
             <div className="flex items-start gap-3">
               <div className="h-8 w-8 rounded-lg bg-neutral-800/50 flex items-center justify-center shrink-0 mt-0.5">
-                <DollarSign className="h-4 w-4 text-neutral-400" />
+                <BarChart3 className="h-4 w-4 text-neutral-400" />
               </div>
               <div className="space-y-1">
-                <CardDescription className="text-neutral-400">Market Cap</CardDescription>
+                <CardDescription className="text-neutral-400">Total Supply</CardDescription>
                 <CardTitle className="text-2xl text-white">
-                  {formatCurrency(stablecoin.marketCap)}
+                  {formatCompactNumber(parseFloat(stablecoin.totalSupply))}
                 </CardTitle>
               </div>
             </div>
@@ -104,9 +110,9 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                 <Users className="h-4 w-4 text-neutral-400" />
               </div>
               <div className="space-y-1">
-                <CardDescription className="text-neutral-400">Unique Addresses</CardDescription>
+                <CardDescription className="text-neutral-400">Daily Active Users</CardDescription>
                 <CardTitle className="text-2xl text-white">
-                  {formatCompactNumber(stablecoin.uniqueAddresses)}
+                  {formatCompactNumber(parseFloat(stablecoin.dailyActiveUsers))}
                 </CardTitle>
               </div>
             </div>
@@ -117,17 +123,23 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
           <CardHeader className="pb-1 px-4 pt-4">
             <div className="flex items-start gap-3">
               <div className="h-8 w-8 rounded-lg bg-neutral-800/50 flex items-center justify-center shrink-0 mt-0.5">
-                <BarChart3 className="h-4 w-4 text-neutral-400" />
+                <DollarSign className="h-4 w-4 text-neutral-400" />
               </div>
               <div className="space-y-1">
-                <CardDescription className="text-neutral-400">Daily Volume</CardDescription>
+                <CardDescription className="text-neutral-400">Daily Transaction Count</CardDescription>
                 <CardTitle className="text-2xl text-white">
-                  {formatCurrency(stablecoin.transactionVolume.daily)}
+                  {formatCompactNumber(parseFloat(stablecoin.transactionCountDaily))}
                 </CardTitle>
               </div>
             </div>
           </CardHeader>
         </Card>
+      </div>
+
+      {/* Price Info - Minor Detail */}
+      <div className="flex items-center gap-2 text-sm text-neutral-500">
+        <span>Price:</span>
+        <span className="font-medium">${stablecoin.price}</span>
       </div>
 
       {/* Executive Summary */}
@@ -136,7 +148,9 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
           <CardTitle className="text-white">Executive Summary</CardTitle>
         </CardHeader>
         <CardContent className="px-5 pb-4">
-          <p className="text-neutral-300 leading-relaxed">{stablecoin.executiveSummary}</p>
+          <p className="text-neutral-300 leading-relaxed">
+            {stablecoin.executiveSummary || 'Coming soon'}
+          </p>
         </CardContent>
       </Card>
 
@@ -146,8 +160,8 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
           <TabsTrigger value="details" className="data-[state=active]:bg-neutral-800">
             Token Details
           </TabsTrigger>
-          <TabsTrigger value="volume" className="data-[state=active]:bg-neutral-800">
-            Volume Analysis
+          <TabsTrigger value="metrics" className="data-[state=active]:bg-neutral-800">
+            Metrics
           </TabsTrigger>
         </TabsList>
 
@@ -202,7 +216,8 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                     <p className="text-white">{stablecoin.mintAuthority}</p>
                   </div>
 
-                  <div>
+                  {/* Commented out as requested */}
+                  {/* <div>
                     <h3 className="text-sm font-medium text-neutral-400 mb-1">Networks Live On</h3>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {stablecoin.networksLiveOn.map(network => (
@@ -215,13 +230,14 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                         </Badge>
                       ))}
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 
               <Separator className="my-5 bg-neutral-800" />
 
-              <div className="space-y-5">
+              {/* Commented out as requested */}
+              {/* <div className="space-y-5">
                 <div>
                   <h3 className="text-sm font-medium text-neutral-400 mb-2">Bridging Mechanisms</h3>
                   <div className="flex flex-wrap gap-2">
@@ -253,12 +269,12 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                     ))}
                   </div>
                 </div>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="volume" className="mt-4">
+        <TabsContent value="metrics" className="mt-4">
           <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all">
             <CardHeader className="px-5 pt-4 pb-3">
               <div className="flex items-center gap-2">
@@ -266,37 +282,43 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                   <BarChart3 className="h-4 w-4 text-neutral-400" />
                 </div>
                 <div>
-                  <CardTitle className="text-white">Transaction Volume</CardTitle>
+                  <CardTitle className="text-white">Token Metrics</CardTitle>
                   <CardDescription className="text-neutral-400">
-                    Historical transaction volume across different timeframes
+                    Key quantitative data from the blockchain
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="px-5 pb-5">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <div className="text-sm text-neutral-400">Daily</div>
+                  <div className="text-sm text-neutral-400">Total Supply</div>
                   <div className="text-2xl font-semibold text-white">
-                    {formatCurrency(stablecoin.transactionVolume.daily)}
+                    {formatCompactNumber(parseFloat(stablecoin.totalSupply))}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm text-neutral-400">Monthly</div>
+                  <div className="text-sm text-neutral-400">Daily Active Users</div>
                   <div className="text-2xl font-semibold text-white">
-                    {formatCurrency(stablecoin.transactionVolume.monthly)}
+                    {formatCompactNumber(parseFloat(stablecoin.dailyActiveUsers))}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm text-neutral-400">Yearly</div>
+                  <div className="text-sm text-neutral-400">Daily Transaction Count</div>
                   <div className="text-2xl font-semibold text-white">
-                    {formatCurrency(stablecoin.transactionVolume.yearly)}
+                    {formatCompactNumber(parseFloat(stablecoin.transactionCountDaily))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-neutral-400">30-Day Volume</div>
+                  <div className="text-2xl font-semibold text-white">
+                    {formatCurrency(parseFloat(stablecoin.transactionVolume30d))}
                   </div>
                 </div>
               </div>
 
               <div className="mt-6 h-64 w-full bg-neutral-800 rounded-md flex items-center justify-center">
-                <p className="text-neutral-400">Transaction volume chart would be displayed here</p>
+                <p className="text-neutral-400">Metrics chart would be displayed here</p>
               </div>
             </CardContent>
           </Card>

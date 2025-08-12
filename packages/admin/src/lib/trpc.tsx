@@ -16,7 +16,7 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
 // API utility functions for data fetching
 export const api = {
   // Base URL for API calls
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005/api',
+  baseUrl: process.env.NEXT_PUBLIC_API_URL || '/api',
   
   // Generic fetch wrapper with error handling
   async fetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
@@ -42,6 +42,7 @@ export const api = {
   
   // GET request
   async get<T>(endpoint: string): Promise<T> {
+    console.log(`API GET request to: ${this.baseUrl}/${endpoint}`);
     return this.fetch<T>(endpoint, { method: 'GET' });
   },
   

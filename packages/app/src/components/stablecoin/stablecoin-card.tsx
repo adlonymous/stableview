@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { formatCompactNumber, formatCurrency } from '@/lib/utils';
+import { formatCompactNumber } from '@/lib/utils';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
@@ -48,22 +48,22 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
         <div className="space-y-3">
           <div className="grid grid-cols-1 gap-3">
             <div className="space-y-1">
-              <p className="text-xs text-neutral-400">Market Cap</p>
+              <p className="text-xs text-neutral-400">Total Supply</p>
               <p className="font-medium text-white text-sm truncate">
-                {formatCurrency(stablecoin.marketCap)}
+                {formatCompactNumber(parseFloat(stablecoin.totalSupply))}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <p className="text-xs text-neutral-400">Holders</p>
+                <p className="text-xs text-neutral-400">Daily Transaction Count</p>
                 <p className="font-medium text-white text-sm">
-                  {formatCompactNumber(stablecoin.uniqueAddresses)}
+                  {formatCompactNumber(parseFloat(stablecoin.transactionCountDaily))}
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs text-neutral-400">Daily Volume</p>
+                <p className="text-xs text-neutral-400">Daily Active Users</p>
                 <p className="font-medium text-white text-sm truncate">
-                  {formatCurrency(stablecoin.transactionVolume.daily)}
+                  {formatCompactNumber(parseFloat(stablecoin.dailyActiveUsers))}
                 </p>
               </div>
             </div>
@@ -71,6 +71,10 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
           <div className="space-y-1">
             <p className="text-xs text-neutral-400">Issuer</p>
             <p className="font-medium text-white text-sm truncate">{stablecoin.issuer}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs text-neutral-400 text-neutral-500">Price</p>
+            <p className="text-xs text-neutral-500">${stablecoin.price}</p>
           </div>
         </div>
       </CardContent>

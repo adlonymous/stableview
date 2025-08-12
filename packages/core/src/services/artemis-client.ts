@@ -1,138 +1,100 @@
 /**
  * Artemis API client for fetching stablecoin metrics
- * 
- * This client handles authentication, request formatting, and response parsing
- * for the Artemis API. It provides methods for fetching various metrics
- * related to Solana stablecoins.
  */
 export class ArtemisClient {
-  private apiKey: string;
   private baseUrl: string;
-  
-  /**
-   * Create a new Artemis API client
-   * 
-   * @param apiKey The API key for authentication
-   * @param baseUrl The base URL for the Artemis API (optional)
-   */
-  constructor(apiKey: string, baseUrl: string = 'https://api.artemisxyz.com') {
-    this.apiKey = apiKey;
-    this.baseUrl = baseUrl;
-  }
-  
-  /**
-   * Get metrics for a specific stablecoin
-   * 
-   * @param slug The slug/identifier of the stablecoin
-   * @returns Metrics data for the stablecoin
-   */
-  async getStablecoinMetrics(slug: string): Promise<StablecoinMetrics> {
-    try {
-      // This is a placeholder implementation
-      // Replace with actual API call when implementing
-      
-      const endpoint = `/data/${slug}`;
-      
-      const response = await this.makeRequest(endpoint);
-      return this.parseMetricsResponse(response);
 
-      
-      // For now, return mock data
-      return {
-        transactionVolume: Math.random() * 1000000000,
-        transactionCount: Math.floor(Math.random() * 1000000),
-        totalSupply: Math.random() * 10000000000,
-        uniqueAddresses: Math.floor(Math.random() * 100000),
-        price: 1 + (Math.random() * 0.01 - 0.005),
-      };
-    } catch (error) {
-      console.error(`Error fetching metrics for ${slug} from Artemis:`, error);
-      throw error;
-    }
+  constructor(baseUrl: string = 'https://data-svc.artemisxyz.com') {
+    this.baseUrl = baseUrl.replace(/\/$/, '');
   }
-  
+
   /**
-   * Make an authenticated request to the Artemis API
-   * 
-   * @param endpoint The API endpoint to call
-   * @param method The HTTP method to use
-   * @param body The request body (for POST requests)
-   * @returns The parsed JSON response
+   * Fetch 30-day transfer volume by summing daily values over the last 30 days
    */
-  private async makeRequest(
-    endpoint: string, 
-    method: 'GET' | 'POST' = 'GET',
-    body?: any
-  ): Promise<any> {
-    try {
-      const url = `${this.baseUrl}${endpoint}`;
-      
-      const headers = {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      };
-      
-      const options: RequestInit = {
-        method,
-        headers,
-      };
-      
-      if (body && method === 'POST') {
-        options.body = JSON.stringify(body);
-      }
-      
-      const response = await fetch(url, options);
-      
-      if (!response.ok) {
-        throw new Error(`Artemis API error: ${response.status} ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error making request to Artemis API:', error);
-      throw error;
+  async getTransferVolume30d(symbol: string, now: Date = new Date()): Promise<number> {
+    const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const start = new Date(end);
+    start.setUTCDate(end.getUTCDate() - 29);
+
+    const startDate = start.toISOString().slice(0, 10);
+    const endDate = end.toISOString().slice(0, 10);
+
+    const data = await this.fetchMetric('STABLECOIN_TRANSFER_VOLUME', symbol, { startDate, endDate });
+    const rawSeries = this.extractSeries(data, symbol, 'STABLECOIN_TRANSFER_VOLUME');
+    const series = Array.isArray(rawSeries) ? rawSeries : [];
+
+    let sum = 0;
+    for (const p of series) {
+      const v = typeof p?.val === 'number' ? p.val : Number(p?.val);
+      if (Number.isFinite(v)) sum += v;
     }
+    return sum;
   }
-  
+
   /**
-   * Parse the metrics response from the Artemis API
-   * 
-   * @param response The API response to parse
-   * @returns Structured metrics data
+   * Fetch latest daily transactions count (uses most recent non-null value)
    */
-  private parseMetricsResponse(response: any): StablecoinMetrics {
-    // This is a placeholder implementation
-    // Adjust the field mapping based on the actual API response structure
-    return {
-      transactionVolume: response.metrics?.transaction_volume_30d || 0,
-      transactionCount: response.metrics?.transaction_count_30d || 0,
-      totalSupply: response.metrics?.total_supply || 0,
-      uniqueAddresses: response.metrics?.unique_addresses_30d || 0,
-      price: response.metrics?.price || 1,
-    };
+  async getDailyTransactions(symbol: string): Promise<number> {
+    const data = await this.fetchMetric('STABLECOIN_DAILY_TXNS', symbol);
+    return this.getLatestNumeric(data, symbol, 'STABLECOIN_DAILY_TXNS');
+  }
+
+  /**
+   * Fetch latest total supply (USD) (uses most recent non-null value)
+   */
+  async getTotalSupply(symbol: string): Promise<number> {
+    const data = await this.fetchMetric('STABLECOIN_SUPPLY', symbol);
+    return this.getLatestNumeric(data, symbol, 'STABLECOIN_SUPPLY');
+  }
+
+  /**
+   * Fetch latest daily active users (DAU) (uses most recent non-null value)
+   */
+  async getDailyActiveUsers(symbol: string): Promise<number> {
+    const data = await this.fetchMetric('STABLECOIN_DAU', symbol);
+    return this.getLatestNumeric(data, symbol, 'STABLECOIN_DAU');
+  }
+
+  /**
+   * Get the latest non-null numeric 'val' from a series
+   */
+  private getLatestNumeric(resp: any, symbol: string, key: string): number {
+    const rawSeries = this.extractSeries(resp, symbol, key);
+    const series = Array.isArray(rawSeries) ? rawSeries : [];
+    for (let i = series.length - 1; i >= 0; i--) {
+      const v = typeof series[i]?.val === 'number' ? series[i].val : Number(series[i]?.val);
+      if (Number.isFinite(v)) return v;
+    }
+    return 0;
+  }
+
+  /**
+   * Generic metric fetcher
+   */
+  private async fetchMetric(metric: string, symbol: string, params?: { startDate?: string; endDate?: string }): Promise<any> {
+    const url = new URL(`${this.baseUrl}/data/${metric}/`);
+    url.searchParams.set('symbols', symbol);
+    if (params?.startDate) url.searchParams.set('startDate', params.startDate);
+    if (params?.endDate) url.searchParams.set('endDate', params.endDate);
+
+    // Log the exact request URL
+    console.log(`[Artemis] GET ${url.toString()}`);
+
+    const res = await fetch(url.toString(), { method: 'GET' });
+    if (!res.ok) {
+      throw new Error(`Artemis API error ${res.status}: ${res.statusText}`);
+    }
+    return res.json();
+  }
+
+  /**
+   * Extract series array from Artemis response
+   */
+  private extractSeries(resp: any, symbol: string, key: string): any[] {
+    return resp?.data?.symbols?.[symbol]?.[key] ?? [];
   }
 }
 
-/**
- * Interface for stablecoin metrics data
- */
-export interface StablecoinMetrics {
-  date?: string;
-  transactionVolume: number;
-  transactionCount: number;
-  totalSupply: number;
-  uniqueAddresses: number;
-  price: number;
-}
-
-/**
- * Create a new Artemis client instance
- * 
- * @param apiKey The API key for authentication
- * @param baseUrl The base URL for the Artemis API (optional)
- * @returns A new Artemis client instance
- */
-export function createArtemisClient(apiKey: string, baseUrl?: string): ArtemisClient {
-  return new ArtemisClient(apiKey, baseUrl);
+export function createArtemisClient(baseUrl?: string): ArtemisClient {
+  return new ArtemisClient(baseUrl);
 } 

@@ -1,36 +1,39 @@
 export interface Stablecoin {
   // Basic Info
-  id: string;
+  id: number;
+  slug: string;
   name: string;
   token: string;
   peggedAsset: string;
   issuer: string;
-  tokenProgram: 'SPL Token' | 'Token 2022';
+  tokenProgram: string;
   tokenAddress: string;
   mintAuthority: string;
 
-  // Mechanism Info
-  bridgingMechanisms: string[];
-  networksLiveOn: string[];
-  redemptionMechanisms: string[];
+  // Mechanism Info (commented out as requested)
+  // bridgingMechanisms: string[];
+  // networksLiveOn: string[];
+  // redemptionMechanisms: string[];
 
   // Links
-  solscanLink: string;
-  artemisLink: string;
-  assetReservesLink: string;
+  solscanLink?: string;
+  artemisLink?: string;
+  assetReservesLink?: string;
 
-  // Quantitative Data
-  marketCap: number;
-  uniqueAddresses: number;
-  transactionVolume: {
-    daily: number;
-    monthly: number;
-    yearly: number;
-  };
+  // Quantitative Data from schema
+  transactionVolume30d: string;
+  transactionCountDaily: string;
+  totalSupply: string;
+  dailyActiveUsers: string;
+  price: string;
 
   // Summary
-  executiveSummary: string;
+  executiveSummary?: string;
 
   // Optional image
   logoUrl?: string;
+
+  // Timestamps
+  createdAt: string;
+  updatedAt: string;
 }

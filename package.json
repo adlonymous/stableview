@@ -6,6 +6,8 @@
     "dev": "pnpm --filter @stableview/app dev",
     "dev:admin": "pnpm --filter @stableview/admin dev",
     "dev:core": "pnpm --filter @stableview/core dev",
+    "start:api": "pnpm --filter @stableview/core start:api",
+    "dev:api": "pnpm --filter @stableview/core dev:api",
     "build": "pnpm -r build",
     "start": "pnpm --filter @stableview/app start",
     "lint": "pnpm -r lint",

@@ -24,11 +24,11 @@ export const stablecoins = pgTable('stablecoins', {
   artemisLink: text('artemis_link'),
   assetReservesLink: text('asset_reserves_link'),
   
-  // Current Quantitative Data (updated daily)
+  // Quantitative Data
   transactionVolume30d: numeric('transaction_volume_30d', { precision: 38, scale: 2 }).default('0'),
-  transactionCount30d: numeric('transaction_count_30d', { precision: 38, scale: 0 }).default('0'),
+  transactionCountDaily: numeric('transaction_count_daily', { precision: 38, scale: 0 }).default('0'),
   totalSupply: numeric('total_supply', { precision: 38, scale: 2 }).default('0'),
-  uniqueAddresses30d: numeric('unique_addresses_30d', { precision: 38, scale: 0 }).default('0'),
+  dailyActiveUsers: numeric('daily_active_users', { precision: 38, scale: 0 }).default('0'),
   
   // Additional metrics
   price: numeric('price', { precision: 10, scale: 6 }).default('1'),

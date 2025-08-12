@@ -5,10 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
 
 export type StablecoinFilter = {
-  tokenProgram?: 'SPL Token' | 'Token 2022';
+  tokenProgram?: string;
   issuer?: string;
   minMarketCap?: number;
-  networksLiveOn?: string;
   peggedAsset?: string;
 };
 
@@ -16,7 +15,6 @@ interface StablecoinFiltersProps {
   filters: StablecoinFilter;
   onFilterChange: (filters: StablecoinFilter) => void;
   issuers: string[];
-  networks: string[];
   peggedAssets: string[];
 }
 
@@ -24,10 +22,9 @@ export function StablecoinFilters({
   filters,
   onFilterChange,
   issuers,
-  networks,
   peggedAssets,
 }: StablecoinFiltersProps) {
-  const handleTokenProgramChange = (program: 'SPL Token' | 'Token 2022' | undefined) => {
+  const handleTokenProgramChange = (program: string | undefined) => {
     onFilterChange({
       ...filters,
       tokenProgram: filters.tokenProgram === program ? undefined : program,
@@ -38,13 +35,6 @@ export function StablecoinFilters({
     onFilterChange({
       ...filters,
       issuer: filters.issuer === issuer ? undefined : issuer,
-    });
-  };
-
-  const handleNetworkChange = (network: string) => {
-    onFilterChange({
-      ...filters,
-      networksLiveOn: filters.networksLiveOn === network ? undefined : network,
     });
   };
 
@@ -138,22 +128,6 @@ export function StablecoinFilters({
         </div>
 
         <div className="space-y-2">
-          <h4 className="text-xs font-medium text-neutral-400">Network</h4>
-          <div className="flex flex-wrap gap-2">
-            {networks.map(network => (
-              <Badge
-                key={network}
-                variant={filters.networksLiveOn === network ? 'default' : 'outline'}
-                className="cursor-pointer hover:bg-neutral-800"
-                onClick={() => handleNetworkChange(network)}
-              >
-                {network}
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-2">
           <h4 className="text-xs font-medium text-neutral-400">Market Cap</h4>
           <div className="flex flex-wrap gap-2">
             <Badge
@@ -206,7 +180,7 @@ export function StablecoinFilters({
                 <X
                   className="h-3 w-3 cursor-pointer"
                   onClick={() =>
-                    handleTokenProgramChange(filters.tokenProgram as 'SPL Token' | 'Token 2022')
+                    handleTokenProgramChange(filters.tokenProgram as string)
                   }
                 />
               </Badge>
@@ -217,15 +191,6 @@ export function StablecoinFilters({
                 <X
                   className="h-3 w-3 cursor-pointer"
                   onClick={() => handleIssuerChange(filters.issuer as string)}
-                />
-              </Badge>
-            )}
-            {filters.networksLiveOn && (
-              <Badge className="bg-neutral-800 text-white flex items-center gap-1">
-                {filters.networksLiveOn}
-                <X
-                  className="h-3 w-3 cursor-pointer"
-                  onClick={() => handleNetworkChange(filters.networksLiveOn as string)}
                 />
               </Badge>
             )}

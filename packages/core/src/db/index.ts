@@ -1,6 +1,10 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import dotenv from 'dotenv';
 import * as schema from './schema.js';
+
+// Load environment variables
+dotenv.config();
 
 // Function to create a database connection
 export function createDb() {
@@ -21,6 +25,8 @@ export function createDb() {
     // Server-side code
     const connectionString = process.env.DATABASE_URL;
     
+    console.log('Attempting database connection with:', connectionString ? 'DATABASE_URL is set' : 'DATABASE_URL is NOT set');
+    
     if (!connectionString) {
       throw new Error('DATABASE_URL environment variable is not set');
     }
@@ -29,10 +35,13 @@ export function createDb() {
     const client = postgres(connectionString);
     
     // Create the drizzle database instance
-    return drizzle(client, { schema });
+    const db = drizzle(client, { schema });
+    console.log('Database connection successful');
+    return db;
   } catch (error) {
     console.error('Error connecting to database:', error);
     // Fall back to mock DB if there's an error
+    console.log('Falling back to mock database');
     return getMockDb();
   }
 }

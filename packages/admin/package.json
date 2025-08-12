@@ -5,35 +5,23 @@
   "scripts": {
     "dev": "next dev --port 3003",
     "build": "next build",
-    "start": "next start --port 3001",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
-    "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\"",
-    "type-check": "tsc --noEmit"
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
-    "@stableview/core": "workspace:*",
-    "@tanstack/react-query": "^5.84.1",
-    "@trpc/client": "^11.4.4",
-    "@trpc/react-query": "^11.4.4",
-    "@trpc/server": "^11.4.4",
     "next": "15.4.5",
     "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "superjson": "^2.2.2",
-    "webpack": "^5.101.0"
+    "react-dom": "19.1.0"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "autoprefixer": "^10.4.16",
-    "eslint": "^8.56.0",
+    "@types/node": "20.19.9",
+    "@types/react": "19.1.9",
+    "@types/react-dom": "19.1.7",
+    "autoprefixer": "10.4.21",
+    "eslint": "8.57.1",
     "eslint-config-next": "15.4.5",
-    "postcss": "^8.4.32",
-    "prettier": "^3.2.5",
-    "tailwindcss": "^3.4.0",
-    "typescript": "^5"
+    "postcss": "8.5.6",
+    "tailwindcss": "3.4.17",
+    "typescript": "5.9.2"
   }
 }
