@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { coreApi } from '../lib/db';
+import { coreApi, NewStablecoin } from '../lib/db';
 
 // Define types for stablecoin data
 export interface Stablecoin {
@@ -80,7 +80,7 @@ export function useCreateStablecoin() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createStablecoin = async (data: Partial<Stablecoin>) => {
+  const createStablecoin = async (data: NewStablecoin) => {
     try {
       setIsSubmitting(true);
       setError(null);

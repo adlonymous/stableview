@@ -4,24 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useCreateStablecoin } from '../../../hooks/useStablecoins';
-
-interface NewStablecoin {
-  slug: string;
-  name: string;
-  token: string;
-  peggedAsset: string;
-  issuer: string;
-  tokenProgram: string;
-  tokenAddress: string;
-  mintAuthority: string;
-  transactionVolume30d: string;
-  transactionCountDaily: string;
-  totalSupply: string;
-  dailyActiveUsers: string;
-  price: string;
-  executiveSummary?: string;
-  logoUrl?: string;
-}
+import { NewStablecoin } from '../../../lib/db';
 
 export default function NewStablecoinPage() {
   const router = useRouter();
