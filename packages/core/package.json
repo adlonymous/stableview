@@ -25,6 +25,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "start": "node dist/server/api.js",
     "start:api": "node dist/server/api.js",
     "dev:api": "tsx src/server/api.ts",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
