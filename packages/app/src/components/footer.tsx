@@ -16,17 +16,6 @@ export function Footer() {
             © {new Date().getFullYear()} StableView. All rights reserved.
           </p>
         </div>
-        <div className="mt-4 flex gap-4 md:ml-auto md:mt-0">
-          <Link href="#" className="text-xs text-neutral-500 hover:text-neutral-300 md:text-sm">
-            Terms
-          </Link>
-          <Link href="#" className="text-xs text-neutral-500 hover:text-neutral-300 md:text-sm">
-            Privacy
-          </Link>
-          <Link href="#" className="text-xs text-neutral-500 hover:text-neutral-300 md:text-sm">
-            Contact
-          </Link>
-        </div>
       </div>
     </footer>
   );

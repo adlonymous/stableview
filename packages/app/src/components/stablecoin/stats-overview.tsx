@@ -31,7 +31,7 @@ export function StatsOverview({
                 <DollarSign className="h-4 w-4 text-neutral-400" />
               </div>
               <div className="space-y-1">
-                <CardDescription className="text-neutral-400">Total Market Cap</CardDescription>
+                <CardDescription className="text-neutral-400">Total Supply</CardDescription>
                 <CardTitle className="text-2xl text-white">
                   {formatCurrency(totalMarketCap)}
                 </CardTitle>

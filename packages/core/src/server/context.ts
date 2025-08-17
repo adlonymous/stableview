@@ -1,15 +1,10 @@
 import { inferAsyncReturnType } from '@trpc/server';
-import { createDb } from '../db/index.js';
 
 /**
  * Inner context creation function - used by both HTTP and direct API access
  */
 export async function createContextInner() {
-  // Create database connection
-  const db = createDb();
-
   return {
-    db,
     // Add any additional context properties here
   };
 }

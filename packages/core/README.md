@@ -1,148 +1,122 @@
-# StableView Core
+# @stableview/core
 
-Core backend services for StableView, providing data access and API functionality.
+Core package for the StableView application, providing database access, API endpoints, and business logic.
 
 ## Features
 
-- tRPC API for type-safe API calls
-- Drizzle ORM for PostgreSQL database access
-- Zod for input validation
-- ESM modules for modern JavaScript
+- **Database Access**: Direct Supabase client for PostgreSQL database operations
+- **API Server**: Fastify-based REST API server
+- **tRPC Integration**: Type-safe API endpoints with tRPC
+- **Stablecoin Management**: CRUD operations for stablecoin data
+- **Metrics Updates**: Automated metrics fetching from Artemis API using original client
 
-## Getting Started
+## Prerequisites
 
-### Environment Setup
+- Node.js 18+
+- pnpm package manager
+- Supabase project with PostgreSQL database
 
-Create a `.env` file in the `packages/core` directory with the following variables:
+## Environment Setup
 
-```env
-# Database connection string
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/stableview
-
-# Environment (development, production, test)
-NODE_ENV=development
-
-# Optional: API base URL for tRPC client
-API_BASE_URL=http://localhost:3000/api/trpc
-```
-
-### Development
+Copy the environment example file and configure your Supabase credentials:
 
 ```bash
-# Install dependencies
+cp env.example .env
+```
+
+Required environment variables:
+
+```bash
+# Supabase Configuration
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# Core API Configuration
+CORE_API_PORT=3004
+```
+
+## Installation
+
+```bash
 pnpm install
-
-# Start development mode
-pnpm dev
-
-# Run database migrations
-pnpm db:push
-
-# Generate migration files
-pnpm db:generate
-
-# Open Drizzle Studio
-pnpm db:studio
 ```
 
-## Usage
+## Development
 
-### Direct Import
+```bash
+# Start development server with hot reload
+pnpm dev:api
 
-```typescript
-import { createDb, stablecoins } from '@stableview/core';
-import { eq } from 'drizzle-orm';
+# Build the project
+pnpm build
 
-// Create database connection
-const db = createDb();
-
-// Query stablecoins
-const allStablecoins = await db.select().from(stablecoins);
-const usdcStablecoin = await db
-  .select()
-  .from(stablecoins)
-  .where(eq(stablecoins.slug, 'usdc'))
-  .limit(1);
+# Start production server
+pnpm start
 ```
 
-### Using tRPC Client
+## Metrics Updates
 
-```typescript
-import { createClient } from '@stableview/core/client';
+Update stablecoin metrics from the Artemis API using the original client implementation:
 
-// Create tRPC client
-const client = createClient({
-  url: 'http://localhost:3000/api/trpc',
-});
+```bash
+# Update all configured stablecoins
+pnpm update-metrics
 
-// Query stablecoins
-const stablecoins = await client.stablecoin.getAll.query({
-  limit: 10,
-  offset: 0,
-});
+# Update a specific stablecoin
+pnpm update-metrics --slug USDC
 
-// Get a specific stablecoin
-const usdc = await client.stablecoin.getBySlug.query('usdc');
+# List configured stablecoins
+pnpm update-metrics --list
 
-// Create a new stablecoin (requires authentication)
-const authenticatedClient = createAuthenticatedClient({
-  url: 'http://localhost:3000/api/trpc',
-  token: 'your-auth-token',
-});
+# Test Artemis API connection
+pnpm update-metrics --test USDC
 
-const newStablecoin = await authenticatedClient.stablecoin.create.mutate({
-  slug: 'usdt',
-  name: 'Tether',
-  token: 'USDT',
-  peggedAsset: 'USD',
-  issuer: 'Tether Limited',
-  tokenProgram: 'SPL Token',
-  tokenAddress: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
-  mintAuthority: 'Tether Limited',
-});
+# Development mode
+pnpm update-metrics:dev
 ```
 
-### Setting Up HTTP Server
+The script fetches real metrics data from Artemis including:
 
-To expose the tRPC API over HTTP, you can use Express or Fastify:
+- **Transaction Volume**: 30-day transfer volume (sum of daily values)
+- **Transaction Count**: Daily transaction count (latest non-null value)
+- **Total Supply**: Current total supply in USD (latest non-null value)
+- **Daily Active Users**: Daily active users count (latest non-null value)
 
-```typescript
-import express from 'express';
-import { createExpressMiddleware } from '@trpc/server/adapters/express';
-import { appRouter, createExpressContext } from '@stableview/core/server';
+**Artemis API Endpoints Used:**
 
-const app = express();
+- `STABLECOIN_TRANSFER_VOLUME` - For 30-day volume calculation
+- `STABLECOIN_DAILY_TXNS` - For daily transaction count
+- `STABLECOIN_SUPPLY` - For total supply
+- `STABLECOIN_DAU` - For daily active users
 
-app.use(
-  '/api/trpc',
-  createExpressMiddleware({
-    router: appRouter,
-    createContext: createExpressContext,
-  })
-);
+**Symbol Convention:** USDC → `usdc-sol`, USDT → `usdt-sol`, etc.
 
-app.listen(3000, () => {
-  console.log('Server running on http://localhost:3000');
-});
+## API Endpoints
+
+The core API provides the following endpoints:
+
+- `GET /api/stablecoins` - List all stablecoins
+- `GET /api/stablecoins/:id` - Get stablecoin by ID
+- `POST /api/stablecoins` - Create new stablecoin
+- `PUT /api/stablecoins/:id` - Update stablecoin
+- `DELETE /api/stablecoins/:id` - Delete stablecoin
+- `GET /api/stablecoins/by-currency-peg` - Group stablecoins by currency peg
+- `GET /api/dashboard/stats` - Get dashboard statistics
+- `GET /health` - Health check
+
+## Architecture
+
+- **Database Layer**: Direct Supabase client with PostgreSQL
+- **API Layer**: Fastify server with REST endpoints
+- **Business Logic**: tRPC routers for type-safe operations
+- **Data Model**: Stablecoin data with snake_case field naming
+- **Metrics**: Automated updates from Artemis API using original client
+
+## Building for Production
+
+```bash
+pnpm build
 ```
 
-## Database Schema
-
-The core package includes a Drizzle ORM schema for stablecoins with the following fields:
-
-- Basic info: id, slug, name, token, peggedAsset, issuer, tokenProgram, etc.
-- Arrays: bridgingMechanisms, networksLiveOn, redemptionMechanisms
-- Links: solscanLink, artemisLink, assetReservesLink
-- Quantitative data: marketCap, uniqueAddresses, volumes
-- Other: executiveSummary, logoUrl
-
-## API Routes
-
-The tRPC API includes the following routes:
-
-- `stablecoin.getAll`: Get all stablecoins with filtering and pagination
-- `stablecoin.getById`: Get a stablecoin by ID
-- `stablecoin.getBySlug`: Get a stablecoin by slug
-- `stablecoin.create`: Create a new stablecoin (protected)
-- `stablecoin.update`: Update an existing stablecoin (protected)
-- `stablecoin.delete`: Delete a stablecoin (protected)
+The built files will be available in the `dist/` directory.

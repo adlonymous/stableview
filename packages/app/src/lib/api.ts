@@ -92,6 +92,54 @@ export async function fetchStablecoinByIdWithFallback(id: number): Promise<Stabl
   }
 }
 
+export interface CurrencyPegStablecoins {
+  [currency: string]: Array<{
+    name: string;
+    slug: string;
+    token: string;
+    totalSupply: string | null;
+    transactionVolume30d: string | null;
+  }>;
+}
+
+export async function fetchStablecoinsByCurrencyPeg(): Promise<CurrencyPegStablecoins> {
+  try {
+    return await fetchApi<CurrencyPegStablecoins>('/api/stablecoins/by-currency-peg');
+  } catch (error) {
+    console.error('Failed to fetch stablecoins by currency peg:', error);
+    throw error;
+  }
+}
+
+// Fallback to mock data if API fails
+export async function fetchStablecoinsByCurrencyPegWithFallback(): Promise<CurrencyPegStablecoins> {
+  try {
+    return await fetchStablecoinsByCurrencyPeg();
+  } catch (error) {
+    console.warn('API failed, falling back to mock data:', error);
+    // Import mock data dynamically to avoid bundling in production
+    const { mockStablecoins } = await import('./mock-data');
+
+    // Group mock data by currency peg
+    const grouped = mockStablecoins.reduce((acc, coin) => {
+      const peg = coin.peggedAsset;
+      if (!acc[peg]) {
+        acc[peg] = [];
+      }
+      acc[peg].push({
+        name: coin.name,
+        slug: coin.slug,
+        token: coin.token,
+        totalSupply: coin.totalSupply?.toString() || null,
+        transactionVolume30d: coin.transactionVolume30d?.toString() || null,
+      });
+      return acc;
+    }, {} as CurrencyPegStablecoins);
+
+    return grouped;
+  }
+}
+
 export interface DashboardStats {
   totalMarketCap: number;
   totalSupply: string;

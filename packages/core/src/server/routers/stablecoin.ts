@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { eq, like, and } from 'drizzle-orm';
-import { stablecoins } from '../../db/schema.js';
+import { supabase } from '../../db/index.js';
 import { router, publicProcedure } from '../trpc.js';
 
 // Schema for filtering stablecoins
@@ -46,125 +45,176 @@ const updateStablecoinSchema = createStablecoinSchema.partial().extend({
 // Export the stablecoin router
 export const stablecoinRouter = router({
   // Get all stablecoins with optional filtering
-  getAll: publicProcedure.input(filterStablecoinsSchema).query(async ({ ctx, input }) => {
+  getAll: publicProcedure.input(filterStablecoinsSchema).query(async ({ input }) => {
     const { search, peggedAsset, issuer, tokenProgram, limit, offset } = input;
-    const whereConditions = [];
+
+    let query = supabase
+      .from('stablecoins')
+      .select('*')
+      .range(offset, offset + limit - 1);
 
     if (search) {
-      whereConditions.push(like(stablecoins.name, `%${search}%`));
+      query = query.ilike('name', `%${search}%`);
     }
 
     if (peggedAsset) {
-      whereConditions.push(eq(stablecoins.peggedAsset, peggedAsset));
+      query = query.eq('pegged_asset', peggedAsset);
     }
 
     if (issuer) {
-      whereConditions.push(eq(stablecoins.issuer, issuer));
+      query = query.eq('issuer', issuer);
     }
 
     if (tokenProgram) {
-      whereConditions.push(eq(stablecoins.tokenProgram, tokenProgram));
+      query = query.eq('token_program', tokenProgram);
     }
 
-    const query = ctx.db
-      .select()
-      .from(stablecoins)
-      .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
-      .limit(limit)
-      .offset(offset);
+    const { data, error } = await query;
 
-    return await query;
+    if (error) {
+      throw new Error(`Failed to fetch stablecoins: ${error.message}`);
+    }
+
+    return data || [];
+  }),
+
+  // Get stablecoins grouped by currency peg
+  getByCurrencyPeg: publicProcedure.query(async () => {
+    const { data, error } = await supabase
+      .from('stablecoins')
+      .select('pegged_asset, name, slug, total_supply, transaction_volume_30d')
+      .order('pegged_asset')
+      .order('name');
+
+    if (error) {
+      throw new Error(`Failed to fetch stablecoins by currency peg: ${error.message}`);
+    }
+
+    // Group by currency peg
+    const grouped = (data || []).reduce(
+      (
+        acc: Record<
+          string,
+          Array<{
+            name: string;
+            slug: string;
+            totalSupply: string | null;
+            transactionVolume30d: string | null;
+          }>
+        >,
+        coin: {
+          pegged_asset: string;
+          name: string;
+          slug: string;
+          total_supply: string | null;
+          transaction_volume_30d: string | null;
+        }
+      ) => {
+        const peg = coin.pegged_asset;
+        if (!acc[peg]) {
+          acc[peg] = [];
+        }
+        acc[peg].push({
+          name: coin.name,
+          slug: coin.slug,
+          totalSupply: coin.total_supply,
+          transactionVolume30d: coin.transaction_volume_30d,
+        });
+        return acc;
+      },
+      {}
+    );
+
+    return grouped;
   }),
 
   // Get a single stablecoin by ID
-  getById: publicProcedure.input(z.number()).query(async ({ ctx, input }) => {
-    const result = await ctx.db
-      .select()
-      .from(stablecoins)
-      .where(eq(stablecoins.id, input))
-      .limit(1);
+  getById: publicProcedure.input(z.number()).query(async ({ input }) => {
+    const { data, error } = await supabase.from('stablecoins').select('*').eq('id', input).single();
 
-    if (result.length === 0) {
+    if (error) {
       throw new Error(`Stablecoin with ID ${input} not found`);
     }
 
-    return result[0];
+    return data;
   }),
 
   // Get a single stablecoin by slug
-  getBySlug: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-    const result = await ctx.db
-      .select()
-      .from(stablecoins)
-      .where(eq(stablecoins.slug, input))
-      .limit(1);
+  getBySlug: publicProcedure.input(z.string()).query(async ({ input }) => {
+    const { data, error } = await supabase
+      .from('stablecoins')
+      .select('*')
+      .eq('slug', input)
+      .single();
 
-    if (result.length === 0) {
+    if (error) {
       throw new Error(`Stablecoin with slug ${input} not found`);
     }
 
-    return result[0];
+    return data;
   }),
 
   // Create a new stablecoin
-  create: publicProcedure.input(createStablecoinSchema).mutation(async ({ ctx, input }) => {
+  create: publicProcedure.input(createStablecoinSchema).mutation(async ({ input }) => {
     // Check if stablecoin with this slug already exists
-    const existing = await ctx.db
-      .select({ id: stablecoins.id })
-      .from(stablecoins)
-      .where(eq(stablecoins.slug, input.slug))
-      .limit(1);
+    const { data: existing } = await supabase
+      .from('stablecoins')
+      .select('id')
+      .eq('slug', input.slug)
+      .single();
 
-    if (existing.length > 0) {
+    if (existing) {
       throw new Error(`Stablecoin with slug "${input.slug}" already exists`);
     }
 
     // Insert the new stablecoin
-    const result = await ctx.db
-      .insert(stablecoins)
-      .values({
+    const { data, error } = await supabase
+      .from('stablecoins')
+      .insert({
         slug: input.slug,
         name: input.name,
         token: input.token,
-        peggedAsset: input.peggedAsset,
+        pegged_asset: input.peggedAsset,
         issuer: input.issuer,
-        tokenProgram: input.tokenProgram,
-        tokenAddress: input.tokenAddress,
-        mintAuthority: input.mintAuthority,
-        bridgingMechanisms: input.bridgingMechanisms,
-        networksLiveOn: input.networksLiveOn,
-        redemptionMechanisms: input.redemptionMechanisms,
-        solscanLink: input.solscanLink,
-        artemisLink: input.artemisLink,
-        assetReservesLink: input.assetReservesLink,
-        transactionVolume30d: input.transactionVolume30d?.toString(),
-        transactionCountDaily: input.transactionCount30d?.toString(),
-        totalSupply: input.totalSupply?.toString(),
-        dailyActiveUsers: input.uniqueAddresses30d?.toString(),
+        token_program: input.tokenProgram,
+        token_address: input.tokenAddress,
+        mint_authority: input.mintAuthority,
+        bridging_mechanisms: input.bridgingMechanisms,
+        networks_live_on: input.networksLiveOn,
+        redemption_mechanisms: input.redemptionMechanisms,
+        solscan_link: input.solscanLink,
+        artemis_link: input.artemisLink,
+        asset_reserves_link: input.assetReservesLink,
+        transaction_volume_30d: input.transactionVolume30d?.toString(),
+        transaction_count_daily: input.transactionCount30d?.toString(),
+        total_supply: input.totalSupply?.toString(),
+        daily_active_users: input.uniqueAddresses30d?.toString(),
         price: input.price?.toString(),
-        executiveSummary: input.executiveSummary,
-        logoUrl: input.logoUrl,
+        executive_summary: input.executiveSummary,
+        logo_url: input.logoUrl,
       })
-      .returning();
+      .select()
+      .single();
 
-    if (Array.isArray(result) && result.length > 0) {
-      return result[0];
+    if (error) {
+      throw new Error(`Failed to create stablecoin: ${error.message}`);
     }
-    throw new Error('Failed to create stablecoin');
+
+    return data;
   }),
 
   // Update an existing stablecoin
-  update: publicProcedure.input(updateStablecoinSchema).mutation(async ({ ctx, input }) => {
+  update: publicProcedure.input(updateStablecoinSchema).mutation(async ({ input }) => {
     const { id, ...updateData } = input;
 
     // Check if stablecoin exists
-    const existing = await ctx.db
-      .select({ id: stablecoins.id })
-      .from(stablecoins)
-      .where(eq(stablecoins.id, id))
-      .limit(1);
+    const { data: existing } = await supabase
+      .from('stablecoins')
+      .select('id')
+      .eq('id', id)
+      .single();
 
-    if (existing.length === 0) {
+    if (!existing) {
       throw new Error(`Stablecoin with ID ${id} not found`);
     }
 
@@ -174,6 +224,9 @@ export const stablecoinRouter = router({
     // Only include fields that are provided
     Object.keys(updateData).forEach(key => {
       if (updateData[key as keyof typeof updateData] !== undefined) {
+        // Convert field names to snake_case for database
+        const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+
         // Convert numeric fields to strings for database
         if (
           [
@@ -185,41 +238,50 @@ export const stablecoinRouter = router({
           ].includes(key) &&
           typeof updateData[key as keyof typeof updateData] === 'number'
         ) {
-          updateValues[key] = updateData[key as keyof typeof updateData]?.toString();
+          updateValues[dbKey] = updateData[key as keyof typeof updateData]?.toString();
         } else {
-          updateValues[key] = updateData[key as keyof typeof updateData];
+          updateValues[dbKey] = updateData[key as keyof typeof updateData];
         }
       }
     });
 
     // Update the stablecoin
-    const result = await ctx.db
-      .update(stablecoins)
-      .set({
+    const { data, error } = await supabase
+      .from('stablecoins')
+      .update({
         ...updateValues,
-        updatedAt: new Date(),
+        updated_at: new Date().toISOString(),
       })
-      .where(eq(stablecoins.id, id))
-      .returning();
+      .eq('id', id)
+      .select()
+      .single();
 
-    return result[0];
+    if (error) {
+      throw new Error(`Failed to update stablecoin: ${error.message}`);
+    }
+
+    return data;
   }),
 
   // Delete a stablecoin
-  delete: publicProcedure.input(z.number()).mutation(async ({ ctx, input }) => {
+  delete: publicProcedure.input(z.number()).mutation(async ({ input }) => {
     // Check if stablecoin exists
-    const existing = await ctx.db
-      .select({ id: stablecoins.id })
-      .from(stablecoins)
-      .where(eq(stablecoins.id, input))
-      .limit(1);
+    const { data: existing } = await supabase
+      .from('stablecoins')
+      .select('id')
+      .eq('id', input)
+      .single();
 
-    if (existing.length === 0) {
+    if (!existing) {
       throw new Error(`Stablecoin with ID ${input} not found`);
     }
 
     // Delete the stablecoin
-    await ctx.db.delete(stablecoins).where(eq(stablecoins.id, input));
+    const { error } = await supabase.from('stablecoins').delete().eq('id', input);
+
+    if (error) {
+      throw new Error(`Failed to delete stablecoin: ${error.message}`);
+    }
 
     return { id: input, deleted: true };
   }),

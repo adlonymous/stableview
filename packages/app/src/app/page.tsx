@@ -1,5 +1,6 @@
 import { StablecoinCard } from '@/components/stablecoin/stablecoin-card';
 import { StatsOverview } from '@/components/stablecoin/stats-overview';
+import { WorldMap } from '@/components/ui/world-map';
 import { fetchStablecoinsWithFallback, fetchDashboardStatsWithFallback } from '@/lib/api';
 
 export default async function Home() {
@@ -23,6 +24,8 @@ export default async function Home() {
         totalTransactionVolume={dashboardStats.totalTransactionVolume}
         stablecoinCount={dashboardStats.stablecoinCount}
       />
+
+      <WorldMap />
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
