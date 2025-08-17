@@ -6,7 +6,6 @@ import { X } from 'lucide-react';
 
 export type StablecoinFilter = {
   tokenProgram?: string;
-  issuer?: string;
   minMarketCap?: number;
   peggedAsset?: string;
 };
@@ -14,27 +13,18 @@ export type StablecoinFilter = {
 interface StablecoinFiltersProps {
   filters: StablecoinFilter;
   onFilterChange: (filters: StablecoinFilter) => void;
-  issuers: string[];
   peggedAssets: string[];
 }
 
 export function StablecoinFilters({
   filters,
   onFilterChange,
-  issuers,
   peggedAssets,
 }: StablecoinFiltersProps) {
   const handleTokenProgramChange = (program: string | undefined) => {
     onFilterChange({
       ...filters,
       tokenProgram: filters.tokenProgram === program ? undefined : program,
-    });
-  };
-
-  const handleIssuerChange = (issuer: string) => {
-    onFilterChange({
-      ...filters,
-      issuer: filters.issuer === issuer ? undefined : issuer,
     });
   };
 
@@ -112,22 +102,6 @@ export function StablecoinFilters({
         </div>
 
         <div className="space-y-2">
-          <h4 className="text-xs font-medium text-neutral-400">Issuer</h4>
-          <div className="flex flex-wrap gap-2">
-            {issuers.map(issuer => (
-              <Badge
-                key={issuer}
-                variant={filters.issuer === issuer ? 'default' : 'outline'}
-                className="cursor-pointer hover:bg-neutral-800"
-                onClick={() => handleIssuerChange(issuer)}
-              >
-                {issuer}
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-2">
           <h4 className="text-xs font-medium text-neutral-400">Market Cap</h4>
           <div className="flex flex-wrap gap-2">
             <Badge
@@ -180,15 +154,6 @@ export function StablecoinFilters({
                 <X
                   className="h-3 w-3 cursor-pointer"
                   onClick={() => handleTokenProgramChange(filters.tokenProgram as string)}
-                />
-              </Badge>
-            )}
-            {filters.issuer && (
-              <Badge className="bg-neutral-800 text-white flex items-center gap-1">
-                {filters.issuer}
-                <X
-                  className="h-3 w-3 cursor-pointer"
-                  onClick={() => handleIssuerChange(filters.issuer as string)}
                 />
               </Badge>
             )}
