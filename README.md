@@ -137,3 +137,72 @@ This project is proprietary and confidential.
 ## Support
 
 For questions or support, please refer to the individual package READMEs or contact the development team.
+
+# StableView Monorepo
+
+A monorepo for the StableView application built with Next.js, Fastify, and TypeScript.
+
+## 🚀 Quick Start
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start development servers
+pnpm dev          # Start the main app
+pnpm dev:admin    # Start the admin panel
+pnpm dev:core     # Start the core API in watch mode
+pnpm dev:api      # Start the core API server
+```
+
+## 🏗️ Turborepo Commands
+
+This monorepo uses Turborepo for fast, incremental builds and task orchestration.
+
+### Development
+```bash
+pnpm dev          # Start the main app in development mode
+pnpm dev:admin    # Start the admin panel in development mode
+pnpm dev:core     # Start the core package in watch mode
+pnpm dev:api      # Start the API server in development mode
+```
+
+### Building
+```bash
+pnpm build        # Build all packages
+pnpm start        # Start the main app (requires build first)
+pnpm start:api    # Start the API server (requires build first)
+```
+
+### Code Quality
+```bash
+pnpm lint         # Lint all packages
+pnpm lint:fix     # Fix linting issues across all packages
+pnpm format       # Format code across all packages
+pnpm format:check # Check code formatting across all packages
+pnpm type-check   # Run TypeScript type checking across all packages
+```
+
+### Maintenance
+```bash
+pnpm clean        # Clean all build outputs and node_modules
+pnpm db:generate  # Generate database schemas (placeholder)
+pnpm db:push      # Push database changes (placeholder)
+```
+
+## 📦 Package Structure
+
+- **`packages/app`** - Main Next.js application
+- **`packages/admin`** - Admin panel application
+- **`packages/core`** - Core API and shared utilities
+
+## 🔧 Turborepo Features
+
+- **Incremental Builds**: Only rebuilds what changed
+- **Task Caching**: Caches build outputs for faster subsequent builds
+- **Parallel Execution**: Runs independent tasks in parallel
+- **Task Dependencies**: Ensures proper build order across packages
+
+## 🚀 Deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.

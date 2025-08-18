@@ -33,7 +33,10 @@
     "type-check": "tsc --noEmit",
     "update-metrics": "node dist/scripts/update-metrics.js",
     "update-metrics:dev": "tsx src/scripts/update-metrics.ts",
-    "vercel-build": "tsc"
+    "vercel-build": "tsc",
+    "clean": "rm -rf dist",
+    "db:generate": "echo 'No database generation script defined'",
+    "db:push": "echo 'No database push script defined'"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",

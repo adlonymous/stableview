@@ -7,7 +7,14 @@
     "dev": "next dev --port 3003",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\"",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf .next",
+    "db:generate": "echo 'No database generation script defined'",
+    "db:push": "echo 'No database push script defined'"
   },
   "dependencies": {
     "next": "15.4.5",
