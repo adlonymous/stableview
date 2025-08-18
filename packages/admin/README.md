@@ -78,6 +78,7 @@ The admin dashboard automatically connects to the core API at `http://localhost:
 The admin dashboard uses the following core API endpoints:
 
 ### Stablecoin Management
+
 - `GET /api/stablecoins` - List all stablecoins
 - `GET /api/stablecoins/:id` - Get stablecoin by ID
 - `POST /api/stablecoins` - Create new stablecoin
@@ -85,6 +86,7 @@ The admin dashboard uses the following core API endpoints:
 - `DELETE /api/stablecoins/:id` - Delete stablecoin
 
 ### Data Flow
+
 1. **API Connection**: Dashboard connects to core API for real-time data
 2. **Fallback System**: Uses mock data when API is unavailable
 3. **State Management**: React hooks manage stablecoin data state
@@ -120,17 +122,20 @@ interface Stablecoin {
 ## Key Features
 
 ### Dashboard Overview
+
 - **Stablecoin List**: Comprehensive view of all stablecoins
 - **Quick Actions**: Create, edit, and delete stablecoins
 - **Data Display**: Organized presentation of stablecoin information
 
 ### Stablecoin Management
+
 - **Create New**: Add new stablecoins to the system
 - **Edit Existing**: Modify stablecoin details and metadata
 - **Delete**: Remove stablecoins from the platform
 - **View Details**: Comprehensive stablecoin information display
 
 ### User Experience
+
 - **Responsive Design**: Works on desktop, tablet, and mobile
 - **Intuitive Navigation**: Easy-to-use interface for administrative tasks
 - **Error Handling**: Clear feedback for successful operations and errors
@@ -168,11 +173,13 @@ The admin dashboard runs on port 3003 by default to avoid conflicts with other s
 ## Dependencies
 
 ### Core Dependencies
+
 - `next`: React framework for production
 - `react`: UI library
 - `@stableview/core`: Core data layer integration
 
 ### Development Dependencies
+
 - `typescript`: Type safety
 - `tailwindcss`: Utility-first CSS framework
 - `eslint`: Code quality
@@ -180,21 +187,21 @@ The admin dashboard runs on port 3003 by default to avoid conflicts with other s
 
 ## Troubleshooting
 
-1. **Core API Connection**: 
+1. **Core API Connection**:
    - Verify the core API is running on port 3004
    - Check network connectivity and firewall settings
    - Ensure CORS is properly configured in the core API
 
-2. **Database Issues**: 
+2. **Database Issues**:
    - Verify PostgreSQL is running and accessible
    - Check Supabase configuration in the core package
    - Ensure proper database permissions
 
-3. **Port Conflicts**: 
+3. **Port Conflicts**:
    - Change the admin dashboard port if 3003 is occupied
    - Update the `dev` script in package.json
 
-4. **Fallback Behavior**: 
+4. **Fallback Behavior**:
    - If the core API is unavailable, the dashboard will use mock data
    - Check browser console for connection errors
    - Verify environment variables are correctly set

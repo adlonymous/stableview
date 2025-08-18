@@ -50,6 +50,7 @@ src/
 ## Key Components
 
 ### Stablecoin Components
+
 - **`StablecoinCard`**: Compact display of stablecoin information
 - **`StablecoinDetail`**: Comprehensive view of individual stablecoin data
 - **`StablecoinFilters`**: Search and filtering capabilities
@@ -57,6 +58,7 @@ src/
 - **`StatsOverview`**: Dashboard statistics display
 
 ### UI Components
+
 - **`WorldMap`**: Interactive world map showing stablecoin usage
 - **`Card`**: Reusable card component for content display
 - **`Dialog`**: Modal dialogs for detailed information
@@ -87,6 +89,7 @@ cp env.example .env.local
 ```
 
 Required environment variables:
+
 - `CORE_API_URL`: URL of the core API server
 - `NEXT_PUBLIC_CORE_API_URL`: Public URL for client-side API calls
 
@@ -136,12 +139,14 @@ pnpm type-check
 ## Dependencies
 
 ### Core Dependencies
+
 - `@stableview/core`: Core data layer and API client
 - `next`: React framework for production
 - `react`: UI library
 - `tailwindcss`: Utility-first CSS framework
 
 ### UI Dependencies
+
 - `@radix-ui/*`: Accessible UI primitives
 - `lucide-react`: Icon library
 - `react-simple-maps`: Geographic visualization
@@ -162,4 +167,4 @@ When contributing to the app package:
 2. Use TypeScript for all new code
 3. Ensure responsive design for mobile devices
 4. Test with both real API data and mock data
-5. Update types when adding new data structures 
+5. Update types when adding new data structures

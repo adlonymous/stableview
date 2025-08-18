@@ -83,6 +83,7 @@ pnpm dev
 The core API provides the following REST endpoints:
 
 ### Stablecoin Management
+
 - `GET /api/stablecoins` - List all stablecoins with pagination
 - `GET /api/stablecoins/:id` - Get stablecoin by ID
 - `POST /api/stablecoins` - Create new stablecoin
@@ -90,10 +91,12 @@ The core API provides the following REST endpoints:
 - `DELETE /api/stablecoins/:id` - Delete stablecoin
 
 ### Analytics & Grouping
+
 - `GET /api/stablecoins/by-currency-peg` - Group stablecoins by currency peg
 - `GET /api/dashboard/stats` - Get dashboard statistics
 
 ### System
+
 - `GET /health` - Health check endpoint
 
 ## tRPC Integration
@@ -144,6 +147,7 @@ The script fetches real metrics data from Artemis including:
 - **Daily Active Users**: Daily active users count (latest non-null value)
 
 **Artemis API Endpoints Used:**
+
 - `STABLECOIN_TRANSFER_VOLUME` - For 30-day volume calculation
 - `STABLECOIN_DAILY_TXNS` - For daily transaction count
 - `STABLECOIN_SUPPLY` - For total supply
@@ -202,12 +206,14 @@ dist/
 ## Dependencies
 
 ### Core Dependencies
+
 - `fastify`: High-performance web framework
 - `@supabase/supabase-js`: PostgreSQL client
 - `@trpc/server`: Type-safe API framework
 - `zod`: Schema validation
 
 ### Development Dependencies
+
 - `typescript`: Type safety
 - `tsx`: TypeScript execution for development
 - `eslint`: Code quality

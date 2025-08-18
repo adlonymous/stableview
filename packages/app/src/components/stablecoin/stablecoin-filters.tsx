@@ -6,6 +6,7 @@ import { X } from 'lucide-react';
 
 export type StablecoinFilter = {
   tokenProgram?: string;
+  issuer?: string;
   minMarketCap?: number;
   peggedAsset?: string;
 };
@@ -14,6 +15,7 @@ interface StablecoinFiltersProps {
   filters: StablecoinFilter;
   onFilterChange: (filters: StablecoinFilter) => void;
   peggedAssets: string[];
+  issuers?: string[];
 }
 
 export function StablecoinFilters({

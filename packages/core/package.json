@@ -1,6 +1,7 @@
 {
   "name": "@stableview/core",
   "version": "0.1.0",
+  "packageManager": "pnpm@10.14.0",
   "private": true,
   "type": "module",
   "main": "dist/index.js",
@@ -31,7 +32,8 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\"",
     "type-check": "tsc --noEmit",
     "update-metrics": "node dist/scripts/update-metrics.js",
-    "update-metrics:dev": "tsx src/scripts/update-metrics.ts"
+    "update-metrics:dev": "tsx src/scripts/update-metrics.ts",
+    "vercel-build": "tsc"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",
@@ -46,6 +48,7 @@
   "devDependencies": {
     "@types/node": "^20",
     "eslint": "^8.56.0",
+    "next": "^15.4.5",
     "prettier": "^3.2.5",
     "tsx": "^4.20.4",
     "typescript": "^5"

@@ -1,9 +1,9 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ArrowDownUp, DollarSign } from 'lucide-react';
+import { ArrowDownUp } from 'lucide-react';
 
-export type SortOption = 'marketCap' | 'transactionVolume';
+export type SortOption = 'name' | 'marketCap' | 'uniqueAddresses' | 'transactionVolume';
 export type SortDirection = 'asc' | 'desc';
 
 export type StablecoinSort = {

@@ -101,7 +101,6 @@ export default function StablecoinsPage() {
             <StablecoinFilters
               filters={filters}
               onFilterChange={setFilters}
-              issuers={issuers}
               peggedAssets={peggedAssets}
             />
           </div>

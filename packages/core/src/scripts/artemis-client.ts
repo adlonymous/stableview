@@ -1,8 +1,3 @@
-/**
- * Artemis API client for fetching stablecoin metrics
- */
-
-// Types for Artemis API responses
 interface ArtemisDataPoint {
   val: number | string;
   [key: string]: unknown;
@@ -27,9 +22,6 @@ export class ArtemisClient {
     this.baseUrl = baseUrl.replace(/\/$/, '');
   }
 
-  /**
-   * Fetch 30-day transfer volume by summing daily values over the last 30 days
-   */
   async getTransferVolume30d(symbol: string, now: Date = new Date()): Promise<number> {
     const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     const start = new Date(end);
@@ -53,33 +45,21 @@ export class ArtemisClient {
     return sum;
   }
 
-  /**
-   * Fetch latest daily transactions count (uses most recent non-null value)
-   */
   async getDailyTransactions(symbol: string): Promise<number> {
     const data = await this.fetchMetric('STABLECOIN_DAILY_TXNS', symbol);
     return this.getLatestNumeric(data, symbol, 'STABLECOIN_DAILY_TXNS');
   }
 
-  /**
-   * Fetch latest total supply (USD) (uses most recent non-null value)
-   */
   async getTotalSupply(symbol: string): Promise<number> {
     const data = await this.fetchMetric('STABLECOIN_SUPPLY', symbol);
     return this.getLatestNumeric(data, symbol, 'STABLECOIN_SUPPLY');
   }
 
-  /**
-   * Fetch latest daily active users (DAU) (uses most recent non-null value)
-   */
   async getDailyActiveUsers(symbol: string): Promise<number> {
     const data = await this.fetchMetric('STABLECOIN_DAU', symbol);
     return this.getLatestNumeric(data, symbol, 'STABLECOIN_DAU');
   }
 
-  /**
-   * Get the latest non-null numeric 'val' from a series
-   */
   private getLatestNumeric(resp: ArtemisResponse, symbol: string, key: string): number {
     const rawSeries = this.extractSeries(resp, symbol, key);
     const series = Array.isArray(rawSeries) ? rawSeries : [];
@@ -91,9 +71,6 @@ export class ArtemisClient {
     return 0;
   }
 
-  /**
-   * Generic metric fetcher
-   */
   private async fetchMetric(
     metric: string,
     symbol: string,
@@ -104,9 +81,6 @@ export class ArtemisClient {
     if (params?.startDate) url.searchParams.set('startDate', params.startDate);
     if (params?.endDate) url.searchParams.set('endDate', params.endDate);
 
-    // Log the exact request URL
-    console.log(`[Artemis] GET ${url.toString()}`);
-
     const res = await fetch(url.toString(), { method: 'GET' });
     if (!res.ok) {
       throw new Error(`Artemis API error ${res.status}: ${res.statusText}`);
@@ -114,9 +88,6 @@ export class ArtemisClient {
     return res.json() as Promise<ArtemisResponse>;
   }
 
-  /**
-   * Extract series array from Artemis response
-   */
   private extractSeries(resp: ArtemisResponse, symbol: string, key: string): ArtemisDataPoint[] {
     return resp?.data?.symbols?.[symbol]?.[key] ?? [];
   }

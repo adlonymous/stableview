@@ -44,7 +44,7 @@ This is a monorepo containing three main packages:
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18 or later)
-- [pnpm](https://pnpm.io/) (v8 or later)
+- [pnpm](https://pnpm.io/) (v10.14.0 or later)
 - PostgreSQL database (via Supabase)
 - Artemis API access for metrics
 
@@ -62,6 +62,7 @@ pnpm install
 ### Environment Setup
 
 1. Copy environment files and configure your credentials:
+
    ```bash
    cp packages/core/env.example packages/core/.env
    cp packages/app/env.example packages/app/.env
