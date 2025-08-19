@@ -1,13 +1,16 @@
 {
-  "buildCommand": "cd ../.. && yarn build --filter=@stableview/app...",
+  "buildCommand": "yarn build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "installCommand": "cd ../.. && yarn install",
-  "devCommand": "cd ../.. && yarn dev --filter=@stableview/app",
+  "installCommand": "yarn install",
+  "devCommand": "yarn dev",
   "regions": ["iad1"],
   "functions": {
     "app/api/**/*.ts": {
       "maxDuration": 30
     }
+  },
+  "env": {
+    "NEXT_PUBLIC_CORE_API_URL": "https://stableview-core-cd9zyb0cp-adlonymous-projects.vercel.app"
   }
 }

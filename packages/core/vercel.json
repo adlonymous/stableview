@@ -1,11 +1,11 @@
 {
-  "buildCommand": "cd ../.. && yarn build --filter=@stableview/core...",
+  "buildCommand": "yarn build",
   "outputDirectory": "dist",
   "framework": null,
-  "installCommand": "cd ../.. && yarn install",
-  "devCommand": "cd ../.. && yarn dev:api --filter=@stableview/core",
+  "installCommand": "yarn install",
+  "devCommand": "yarn dev:api",
   "functions": {
-    "api/**/*.ts": {
+    "dist/server/api.js": {
       "maxDuration": 30
     }
   }

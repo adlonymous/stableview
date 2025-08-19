@@ -415,7 +415,7 @@ fastify.get('/api/stablecoins/by-currency-peg', async (request, reply) => {
 });
 
 // Health check endpoint
-fastify.get('/health', async (request, reply) => {
+fastify.get('/api/health', async (request, reply) => {
   return reply.send({ status: 'ok', timestamp: new Date().toISOString() });
 });
 

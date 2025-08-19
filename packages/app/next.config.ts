@@ -9,7 +9,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  transpilePackages: ['@stableview/core'],
 };
 
 export default nextConfig;
