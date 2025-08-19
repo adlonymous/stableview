@@ -9,8 +9,5 @@
     "app/api/**/*.ts": {
       "maxDuration": 30
     }
-  },
-  "env": {
-    "NEXT_PUBLIC_CORE_API_URL": "https://your-core-api-domain.vercel.app"
   }
 }

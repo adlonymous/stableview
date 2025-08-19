@@ -2,7 +2,7 @@
   "buildCommand": "yarn build",
   "outputDirectory": "dist",
   "framework": null,
-  "installCommand": "npm install",
+  "installCommand": "yarn install",
   "devCommand": "yarn dev:api",
   "functions": {
     "api/**/*.ts": {
