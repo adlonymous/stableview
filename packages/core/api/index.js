@@ -1,12 +1,12 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import dotenv from 'dotenv';
-import { supabase } from '../src/db/index.js';
+const { createClient } = require('@supabase/supabase-js');
 
-// Load environment variables
-dotenv.config();
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Helper function to transform database fields from snake_case to camelCase
-function transformStablecoinData(dbData: any) {
+function transformStablecoinData(dbData) {
   return {
     id: dbData.id,
     slug: dbData.slug,
@@ -37,30 +37,24 @@ function transformStablecoinData(dbData: any) {
 }
 
 // Helper function to set CORS headers
-function setCorsHeaders(res: VercelResponse) {
+function setCorsHeaders(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }
 
-// Handle OPTIONS request for CORS preflight
-function handleOptions(req: VercelRequest, res: VercelResponse) {
-  setCorsHeaders(res);
-  res.status(200).end();
-}
-
 // Health check endpoint
-async function handleHealth(req: VercelRequest, res: VercelResponse) {
+async function handleHealth(req, res) {
   setCorsHeaders(res);
-  res.status(200).json({ 
-    status: 'ok', 
+  res.status(200).json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
     service: 'stableview-core-api'
   });
 }
 
 // Get all stablecoins
-async function handleGetStablecoins(req: VercelRequest, res: VercelResponse) {
+async function handleGetStablecoins(req, res) {
   try {
     setCorsHeaders(res);
     
@@ -82,11 +76,11 @@ async function handleGetStablecoins(req: VercelRequest, res: VercelResponse) {
 }
 
 // Get stablecoin by ID
-async function handleGetStablecoinById(req: VercelRequest, res: VercelResponse) {
+async function handleGetStablecoinById(req, res) {
   try {
     setCorsHeaders(res);
     
-    const { id } = req.query as { id: string };
+    const { id } = req.query;
     const { data, error } = await supabase
       .from('stablecoins')
       .select('*')
@@ -111,7 +105,7 @@ async function handleGetStablecoinById(req: VercelRequest, res: VercelResponse) 
 }
 
 // Get stablecoins by currency peg
-async function handleGetStablecoinsByCurrencyPeg(req: VercelRequest, res: VercelResponse) {
+async function handleGetStablecoinsByCurrencyPeg(req, res) {
   try {
     setCorsHeaders(res);
     
@@ -125,7 +119,7 @@ async function handleGetStablecoinsByCurrencyPeg(req: VercelRequest, res: Vercel
       throw error;
     }
 
-    const grouped = (data || []).reduce((acc: any, coin: any) => {
+    const grouped = (data || []).reduce((acc, coin) => {
       const peg = coin.pegged_asset;
       if (!acc[peg]) {
         acc[peg] = [];
@@ -148,12 +142,14 @@ async function handleGetStablecoinsByCurrencyPeg(req: VercelRequest, res: Vercel
 }
 
 // Main handler function
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+module.exports = async (req, res) => {
   const { method, url } = req;
   
   // Handle CORS preflight
   if (method === 'OPTIONS') {
-    return handleOptions(req, res);
+    setCorsHeaders(res);
+    res.status(200).end();
+    return;
   }
 
   // Route based on URL
@@ -165,7 +161,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return handleGetStablecoins(req, res);
   }
   
-  if (url?.startsWith('/api/stablecoins/') && url !== '/api/stablecoins/by-currency-peg') {
+  if (url && url.startsWith('/api/stablecoins/') && url !== '/api/stablecoins/by-currency-peg') {
     return handleGetStablecoinById(req, res);
   }
   
@@ -175,4 +171,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // 404 for unknown routes
   res.status(404).json({ error: 'Not found' });
-} 
+}; 
