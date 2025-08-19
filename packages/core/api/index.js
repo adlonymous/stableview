@@ -1,26 +1,12 @@
-import { createClient } from '@supabase/supabase-js';
-
-// Type definitions for Vercel serverless functions
-interface VercelRequest {
-  method: string;
-  url: string;
-  query: Record<string, string>;
-}
-
-interface VercelResponse {
-  status: (code: number) => VercelResponse;
-  json: (data: unknown) => void;
-  end: () => void;
-  setHeader: (name: string, value: string) => void;
-}
+const { createClient } = require('@supabase/supabase-js');
 
 // Initialize Supabase client
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Helper function to transform database fields from snake_case to camelCase
-function transformStablecoinData(dbData: Record<string, unknown>) {
+function transformStablecoinData(dbData) {
   return {
     id: dbData.id,
     slug: dbData.slug,
@@ -42,9 +28,7 @@ function transformStablecoinData(dbData: Record<string, unknown>) {
     totalSupply: dbData.total_supply,
     dailyActiveUsers: dbData.daily_active_users,
     price: dbData.price,
-    marketCap:
-      parseFloat((dbData.price as string) || '0') *
-      parseFloat((dbData.total_supply as string) || '0'),
+    marketCap: parseFloat(dbData.price || '0') * parseFloat(dbData.total_supply || '0'),
     executiveSummary: dbData.executive_summary,
     logoUrl: dbData.logo_url,
     createdAt: dbData.created_at,
@@ -53,14 +37,14 @@ function transformStablecoinData(dbData: Record<string, unknown>) {
 }
 
 // Helper function to set CORS headers
-function setCorsHeaders(res: VercelResponse) {
+function setCorsHeaders(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }
 
 // Health check endpoint
-async function handleHealth(req: VercelRequest, res: VercelResponse) {
+async function handleHealth(req, res) {
   setCorsHeaders(res);
   res.status(200).json({
     status: 'ok',
@@ -70,10 +54,10 @@ async function handleHealth(req: VercelRequest, res: VercelResponse) {
 }
 
 // Get all stablecoins
-async function handleGetStablecoins(req: VercelRequest, res: VercelResponse) {
+async function handleGetStablecoins(req, res) {
   try {
     setCorsHeaders(res);
-
+    
     const { data, error } = await supabase
       .from('stablecoins')
       .select('*')
@@ -92,10 +76,10 @@ async function handleGetStablecoins(req: VercelRequest, res: VercelResponse) {
 }
 
 // Get stablecoin by ID
-async function handleGetStablecoinById(req: VercelRequest, res: VercelResponse) {
+async function handleGetStablecoinById(req, res) {
   try {
     setCorsHeaders(res);
-
+    
     const { id } = req.query;
     const { data, error } = await supabase.from('stablecoins').select('*').eq('id', id).single();
 
@@ -117,10 +101,10 @@ async function handleGetStablecoinById(req: VercelRequest, res: VercelResponse) 
 }
 
 // Get stablecoins by currency peg
-async function handleGetStablecoinsByCurrencyPeg(req: VercelRequest, res: VercelResponse) {
+async function handleGetStablecoinsByCurrencyPeg(req, res) {
   try {
     setCorsHeaders(res);
-
+    
     const { data, error } = await supabase
       .from('stablecoins')
       .select('pegged_asset, name, slug, token, total_supply, transaction_volume_30d')
@@ -132,8 +116,8 @@ async function handleGetStablecoinsByCurrencyPeg(req: VercelRequest, res: Vercel
     }
 
     const grouped = (data || []).reduce(
-      (acc: Record<string, unknown[]>, coin: Record<string, unknown>) => {
-        const peg = coin.pegged_asset as string;
+      (acc, coin) => {
+        const peg = coin.pegged_asset;
         if (!acc[peg]) {
           acc[peg] = [];
         }
@@ -157,9 +141,9 @@ async function handleGetStablecoinsByCurrencyPeg(req: VercelRequest, res: Vercel
 }
 
 // Main handler function
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+module.exports = async (req, res) => {
   const { method, url } = req;
-
+  
   // Handle CORS preflight
   if (method === 'OPTIONS') {
     setCorsHeaders(res);
@@ -171,19 +155,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (url === '/api/health') {
     return handleHealth(req, res);
   }
-
+  
   if (url === '/api/stablecoins') {
     return handleGetStablecoins(req, res);
   }
-
+  
   if (url && url.startsWith('/api/stablecoins/') && url !== '/api/stablecoins/by-currency-peg') {
     return handleGetStablecoinById(req, res);
   }
-
+  
   if (url === '/api/stablecoins/by-currency-peg') {
     return handleGetStablecoinsByCurrencyPeg(req, res);
   }
 
   // 404 for unknown routes
   res.status(404).json({ error: 'Not found' });
-}
+}; 
