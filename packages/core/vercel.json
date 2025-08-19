@@ -5,7 +5,10 @@
   "installCommand": "yarn install",
   "devCommand": "yarn dev:api",
   "functions": {
-    "api/index.js": {
+    "api/index.ts": {
+      "maxDuration": 30
+    },
+    "api/health/route.ts": {
       "maxDuration": 30
     }
   }
