@@ -2,6 +2,13 @@ import { Stablecoin } from '@/types/stablecoin';
 
 const CORE_API_BASE_URL = process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:3004';
 
+// Debug logging
+console.log('🔧 API Configuration:', {
+  NEXT_PUBLIC_CORE_API_URL: process.env.NEXT_PUBLIC_CORE_API_URL,
+  CORE_API_BASE_URL,
+  NODE_ENV: process.env.NODE_ENV,
+});
+
 // Helper function to get the full API URL
 function getApiUrl(endpoint: string): string {
   // If the endpoint starts with http, use it as-is
@@ -10,7 +17,9 @@ function getApiUrl(endpoint: string): string {
   }
 
   // Otherwise, prepend the base URL
-  return `${CORE_API_BASE_URL}${endpoint}`;
+  const fullUrl = `${CORE_API_BASE_URL}${endpoint}`;
+  console.log(`🔗 API Call: ${endpoint} → ${fullUrl}`);
+  return fullUrl;
 }
 
 export class ApiError extends Error {
