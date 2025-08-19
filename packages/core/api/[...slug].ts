@@ -1,21 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import Fastify from 'fastify';
-import cors from '@fastify/cors';
 import dotenv from 'dotenv';
 import { supabase } from '../src/db/index.js';
 
 // Load environment variables
 dotenv.config();
-
-// Create Fastify instance
-const fastify = Fastify({
-  logger: false, // Disable logging in serverless
-});
-
-// Register CORS plugin
-await fastify.register(cors, {
-  origin: true,
-});
 
 // Helper function to transform database fields from snake_case to camelCase
 function transformStablecoinData(dbData: any) {
@@ -48,13 +36,34 @@ function transformStablecoinData(dbData: any) {
   };
 }
 
-// Register routes
-fastify.get('/api/health', async (request, reply) => {
-  return reply.send({ status: 'ok', timestamp: new Date().toISOString() });
-});
+// Helper function to set CORS headers
+function setCorsHeaders(res: VercelResponse) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+}
 
-fastify.get('/api/stablecoins', async (request, reply) => {
+// Handle OPTIONS request for CORS preflight
+function handleOptions(req: VercelRequest, res: VercelResponse) {
+  setCorsHeaders(res);
+  res.status(200).end();
+}
+
+// Health check endpoint
+async function handleHealth(req: VercelRequest, res: VercelResponse) {
+  setCorsHeaders(res);
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    service: 'stableview-core-api'
+  });
+}
+
+// Get all stablecoins
+async function handleGetStablecoins(req: VercelRequest, res: VercelResponse) {
   try {
+    setCorsHeaders(res);
+    
     const { data, error } = await supabase
       .from('stablecoins')
       .select('*')
@@ -65,16 +74,19 @@ fastify.get('/api/stablecoins', async (request, reply) => {
     }
 
     const transformedData = (data || []).map(transformStablecoinData);
-    return reply.send(transformedData);
+    res.status(200).json(transformedData);
   } catch (error) {
     console.error('Error fetching stablecoins:', error);
-    return reply.status(500).send({ error: 'Failed to fetch stablecoins' });
+    res.status(500).json({ error: 'Failed to fetch stablecoins' });
   }
-});
+}
 
-fastify.get('/api/stablecoins/:id', async (request, reply) => {
+// Get stablecoin by ID
+async function handleGetStablecoinById(req: VercelRequest, res: VercelResponse) {
   try {
-    const { id } = request.params as { id: string };
+    setCorsHeaders(res);
+    
+    const { id } = req.query as { id: string };
     const { data, error } = await supabase
       .from('stablecoins')
       .select('*')
@@ -86,19 +98,23 @@ fastify.get('/api/stablecoins/:id', async (request, reply) => {
     }
 
     if (!data) {
-      return reply.status(404).send({ error: 'Stablecoin not found' });
+      res.status(404).json({ error: 'Stablecoin not found' });
+      return;
     }
 
     const transformedData = transformStablecoinData(data);
-    return reply.send(transformedData);
+    res.status(200).json(transformedData);
   } catch (error) {
     console.error('Error fetching stablecoin:', error);
-    return reply.status(500).send({ error: 'Failed to fetch stablecoin' });
+    res.status(500).json({ error: 'Failed to fetch stablecoin' });
   }
-});
+}
 
-fastify.get('/api/stablecoins/by-currency-peg', async (request, reply) => {
+// Get stablecoins by currency peg
+async function handleGetStablecoinsByCurrencyPeg(req: VercelRequest, res: VercelResponse) {
   try {
+    setCorsHeaders(res);
+    
     const { data, error } = await supabase
       .from('stablecoins')
       .select('pegged_asset, name, slug, token, total_supply, transaction_volume_30d')
@@ -124,15 +140,39 @@ fastify.get('/api/stablecoins/by-currency-peg', async (request, reply) => {
       return acc;
     }, {});
 
-    return reply.send(grouped);
+    res.status(200).json(grouped);
   } catch (error) {
     console.error('Error fetching stablecoins by currency peg:', error);
-    return reply.status(500).send({ error: 'Failed to fetch stablecoins by currency peg' });
+    res.status(500).json({ error: 'Failed to fetch stablecoins by currency peg' });
   }
-});
+}
 
-// Export the handler for Vercel
+// Main handler function
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  await fastify.ready();
-  fastify.server.emit('request', req, res);
+  const { method, url } = req;
+  
+  // Handle CORS preflight
+  if (method === 'OPTIONS') {
+    return handleOptions(req, res);
+  }
+
+  // Route based on URL
+  if (url === '/api/health') {
+    return handleHealth(req, res);
+  }
+  
+  if (url === '/api/stablecoins') {
+    return handleGetStablecoins(req, res);
+  }
+  
+  if (url?.startsWith('/api/stablecoins/') && url !== '/api/stablecoins/by-currency-peg') {
+    return handleGetStablecoinById(req, res);
+  }
+  
+  if (url === '/api/stablecoins/by-currency-peg') {
+    return handleGetStablecoinsByCurrencyPeg(req, res);
+  }
+
+  // 404 for unknown routes
+  res.status(404).json({ error: 'Not found' });
 } 
