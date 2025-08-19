@@ -36,7 +36,7 @@ This is a monorepo containing three main packages:
 - **Frontend**: Next.js 15, React 19, Tailwind CSS, shadcn/ui
 - **Backend**: Fastify, tRPC, PostgreSQL (via Supabase)
 - **Data Sources**: Solana blockchain, Artemis API
-- **Package Manager**: pnpm with workspace management
+- **Package Manager**: Yarn with workspace management
 - **Language**: TypeScript throughout
 
 ## Getting Started
@@ -44,7 +44,7 @@ This is a monorepo containing three main packages:
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18 or later)
-- [pnpm](https://pnpm.io/) (v10.14.0 or later)
+- [Yarn](https://yarnpkg.com/) (v1.22.0 or later)
 - PostgreSQL database (via Supabase)
 - Artemis API access for metrics
 
@@ -56,7 +56,7 @@ git clone <repository-url>
 cd stableview
 
 # Install dependencies
-pnpm install
+yarn install
 ```
 
 ### Environment Setup
@@ -74,40 +74,40 @@ pnpm install
 
 ```bash
 # Run the main StableView application
-pnpm dev
+yarn dev
 
 # Run the admin dashboard
-pnpm dev:admin
+yarn dev:admin
 
 # Run the core API server
-pnpm dev:core
+yarn dev:core
 
 # Run all services concurrently
-pnpm dev:all
+yarn dev:all
 ```
 
 ### Building
 
 ```bash
 # Build all packages
-pnpm build
+yarn build
 
 # Build specific packages
-pnpm --filter @stableview/core build
-pnpm --filter @stableview/app build
-pnpm --filter @stableview/admin build
+yarn workspace @stableview/core build
+yarn workspace @stableview/app build
+yarn workspace @stableview/admin build
 ```
 
 ## Available Scripts
 
-- **`pnpm dev`** - Start the main app
-- **`pnpm dev:admin`** - Start the admin dashboard
-- **`pnpm dev:core`** - Start the core API server
-- **`pnpm dev:all`** - Start all services concurrently
-- **`pnpm build`** - Build all packages
-- **`pnpm lint`** - Run linting across all packages
-- **`pnpm format`** - Format code with Prettier
-- **`pnpm type-check`** - Run TypeScript type checking
+- **`yarn dev`** - Start the main app
+- **`yarn dev:admin`** - Start the admin dashboard
+- **`yarn dev:core`** - Start the core API server
+- **`yarn dev:all`** - Start all services concurrently
+- **`yarn build`** - Build all packages
+- **`yarn lint`** - Run linting across all packages
+- **`yarn format`** - Format code with Prettier
+- **`yarn type-check`** - Run TypeScript type checking
 
 ## Data Sources & Metrics
 
@@ -123,7 +123,7 @@ StableView integrates with multiple data sources to provide comprehensive stable
 
 ## Contributing
 
-This project uses a monorepo structure with pnpm workspaces. When contributing:
+This project uses a monorepo structure with Yarn workspaces. When contributing:
 
 1. Make changes in the appropriate package directory
 2. Ensure all packages build successfully
@@ -146,13 +146,13 @@ A monorepo for the StableView application built with Next.js, Fastify, and TypeS
 
 ```bash
 # Install dependencies
-pnpm install
+yarn install
 
 # Start development servers
-pnpm dev          # Start the main app
-pnpm dev:admin    # Start the admin panel
-pnpm dev:core     # Start the core API in watch mode
-pnpm dev:api      # Start the core API server
+yarn dev          # Start the main app
+yarn dev:admin    # Start the admin panel
+yarn dev:core     # Start the core API in watch mode
+yarn dev:api      # Start the core API server
 ```
 
 ## 🏗️ Turborepo Commands
@@ -161,33 +161,33 @@ This monorepo uses Turborepo for fast, incremental builds and task orchestration
 
 ### Development
 ```bash
-pnpm dev          # Start the main app in development mode
-pnpm dev:admin    # Start the admin panel in development mode
-pnpm dev:core     # Start the core package in watch mode
-pnpm dev:api      # Start the API server in development mode
+yarn dev          # Start the main app in development mode
+yarn dev:admin    # Start the admin panel in development mode
+yarn dev:core     # Start the core package in watch mode
+yarn dev:api      # Start the API server in development mode
 ```
 
 ### Building
 ```bash
-pnpm build        # Build all packages
-pnpm start        # Start the main app (requires build first)
-pnpm start:api    # Start the API server (requires build first)
+yarn build        # Build all packages
+yarn start        # Start the main app (requires build first)
+yarn start:api    # Start the API server (requires build first)
 ```
 
 ### Code Quality
 ```bash
-pnpm lint         # Lint all packages
-pnpm lint:fix     # Fix linting issues across all packages
-pnpm format       # Format code across all packages
-pnpm format:check # Check code formatting across all packages
-pnpm type-check   # Run TypeScript type checking across all packages
+yarn lint         # Lint all packages
+yarn lint:fix     # Fix linting issues across all packages
+yarn format       # Format code across all packages
+yarn format:check # Check code formatting across all packages
+yarn type-check   # Run TypeScript type checking across all packages
 ```
 
 ### Maintenance
 ```bash
-pnpm clean        # Clean all build outputs and node_modules
-pnpm db:generate  # Generate database schemas (placeholder)
-pnpm db:push      # Push database changes (placeholder)
+yarn clean        # Clean all build outputs and node_modules
+yarn db:generate  # Generate database schemas (placeholder)
+yarn db:push      # Push database changes (placeholder)
 ```
 
 ## 📦 Package Structure

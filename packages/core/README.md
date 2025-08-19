@@ -32,7 +32,7 @@ src/
 ## Prerequisites
 
 - Node.js 18+
-- pnpm package manager
+- Yarn package manager
 - Supabase project with PostgreSQL database
 - Artemis API access for stablecoin metrics
 
@@ -59,23 +59,23 @@ CORE_API_PORT=3004
 ## Installation
 
 ```bash
-pnpm install
+yarn install
 ```
 
 ## Development
 
 ```bash
 # Start development server with hot reload
-pnpm dev:api
+yarn dev:api
 
 # Build the project
-pnpm build
+yarn build
 
 # Start production server
-pnpm start
+yarn start
 
 # Watch mode for TypeScript compilation
-pnpm dev
+yarn dev
 ```
 
 ## API Endpoints
@@ -122,19 +122,19 @@ Update stablecoin metrics from the Artemis API using the built-in script:
 
 ```bash
 # Update all configured stablecoins
-pnpm update-metrics
+yarn update-metrics
 
 # Update a specific stablecoin
-pnpm update-metrics --slug USDC
+yarn update-metrics --slug USDC
 
 # List configured stablecoins
-pnpm update-metrics --list
+yarn update-metrics --list
 
 # Test Artemis API connection
-pnpm update-metrics --test USDC
+yarn update-metrics --test USDC
 
 # Development mode with TypeScript
-pnpm update-metrics:dev
+yarn update-metrics:dev
 ```
 
 ### Artemis API Integration
@@ -182,7 +182,7 @@ import { createTRPCRouter } from '@stableview/core/server';
 ## Building for Production
 
 ```bash
-pnpm build
+yarn build
 ```
 
 The built files will be available in the `dist/` directory with the following structure:
@@ -197,11 +197,11 @@ dist/
 
 ## Development Workflow
 
-1. **Local Development**: Use `pnpm dev:api` for hot reload
+1. **Local Development**: Use `yarn dev:api` for hot reload
 2. **Database Changes**: Update schema in Supabase and regenerate types
 3. **API Changes**: Modify routers and update tRPC types
 4. **Testing**: Use the update-metrics script to test Artemis integration
-5. **Building**: Run `pnpm build` before deployment
+5. **Building**: Run `yarn build` before deployment
 
 ## Dependencies
 
@@ -223,7 +223,7 @@ dist/
 
 1. **Database Connection**: Verify Supabase credentials and network access
 2. **Port Conflicts**: Ensure port 3004 is available for the API server
-3. **Build Errors**: Check TypeScript compilation with `pnpm type-check`
+3. **Build Errors**: Check TypeScript compilation with `yarn type-check`
 4. **Artemis API**: Verify API keys and rate limits for metrics updates
 
 ## Contributing

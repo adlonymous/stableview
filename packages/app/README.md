@@ -97,25 +97,25 @@ Required environment variables:
 
 ```bash
 # Install dependencies
-pnpm install
+yarn install
 
 # Start development server
-pnpm dev
+yarn dev
 
 # Build for production
-pnpm build
+yarn build
 
 # Start production server
-pnpm start
+yarn start
 
 # Run linting
-pnpm lint
+yarn lint
 
 # Format code
-pnpm format
+yarn format
 
 # Type checking
-pnpm type-check
+yarn type-check
 ```
 
 ## Port Configuration
@@ -157,7 +157,7 @@ pnpm type-check
 1. **API Connection Issues**: Check if the core API is running and accessible
 2. **Build Errors**: Ensure all dependencies are properly installed
 3. **Styling Issues**: Verify Tailwind CSS is properly configured
-4. **Type Errors**: Run `pnpm type-check` to identify TypeScript issues
+4. **Type Errors**: Run `yarn type-check` to identify TypeScript issues
 
 ## Contributing
 

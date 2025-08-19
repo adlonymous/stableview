@@ -1,7 +1,12 @@
 {
-  "buildCommand": "pnpm build",
+  "buildCommand": "yarn build",
   "outputDirectory": "dist",
   "framework": null,
-  "installCommand": "pnpm install",
-  "devCommand": "pnpm dev:api"
+  "installCommand": "npm install",
+  "devCommand": "yarn dev:api",
+  "functions": {
+    "api/**/*.ts": {
+      "maxDuration": 30
+    }
+  }
 }

@@ -1,8 +1,11 @@
 {
   "name": "stableview-monorepo",
   "version": "0.1.0",
-  "packageManager": "pnpm@10.14.0",
+  "packageManager": "yarn@1.22.22",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "turbo run dev --filter=@stableview/app",
     "dev:admin": "turbo run dev --filter=@stableview/admin",

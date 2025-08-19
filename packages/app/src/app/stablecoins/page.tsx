@@ -9,7 +9,6 @@ import {
 } from '@/components/stablecoin/stablecoin-sort';
 import {
   filterStablecoins,
-  getUniqueIssuers,
   getUniquePeggedAssets,
   sortStablecoins,
 } from '@/lib/utils';
@@ -46,7 +45,6 @@ export default function StablecoinsPage() {
   }, []);
 
   // Get unique values for filter options
-  const issuers = getUniqueIssuers(stablecoins);
   const peggedAssets = getUniquePeggedAssets(stablecoins);
 
   // Apply filters and sorting

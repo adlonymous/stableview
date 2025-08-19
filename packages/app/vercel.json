@@ -1,9 +1,9 @@
 {
-  "buildCommand": "pnpm build",
+  "buildCommand": "yarn build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "installCommand": "pnpm install",
-  "devCommand": "pnpm dev",
+  "installCommand": "yarn install",
+  "devCommand": "yarn dev",
   "regions": ["iad1"],
   "functions": {
     "app/api/**/*.ts": {
@@ -11,6 +11,6 @@
     }
   },
   "env": {
-    "NEXT_PUBLIC_CORE_API_URL": "@next_public_core_api_url"
+    "NEXT_PUBLIC_CORE_API_URL": "https://your-core-api-domain.vercel.app"
   }
 }

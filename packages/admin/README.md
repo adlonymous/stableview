@@ -43,7 +43,7 @@ src/
 
 ## Prerequisites
 
-- Node.js 18+ and pnpm
+- Node.js 18+ and Yarn
 - Core API running on port 3004
 - PostgreSQL database (configured in core package)
 - Access to stablecoin data management
@@ -53,15 +53,15 @@ src/
 1. **Start the Core API** (from root directory):
 
    ```bash
-   pnpm start:api
+   yarn start:api
    # or for development
-   pnpm dev:api
+   yarn dev:api
    ```
 
 2. **Start the Admin Dashboard**:
 
    ```bash
-   pnpm dev:admin
+   yarn dev:admin
    ```
 
 3. **Access the dashboard** at `http://localhost:3003`
@@ -152,14 +152,14 @@ interface Stablecoin {
 
 ```bash
 # Development
-pnpm dev              # Start development server on port 3003
+yarn dev              # Start development server on port 3003
 
 # Production
-pnpm build            # Build for production
-pnpm start            # Start production server
+yarn build            # Build for production
+yarn start            # Start production server
 
 # Code Quality
-pnpm lint             # Run ESLint
+yarn lint             # Run ESLint
 ```
 
 ## Port Configuration
