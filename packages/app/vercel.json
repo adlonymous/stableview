@@ -1,9 +1,9 @@
 {
-  "buildCommand": "yarn build",
+  "buildCommand": "cd ../.. && yarn build --filter=@stableview/app...",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "installCommand": "yarn install",
-  "devCommand": "yarn dev",
+  "installCommand": "cd ../.. && yarn install",
+  "devCommand": "cd ../.. && yarn dev --filter=@stableview/app",
   "regions": ["iad1"],
   "functions": {
     "app/api/**/*.ts": {
