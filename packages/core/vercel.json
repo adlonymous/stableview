@@ -5,7 +5,7 @@
   "installCommand": "yarn install",
   "devCommand": "yarn dev:api",
   "functions": {
-    "dist/server/api.js": {
+    "api/[...slug].ts": {
       "maxDuration": 30
     }
   }

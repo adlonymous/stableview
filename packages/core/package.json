@@ -42,6 +42,7 @@
     "@supabase/supabase-js": "^2.39.0",
     "@trpc/client": "^11.0.0-next-beta.294",
     "@trpc/server": "^11.0.0-next-beta.294",
+    "@vercel/node": "^3.0.0",
     "dotenv": "^16.4.5",
     "fastify": "^4.26.1",
     "superjson": "^2.2.1",
