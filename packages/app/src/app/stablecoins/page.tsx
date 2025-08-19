@@ -7,11 +7,7 @@ import {
   StablecoinSort,
   StablecoinSort as StablecoinSortType,
 } from '@/components/stablecoin/stablecoin-sort';
-import {
-  filterStablecoins,
-  getUniquePeggedAssets,
-  sortStablecoins,
-} from '@/lib/utils';
+import { filterStablecoins, getUniquePeggedAssets, sortStablecoins } from '@/lib/utils';
 import { fetchStablecoinsWithFallback } from '@/lib/api';
 import { Stablecoin } from '@/types/stablecoin';
 import { Separator } from '@/components/ui/separator';
