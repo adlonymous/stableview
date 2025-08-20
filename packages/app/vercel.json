@@ -11,6 +11,6 @@
     }
   },
   "env": {
-    "NEXT_PUBLIC_CORE_API_URL": "https://stableview-core-cd9zyb0cp-adlonymous-projects.vercel.app"
+    "NEXT_PUBLIC_CORE_API_URL": "https://stableview-core-5lvd3x5yy-adlonymous-projects.vercel.app"
   }
 }

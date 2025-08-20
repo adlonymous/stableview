@@ -16,8 +16,8 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "rootDir": "src"
+    "rootDir": "."
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "api/**/*"],
   "exclude": ["node_modules", "dist"]
 }
