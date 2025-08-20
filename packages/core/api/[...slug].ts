@@ -15,12 +15,12 @@ interface VercelRequest {
 interface VercelResponse {
   setHeader: (name: string, value: string) => VercelResponse;
   status: (code: number) => VercelResponse;
-  json: (data: any) => VercelResponse;
+  json: (data: unknown) => VercelResponse;
   end: () => VercelResponse;
 }
 
 // Helper function to transform database fields from snake_case to camelCase
-function transformStablecoinData(dbData: any) {
+function transformStablecoinData(dbData: Record<string, unknown>) {
   return {
     id: dbData.id,
     slug: dbData.slug,
@@ -42,7 +42,8 @@ function transformStablecoinData(dbData: any) {
     totalSupply: dbData.total_supply,
     dailyActiveUsers: dbData.daily_active_users,
     price: dbData.price,
-    marketCap: parseFloat(dbData.price || '0') * parseFloat(dbData.total_supply || '0'),
+    marketCap:
+      parseFloat(String(dbData.price || '0')) * parseFloat(String(dbData.total_supply || '0')),
     executiveSummary: dbData.executive_summary,
     logoUrl: dbData.logo_url,
     createdAt: dbData.created_at,
@@ -95,11 +96,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Get stablecoin by ID - handle both /api/stablecoins/1 and /api/stablecoins/1/
     if (pathname.match(/^\/api\/stablecoins\/\d+\/?$/)) {
       const id = pathname.split('/').filter(Boolean).pop();
-      const { data, error } = await supabase
-        .from('stablecoins')
-        .select('*')
-        .eq('id', id)
-        .single();
+      const { data, error } = await supabase.from('stablecoins').select('*').eq('id', id).single();
 
       if (error) {
         throw error;
@@ -125,28 +122,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         throw error;
       }
 
-      const grouped = (data || []).reduce((acc: any, coin: any) => {
-        const peg = coin.pegged_asset;
-        if (!acc[peg]) {
-          acc[peg] = [];
-        }
-        acc[peg].push({
-          name: coin.name,
-          slug: coin.slug,
-          token: coin.token,
-          totalSupply: coin.total_supply,
-          transactionVolume30d: coin.transaction_volume_30d,
-        });
-        return acc;
-      }, {});
+      interface CurrencyPegStablecoin {
+        name: string;
+        slug: string;
+        token: string;
+        totalSupply: string | null;
+        transactionVolume30d: string | null;
+      }
+
+      interface GroupedStablecoins {
+        [currency: string]: CurrencyPegStablecoin[];
+      }
+
+      const grouped = (data || []).reduce(
+        (acc: GroupedStablecoins, coin: Record<string, unknown>) => {
+          const peg = coin.pegged_asset as string;
+          if (!acc[peg]) {
+            acc[peg] = [];
+          }
+          acc[peg].push({
+            name: coin.name as string,
+            slug: coin.slug as string,
+            token: coin.token as string,
+            totalSupply: coin.total_supply as string | null,
+            transactionVolume30d: coin.transaction_volume_30d as string | null,
+          });
+          return acc;
+        },
+        {}
+      );
 
       return res.status(200).json(grouped);
     }
 
     // If no route matches, return 404
     return res.status(404).json({ error: 'Route not found', pathname });
-
   } catch (error) {
     return res.status(500).json({ error: 'Internal server error' });
   }
-} 
+}

@@ -5,4 +5,4 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['@supabase/supabase-js'],
 };
 
-export default nextConfig; 
+export default nextConfig;

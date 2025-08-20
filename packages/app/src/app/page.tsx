@@ -9,7 +9,15 @@ export default async function Home() {
     fetchDashboardStatsWithFallback(),
   ]);
 
-  const popularStablecoins = stablecoins.slice(0, 3);
+  // Sort stablecoins by market cap (totalSupply) in descending order
+  const sortedByMarketCap = stablecoins.sort((a, b) => {
+    const marketCapA = parseFloat(a.totalSupply || '0');
+    const marketCapB = parseFloat(b.totalSupply || '0');
+    return marketCapB - marketCapA; // Descending order (highest first)
+  });
+
+  // Get the 3rd, 4th, and 5th highest market cap stablecoins
+  const popularStablecoins = sortedByMarketCap.slice(2, 5);
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 max-w-7xl">
@@ -29,7 +37,9 @@ export default async function Home() {
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-white">Popular Stablecoins</h2>
+          <h2 className="text-2xl font-bold text-white">
+            3rd, 4th & 5th Highest Market Cap Stablecoins
+          </h2>
           <a href="/stablecoins" className="text-sm text-blue-400 hover:underline">
             View all stablecoins →
           </a>
