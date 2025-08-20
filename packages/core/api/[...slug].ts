@@ -64,19 +64,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { pathname } = new URL(req.url || '', `https://${req.headers.host}`);
+    // Extract pathname from URL
+    const url = req.url || '';
+    const pathname = url.split('?')[0]; // Remove query parameters
 
-    // Health check endpoint
-    if (pathname === '/api/health') {
-      return res.status(200).json({
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        service: 'stableview-core-api',
-      });
-    }
-
-    // Health check endpoint (without /api prefix for compatibility)
-    if (pathname === '/health') {
+    // Health check endpoints
+    if (pathname === '/health' || pathname === '/api/health') {
       return res.status(200).json({
         status: 'ok',
         timestamp: new Date().toISOString(),
@@ -99,9 +92,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json(transformedData);
     }
 
-    // Get stablecoin by ID
-    if (pathname.match(/^\/api\/stablecoins\/\d+$/)) {
-      const id = pathname.split('/').pop();
+    // Get stablecoin by ID - handle both /api/stablecoins/1 and /api/stablecoins/1/
+    if (pathname.match(/^\/api\/stablecoins\/\d+\/?$/)) {
+      const id = pathname.split('/').filter(Boolean).pop();
       const { data, error } = await supabase
         .from('stablecoins')
         .select('*')
@@ -151,10 +144,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // If no route matches, return 404
-    return res.status(404).json({ error: 'Route not found' });
+    return res.status(404).json({ error: 'Route not found', pathname });
 
   } catch (error) {
-    console.error('API Error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 } 

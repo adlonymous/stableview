@@ -8,5 +8,15 @@
     "api/[...slug].ts": {
       "maxDuration": 30
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/[...slug]"
+    },
+    {
+      "source": "/health",
+      "destination": "/api/[...slug]"
+    }
+  ]
 }
