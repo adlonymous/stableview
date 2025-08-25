@@ -38,7 +38,7 @@ export default async function Home() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-white">
-            3rd, 4th & 5th Highest Market Cap Stablecoins
+            Trending Stablecoins
           </h2>
           <a href="/stablecoins" className="text-sm text-blue-400 hover:underline">
             View all stablecoins →
