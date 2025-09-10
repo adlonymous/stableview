@@ -287,7 +287,6 @@ fastify.get('/api/dashboard/stats', async (request, reply) => {
           yearly: 0,
         },
         totalDailyTransactions: '0',
-        totalDailyActiveUsers: '0',
         stablecoinCount: 0,
         dominantStablecoin: 'N/A',
         dominantStablecoinShare: 0,
@@ -307,10 +306,6 @@ fastify.get('/api/dashboard/stats', async (request, reply) => {
 
     const totalDailyTransactions = stablecoins.reduce((sum, coin) => {
       return sum + parseFloat(coin.transaction_count_daily || '0');
-    }, 0);
-
-    const totalDailyActiveUsers = stablecoins.reduce((sum, coin) => {
-      return sum + parseFloat(coin.daily_active_users || '0');
     }, 0);
 
     const stablecoinCount = stablecoins.length;
@@ -343,7 +338,6 @@ fastify.get('/api/dashboard/stats', async (request, reply) => {
         yearly: totalTransactionVolume * 12, // Rough estimate
       },
       totalDailyTransactions: totalDailyTransactions.toString(),
-      totalDailyActiveUsers: totalDailyActiveUsers.toString(),
       stablecoinCount,
       dominantStablecoin,
       dominantStablecoinShare,

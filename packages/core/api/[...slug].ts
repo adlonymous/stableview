@@ -173,7 +173,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             yearly: 0,
           },
           totalDailyTransactions: '0',
-          totalDailyActiveUsers: '0',
           stablecoinCount: 0,
           dominantStablecoin: 'N/A',
           dominantStablecoinShare: 0,
@@ -193,10 +192,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const totalDailyTransactions = stablecoins.reduce((sum, coin) => {
         return sum + parseFloat(coin.transaction_count_daily || '0');
-      }, 0);
-
-      const totalDailyActiveUsers = stablecoins.reduce((sum, coin) => {
-        return sum + parseFloat(coin.daily_active_users || '0');
       }, 0);
 
       const stablecoinCount = stablecoins.length;
@@ -229,7 +224,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           yearly: totalTransactionVolume * 12, // Rough estimate
         },
         totalDailyTransactions: totalDailyTransactions.toString(),
-        totalDailyActiveUsers: totalDailyActiveUsers.toString(),
         stablecoinCount,
         dominantStablecoin,
         dominantStablecoinShare,

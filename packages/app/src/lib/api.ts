@@ -158,7 +158,6 @@ export interface DashboardStats {
     yearly: number;
   };
   totalDailyTransactions: string;
-  totalDailyActiveUsers: string;
   stablecoinCount: number;
   dominantStablecoin: string;
   dominantStablecoinShare: number;
@@ -190,7 +189,6 @@ export async function fetchDashboardStatsWithFallback(): Promise<DashboardStats>
       totalDailyTransactions: (
         solanaStablecoinStats.totalTransactionVolume.daily / 1000
       ).toString(), // Convert to daily transactions
-      totalDailyActiveUsers: solanaStablecoinStats.totalUniqueUsers.toString(),
       stablecoinCount: solanaStablecoinStats.stablecoinCount,
       dominantStablecoin: solanaStablecoinStats.dominantStablecoin,
       dominantStablecoinShare: solanaStablecoinStats.dominantStablecoinShare,

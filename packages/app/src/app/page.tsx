@@ -28,7 +28,6 @@ export default async function Home() {
 
       <StatsOverview
         totalMarketCap={dashboardStats.totalMarketCap}
-        totalUniqueUsers={parseInt(dashboardStats.totalDailyActiveUsers)}
         totalTransactionVolume={dashboardStats.totalTransactionVolume}
         stablecoinCount={dashboardStats.stablecoinCount}
       />

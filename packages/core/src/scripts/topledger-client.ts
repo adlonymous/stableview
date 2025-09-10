@@ -24,12 +24,19 @@ export class TopLedgerClient {
 
   constructor(
     baseUrl: string = 'https://analytics.topledger.xyz/solana/api',
-    apiKey14115: string = 'pDVJFFpGHoVU5XmFkeBXiwMPYuDUwQV12ZXvYJ6D',
-    apiKey14117: string = 'zJqC6Yh0Nn3tkzLnZJCwBPRIA8tJToTSHi5jQX9I'
+    apiKey14115?: string,
+    apiKey14117?: string
   ) {
     this.baseUrl = baseUrl.replace(/\/$/, '');
-    this.apiKey14115 = apiKey14115;
-    this.apiKey14117 = apiKey14117;
+    this.apiKey14115 = apiKey14115 || process.env.TOPLEDGER_API_KEY_14115 || '';
+    this.apiKey14117 = apiKey14117 || process.env.TOPLEDGER_API_KEY_14117 || '';
+    
+    if (!this.apiKey14115) {
+      throw new Error('TOPLEDGER_API_KEY_14115 environment variable is required');
+    }
+    if (!this.apiKey14117) {
+      throw new Error('TOPLEDGER_API_KEY_14117 environment variable is required');
+    }
   }
 
   async getCirculatingSupplyData(): Promise<TopLedgerDataPoint[]> {
