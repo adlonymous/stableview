@@ -17,52 +17,101 @@ interface GeographyData {
   properties: Record<string, unknown>;
 }
 
+// Currency to country mapping based on database currency pegs
+const CURRENCY_COUNTRY_MAP: Record<string, { countries: string[]; color: string; displayName: string }> = {
+  USD: {
+    countries: ['United States of America', 'United States'],
+    color: '#1e40af', // Dark blue
+    displayName: 'United States'
+  },
+  EUR: {
+    countries: [
+      'Austria', 'Belgium', 'Bulgaria', 'Croatia', 'Cyprus', 'Czech Republic',
+      'Denmark', 'Estonia', 'Finland', 'France', 'Germany', 'Greece',
+      'Hungary', 'Ireland', 'Italy', 'Latvia', 'Lithuania', 'Luxembourg',
+      'Malta', 'Netherlands', 'Poland', 'Portugal', 'Romania', 'Slovakia',
+      'Slovenia', 'Spain', 'Sweden',
+      // Alternative names that might appear in map data
+      'Federal Republic of Germany', 'Deutschland'
+    ],
+    color: '#3b82f6', // Medium blue
+    displayName: 'European Union'
+  },
+  GBP: {
+    countries: ['United Kingdom', 'Great Britain', 'UK'],
+    color: '#059669', // Green
+    displayName: 'United Kingdom'
+  },
+  JPY: {
+    countries: ['Japan', 'Nippon'],
+    color: '#dc2626', // Red
+    displayName: 'Japan'
+  },
+  CHF: {
+    countries: ['Switzerland', 'Swiss Confederation', 'Schweiz'],
+    color: '#7c3aed', // Purple
+    displayName: 'Switzerland'
+  },
+  BRL: {
+    countries: ['Brazil', 'Brasil', 'Federative Republic of Brazil'],
+    color: '#ea580c', // Orange
+    displayName: 'Brazil'
+  },
+  TRY: {
+    countries: ['Turkey', 'Republic of Turkey', 'Türkiye'],
+    color: '#0891b2', // Cyan
+    displayName: 'Turkey'
+  },
+  MXN: {
+    countries: ['Mexico', 'United Mexican States', 'México'],
+    color: '#be185d', // Pink
+    displayName: 'Mexico'
+  },
+  NGN: {
+    countries: ['Nigeria', 'Federal Republic of Nigeria'],
+    color: '#65a30d', // Lime
+    displayName: 'Nigeria'
+  },
+  ZAR: {
+    countries: ['South Africa', 'Republic of South Africa'],
+    color: '#ca8a04', // Yellow
+    displayName: 'South Africa'
+  }
+};
+
 // Function to determine shading based on region and available currency pegs
 const getRegionShading = (geo: GeographyData, stablecoinData: CurrencyPegStablecoins) => {
   const name = geo.properties?.NAME || geo.properties?.name || '';
   const admin = geo.properties?.ADMIN || geo.properties?.admin || '';
 
-  // US states and territories - maximum shading for USD
-  if (admin === 'United States of America' || name === 'United States of America') {
-    return stablecoinData.USD ? '#1e40af' : '#1f2937'; // Dark blue if USD exists, dark gray if not
+  // Check each currency to see if this country has stablecoins
+  for (const [currency, config] of Object.entries(CURRENCY_COUNTRY_MAP)) {
+    if (stablecoinData[currency]) {
+      // Check if this specific country matches this currency's countries
+      const isMatch = config.countries.some(configCountry => 
+        configCountry.toLowerCase() === String(name || '').toLowerCase() || 
+        configCountry.toLowerCase() === String(admin || '').toLowerCase()
+      );
+      
+      if (isMatch) {
+        // Calculate brightness based on number of stablecoins
+        const stablecoinCount = stablecoinData[currency].length;
+        const maxCount = Math.max(...Object.values(stablecoinData).map(arr => arr.length));
+        
+        // Normalize count to 0-1 range, with minimum brightness of 0.3
+        const normalizedCount = Math.max(0.3, stablecoinCount / maxCount);
+        
+        // Convert to HSL and adjust lightness
+        const baseHue = 217; // Blue hue
+        const baseSaturation = 91; // Blue saturation
+        const lightness = Math.round(30 + (normalizedCount * 40)); // Range from 30% to 70% lightness
+        
+        return `hsl(${baseHue}, ${baseSaturation}%, ${lightness}%)`;
+      }
+    }
   }
 
-  // European Union member countries - medium shading for EUR
-  const euCountries = [
-    'Austria',
-    'Belgium',
-    'Bulgaria',
-    'Croatia',
-    'Cyprus',
-    'Czech Republic',
-    'Denmark',
-    'Estonia',
-    'Finland',
-    'France',
-    'Germany',
-    'Greece',
-    'Hungary',
-    'Ireland',
-    'Italy',
-    'Latvia',
-    'Lithuania',
-    'Luxembourg',
-    'Malta',
-    'Netherlands',
-    'Poland',
-    'Portugal',
-    'Romania',
-    'Slovakia',
-    'Slovenia',
-    'Spain',
-    'Sweden',
-  ];
-
-  if (euCountries.includes(name as string)) {
-    return stablecoinData.EUR ? '#3b82f6' : '#1f2937'; // Medium blue if EUR exists, dark gray if not
-  }
-
-  // All other regions - no shading
+  // No stablecoins for this region
   return '#1f2937'; // Dark gray (same as background)
 };
 
@@ -70,61 +119,40 @@ const getRegionShading = (geo: GeographyData, stablecoinData: CurrencyPegStablec
 const getRegionInfo = (
   geo: GeographyData,
   stablecoinData: CurrencyPegStablecoins
-): { type: string; currency: string; hasStablecoins: boolean } => {
+): { type: string; currency: string; hasStablecoins: boolean; displayName: string } => {
   const name = geo.properties?.NAME || geo.properties?.name || '';
   const admin = geo.properties?.ADMIN || geo.properties?.admin || '';
 
-  if (admin === 'United States of America' || name === 'United States of America') {
-    return { type: 'us', currency: 'USD', hasStablecoins: !!stablecoinData.USD };
+  // Check each currency to see if this country has stablecoins
+  for (const [currency, config] of Object.entries(CURRENCY_COUNTRY_MAP)) {
+    if (stablecoinData[currency]) {
+      // Check if this specific country matches this currency's countries
+      const isMatch = config.countries.some(configCountry => 
+        configCountry.toLowerCase() === String(name || '').toLowerCase() || 
+        configCountry.toLowerCase() === String(admin || '').toLowerCase()
+      );
+      
+      if (isMatch) {
+        return { 
+          type: currency.toLowerCase(), 
+          currency, 
+          hasStablecoins: true,
+          displayName: config.displayName
+        };
+      }
+    }
   }
 
-  const euCountries = [
-    'Austria',
-    'Belgium',
-    'Bulgaria',
-    'Croatia',
-    'Cyprus',
-    'Czech Republic',
-    'Denmark',
-    'Estonia',
-    'Finland',
-    'France',
-    'Germany',
-    'Greece',
-    'Hungary',
-    'Ireland',
-    'Italy',
-    'Latvia',
-    'Lithuania',
-    'Luxembourg',
-    'Malta',
-    'Netherlands',
-    'Poland',
-    'Portugal',
-    'Romania',
-    'Slovakia',
-    'Slovenia',
-    'Spain',
-    'Sweden',
-  ];
-
-  if (euCountries.includes(name as string)) {
-    return { type: 'eu', currency: 'EUR', hasStablecoins: !!stablecoinData.EUR };
-  }
-
-  return { type: 'other', currency: '', hasStablecoins: false };
+  return { type: 'other', currency: '', hasStablecoins: false, displayName: 'Other Region' };
 };
 
 // Function to get region name for display
-const getRegionDisplayName = (type: string): string => {
-  switch (type) {
-    case 'us':
-      return 'United States';
-    case 'eu':
-      return 'European Union';
-    default:
-      return 'Other Region';
-  }
+const getRegionDisplayName = (type: string, currency: string): string => {
+  if (type === 'other') return 'Other Region';
+  
+  // Find the display name from our currency map
+  const config = CURRENCY_COUNTRY_MAP[currency];
+  return config ? config.displayName : currency;
 };
 
 export function WorldMap({ className }: WorldMapProps) {
@@ -159,10 +187,11 @@ export function WorldMap({ className }: WorldMapProps) {
     <TooltipProvider>
       <div className={`relative ${className}`}>
         <div className="mb-4">
-          <h3 className="text-lg font-semibold text-white mb-2">Global Stablecoin Adoption</h3>
+          <h3 className="text-lg font-semibold text-white mb-2">Global Stablecoin Coverage</h3>
           <p className="text-sm text-neutral-400">
-            Regional adoption levels based on market activity and regulatory environment. Hover over
-            regions to see stablecoins pegged to their currencies.
+            Countries and regions with stablecoins pegged to their currencies. 
+            Brighter blue indicates more stablecoins pegged to that region's currency.
+            Hover over regions to explore available stablecoins and their market data.
           </p>
         </div>
 
@@ -194,9 +223,17 @@ export function WorldMap({ className }: WorldMapProps) {
                               default: { outline: 'none' },
                               hover: {
                                 fill: hasStablecoins
-                                  ? getRegionShading(geo, stablecoinData) === '#1f2937'
-                                    ? '#374151'
-                                    : getRegionShading(geo, stablecoinData)
+                                  ? (() => {
+                                      const regionInfo = getRegionInfo(geo, stablecoinData);
+                                      if (regionInfo.hasStablecoins && stablecoinData[regionInfo.currency]) {
+                                        const stablecoinCount = stablecoinData[regionInfo.currency].length;
+                                        const maxCount = Math.max(...Object.values(stablecoinData).map(arr => arr.length));
+                                        const normalizedCount = Math.max(0.3, stablecoinCount / maxCount);
+                                        const lightness = Math.round(20 + (normalizedCount * 50)); // Darker on hover
+                                        return `hsl(217, 91%, ${lightness}%)`;
+                                      }
+                                      return '#374151';
+                                    })()
                                   : '#374151',
                                 outline: 'none',
                               },
@@ -209,8 +246,7 @@ export function WorldMap({ className }: WorldMapProps) {
                           <TooltipContent className="max-w-xs bg-neutral-800 border border-neutral-600 rounded-lg shadow-xl p-3">
                             <div className="max-w-xs">
                               <h4 className="font-semibold text-white mb-2">
-                                {regionInfo.currency} Stablecoins (
-                                {getRegionDisplayName(regionInfo.type)})
+                                {regionInfo.currency} Stablecoins ({regionInfo.displayName})
                               </h4>
                               <div className="space-y-1 max-h-32 overflow-y-auto">
                                 {stablecoinData[regionInfo.currency]
@@ -249,29 +285,38 @@ export function WorldMap({ className }: WorldMapProps) {
           </ComposableMap>
 
           {/* Legend */}
-          <div className="mt-4 flex items-center justify-center space-x-6 text-sm">
-            {stablecoinData.USD && (
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-[#1e40af] rounded"></div>
-                <span className="text-white">USD Stablecoins (US)</span>
-              </div>
-            )}
-            {stablecoinData.EUR && (
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-[#3b82f6] rounded"></div>
-                <span className="text-white">EUR Stablecoins (EU)</span>
-              </div>
-            )}
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-sm">
+            <div className="flex items-center space-x-2">
+              <div 
+                className="w-4 h-4 rounded" 
+                style={{ backgroundColor: 'hsl(217, 91%, 30%)' }}
+              ></div>
+              <span className="text-white">Fewer Stablecoins</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div 
+                className="w-4 h-4 rounded" 
+                style={{ backgroundColor: 'hsl(217, 91%, 50%)' }}
+              ></div>
+              <span className="text-white">More Stablecoins</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div 
+                className="w-4 h-4 rounded" 
+                style={{ backgroundColor: 'hsl(217, 91%, 70%)' }}
+              ></div>
+              <span className="text-white">Most Stablecoins</span>
+            </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-[#1f2937] rounded border border-neutral-600"></div>
-              <span className="text-white">Emerging Markets</span>
+              <span className="text-white">No Stablecoins</span>
             </div>
           </div>
         </div>
 
         <div className="mt-4 text-xs text-neutral-500 text-center">
-          Chloropleth map showing regional stablecoin adoption levels. Hover over colored regions to
-          see stablecoins pegged to their currencies.
+          Interactive map showing countries with stablecoins pegged to their currencies. 
+          Hover over colored regions to see available stablecoins and their details.
         </div>
       </div>
     </TooltipProvider>

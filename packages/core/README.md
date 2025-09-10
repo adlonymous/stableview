@@ -118,7 +118,7 @@ const client = createTRPCProxyClient<AppRouter>({
 
 ## Metrics Updates
 
-Update stablecoin metrics from the Artemis API using the built-in script:
+Update stablecoin metrics from the TopLedger API using the built-in script:
 
 ```bash
 # Update all configured stablecoins
@@ -130,30 +130,28 @@ yarn update-metrics --slug USDC
 # List configured stablecoins
 yarn update-metrics --list
 
-# Test Artemis API connection
+# Test TopLedger API connection
 yarn update-metrics --test USDC
 
 # Development mode with TypeScript
 yarn update-metrics:dev
 ```
 
-### Artemis API Integration
+### TopLedger API Integration
 
-The script fetches real metrics data from Artemis including:
+The script fetches real metrics data from TopLedger including:
 
 - **Transaction Volume**: 30-day transfer volume (sum of daily values)
-- **Transaction Count**: Daily transaction count (latest non-null value)
-- **Total Supply**: Current total supply in USD (latest non-null value)
-- **Daily Active Users**: Daily active users count (latest non-null value)
+- **Transaction Count**: 30-day transaction count (sum of daily fee_payer values)
+- **Total Supply**: Current circulating supply (latest token_supply value)
+- **Daily Active Users**: Current holders count (latest holders value)
 
-**Artemis API Endpoints Used:**
+**TopLedger API Endpoints Used:**
 
-- `STABLECOIN_TRANSFER_VOLUME` - For 30-day volume calculation
-- `STABLECOIN_DAILY_TXNS` - For daily transaction count
-- `STABLECOIN_SUPPLY` - For total supply
-- `STABLECOIN_DAU` - For daily active users
+- Query 14115 - For circulating supply and holders data
+- Query 14117 - For volume and transaction data
 
-**Symbol Convention:** USDC → `usdc-sol`, USDT → `usdt-sol`, etc.
+**Mint Address Mapping:** The system maps stablecoin slugs to Solana mint addresses for data retrieval.
 
 ## Database Schema
 

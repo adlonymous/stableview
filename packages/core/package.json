@@ -30,7 +30,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\"",
     "type-check": "tsc --noEmit",
-    "update-metrics": "node dist/scripts/update-metrics.js",
+    "update-metrics": "node dist/src/scripts/update-metrics.js",
     "update-metrics:dev": "tsx src/scripts/update-metrics.ts",
     "vercel-build": "tsc",
     "clean": "rm -rf dist",
