@@ -11,91 +11,121 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ExternalLink, Info, BarChart3, Users, DollarSign } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { SupplyChart } from '@/components/charts/supply-chart';
+import { useChartData } from '@/hooks/useChartData';
+import { useState, useEffect, useRef } from 'react';
 
 interface StablecoinDetailProps {
   stablecoin: Stablecoin;
 }
 
 export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
+  const [chartRange, setChartRange] = useState('1M');
+  const hasRefreshed = useRef(false);
+  
+  const { data: chartData, loading: chartLoading, error: chartError, refetch } = useChartData({
+    stablecoinId: stablecoin.id,
+    range: chartRange,
+    enabled: true,
+  });
+  
+
+  // Auto-refresh chart data once when component mounts
+  useEffect(() => {
+    if (!hasRefreshed.current && !chartLoading) {
+      hasRefreshed.current = true;
+      console.log('Auto-refreshing chart data for stablecoin:', stablecoin.id);
+      refetch();
+    }
+  }, [stablecoin.id, chartLoading, refetch]);
+
+  console.log('StablecoinDetail chart data:', { chartData, chartLoading, chartError, stablecoinId: stablecoin.id, range: chartRange });
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-10">
-        <div className="flex items-center gap-4">
-          {stablecoin.logoUrl && (
-            <div className="relative h-16 w-16 rounded-full overflow-hidden bg-neutral-800 border border-neutral-700">
-              <Image
-                src={stablecoin.logoUrl}
-                alt={`${stablecoin.name} logo`}
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
-          <div>
-            <h1 className="text-3xl font-bold text-white">{stablecoin.name}</h1>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge className="bg-neutral-800 text-white hover:bg-neutral-700">
-                {stablecoin.token}
-              </Badge>
-              <Badge variant="outline" className="border-neutral-700 text-neutral-300">
-                {stablecoin.tokenProgram}
-              </Badge>
+    <div className="space-y-8">
+      {/* Enhanced Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-950 border border-neutral-800 p-8">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5"></div>
+        <div className="relative flex flex-col md:flex-row md:items-center gap-6 md:gap-10">
+          <div className="flex items-center gap-6">
+            {stablecoin.logoUrl && (
+              <div className="relative h-20 w-20 rounded-full overflow-hidden bg-gradient-to-br from-neutral-800 to-neutral-900 border-2 border-neutral-700 shadow-xl">
+                <Image
+                  src={stablecoin.logoUrl}
+                  alt={`${stablecoin.name} logo`}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            )}
+            <div>
+              <h1 className="text-4xl font-bold text-white mb-2">{stablecoin.name}</h1>
+              <div className="flex items-center gap-3">
+                <Badge className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-1.5 text-sm font-medium">
+                  {stablecoin.token}
+                </Badge>
+                <Badge variant="outline" className="border-neutral-600 text-neutral-300 bg-neutral-800/50 px-4 py-1.5 text-sm">
+                  {stablecoin.tokenProgram}
+                </Badge>
+                <div className="flex items-center gap-2 text-green-400">
+                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                  <span className="text-sm font-medium">${stablecoin.price}</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex flex-wrap gap-3 md:ml-auto">
-          {stablecoin.solscanLink && (
-            <Button
-              asChild
-              variant="outline"
-              className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
-            >
-              <Link href={stablecoin.solscanLink} target="_blank" rel="noopener noreferrer">
-                <span>Solscan</span>
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          )}
-          {stablecoin.artemisLink && (
-            <Button
-              asChild
-              variant="outline"
-              className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
-            >
-              <Link href={stablecoin.artemisLink} target="_blank" rel="noopener noreferrer">
-                <span>Artemis</span>
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          )}
-          {stablecoin.assetReservesLink && (
-            <Button
-              asChild
-              variant="outline"
-              className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
-            >
-              <Link href={stablecoin.assetReservesLink} target="_blank" rel="noopener noreferrer">
-                <span>Reserves</span>
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          )}
+          <div className="flex flex-wrap gap-3 md:ml-auto">
+            {stablecoin.tokenAddress && (
+              <Button
+                asChild
+                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-medium px-6 py-2.5 shadow-lg hover:shadow-blue-500/25 transition-all duration-300"
+              >
+                <Link href={`https://solscan.io/token/${stablecoin.tokenAddress}`} target="_blank" rel="noopener noreferrer">
+                  <span>View on Solscan</span>
+                  <ExternalLink className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            )}
+            {stablecoin.artemisLink && (
+              <Button
+                asChild
+                variant="outline"
+                className="border-neutral-600 text-neutral-300 hover:bg-neutral-800 hover:text-white hover:border-neutral-500 px-6 py-2.5 transition-all duration-300"
+              >
+                <Link href={stablecoin.artemisLink} target="_blank" rel="noopener noreferrer">
+                  <span>Artemis</span>
+                  <ExternalLink className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            )}
+            {stablecoin.assetReservesLink && (
+              <Button
+                asChild
+                variant="outline"
+                className="border-neutral-600 text-neutral-300 hover:bg-neutral-800 hover:text-white hover:border-neutral-500 px-6 py-2.5 transition-all duration-300"
+              >
+                <Link href={stablecoin.assetReservesLink} target="_blank" rel="noopener noreferrer">
+                  <span>Reserves</span>
+                  <ExternalLink className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all">
-          <CardHeader className="pb-1 px-4 pt-4">
-            <div className="flex items-start gap-3">
-              <div className="h-8 w-8 rounded-lg bg-neutral-800/50 flex items-center justify-center shrink-0 mt-0.5">
-                <BarChart3 className="h-4 w-4 text-neutral-400" />
+      {/* Enhanced Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="group bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20 hover:border-blue-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10">
+          <CardHeader className="pb-4 px-6 pt-6">
+            <div className="flex items-start gap-4">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <BarChart3 className="h-6 w-6 text-blue-400" />
               </div>
-              <div className="space-y-1">
-                <CardDescription className="text-neutral-400">Total Supply</CardDescription>
-                <CardTitle className="text-2xl text-white">
+              <div className="space-y-2">
+                <CardDescription className="text-blue-300 font-medium">Total Supply</CardDescription>
+                <CardTitle className="text-3xl font-bold text-white">
                   {formatCompactNumber(parseFloat(stablecoin.totalSupply))}
                 </CardTitle>
               </div>
@@ -103,15 +133,15 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
           </CardHeader>
         </Card>
 
-        <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all">
-          <CardHeader className="pb-1 px-4 pt-4">
-            <div className="flex items-start gap-3">
-              <div className="h-8 w-8 rounded-lg bg-neutral-800/50 flex items-center justify-center shrink-0 mt-0.5">
-                <Users className="h-4 w-4 text-neutral-400" />
+        <Card className="group bg-gradient-to-br from-green-500/10 to-green-600/5 border border-green-500/20 hover:border-green-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-green-500/10">
+          <CardHeader className="pb-4 px-6 pt-6">
+            <div className="flex items-start gap-4">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <Users className="h-6 w-6 text-green-400" />
               </div>
-              <div className="space-y-1">
-                <CardDescription className="text-neutral-400">Daily Active Users</CardDescription>
-                <CardTitle className="text-2xl text-white">
+              <div className="space-y-2">
+                <CardDescription className="text-green-300 font-medium">Daily Active Users</CardDescription>
+                <CardTitle className="text-3xl font-bold text-white">
                   {formatCompactNumber(parseFloat(stablecoin.dailyActiveUsers))}
                 </CardTitle>
               </div>
@@ -119,17 +149,17 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
           </CardHeader>
         </Card>
 
-        <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all">
-          <CardHeader className="pb-1 px-4 pt-4">
-            <div className="flex items-start gap-3">
-              <div className="h-8 w-8 rounded-lg bg-neutral-800/50 flex items-center justify-center shrink-0 mt-0.5">
-                <DollarSign className="h-4 w-4 text-neutral-400" />
+        <Card className="group bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10">
+          <CardHeader className="pb-4 px-6 pt-6">
+            <div className="flex items-start gap-4">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <DollarSign className="h-6 w-6 text-purple-400" />
               </div>
-              <div className="space-y-1">
-                <CardDescription className="text-neutral-400">
-                  Daily Transaction Count
+              <div className="space-y-2">
+                <CardDescription className="text-purple-300 font-medium">
+                  Daily Transactions
                 </CardDescription>
-                <CardTitle className="text-2xl text-white">
+                <CardTitle className="text-3xl font-bold text-white">
                   {formatCompactNumber(parseFloat(stablecoin.transactionCountDaily))}
                 </CardTitle>
               </div>
@@ -138,39 +168,27 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
         </Card>
       </div>
 
-      {/* Price Info - Minor Detail */}
-      <div className="flex items-center gap-2 text-sm text-neutral-500">
-        <span>Price:</span>
-        <span className="font-medium">${stablecoin.price}</span>
-      </div>
-
-      {/* Executive Summary */}
-      <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all">
-        <CardHeader className="px-5 pt-4 pb-2">
-          <CardTitle className="text-white">Executive Summary</CardTitle>
-        </CardHeader>
-        <CardContent className="px-5 pb-4">
-          <p className="text-neutral-300 leading-relaxed">
-            {stablecoin.executiveSummary || 'Coming soon'}
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Tabs for different data sections */}
-      <Tabs defaultValue="details" className="w-full">
-        <TabsList className="grid grid-cols-2 bg-neutral-900 border border-neutral-800">
-          <TabsTrigger value="details" className="data-[state=active]:bg-neutral-800">
-            Token Details
-          </TabsTrigger>
-          <TabsTrigger value="metrics" className="data-[state=active]:bg-neutral-800">
+      {/* Enhanced Tabs for different data sections */}
+      <Tabs defaultValue="metrics" className="w-full">
+        <TabsList className="grid grid-cols-2 bg-gradient-to-r from-neutral-900 to-neutral-950 border border-neutral-800 rounded-xl p-1">
+          <TabsTrigger 
+            value="metrics" 
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-300"
+          >
             Metrics
+          </TabsTrigger>
+          <TabsTrigger 
+            value="details" 
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-300"
+          >
+            Token Details
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="details" className="mt-4">
-          <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all">
-            <CardContent className="pt-4 px-5 pb-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-10">
+        <TabsContent value="details" className="mt-6">
+          <Card className="bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 shadow-xl">
+            <CardContent className="pt-6 px-8 pb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-sm font-medium text-neutral-400 mb-1">Token</h3>
@@ -319,13 +337,39 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                 </div>
               </div>
 
-              <div className="mt-6 h-64 w-full bg-neutral-800 rounded-md flex items-center justify-center">
-                <p className="text-neutral-400">Metrics chart would be displayed here</p>
+              <div className="mt-6">
+                <SupplyChart
+                  data={chartData}
+                  title="Total Supply Over Time"
+                  stablecoinName={stablecoin.name}
+                  currentRange={chartRange}
+                  onRangeChange={setChartRange}
+                  loading={chartLoading}
+                />
+                {chartError && (
+                  <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+                    <p className="text-red-400 text-sm">
+                      Error loading chart data: {chartError}
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Executive Summary */}
+      <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all">
+        <CardHeader className="px-5 pt-4 pb-2">
+          <CardTitle className="text-white">Executive Summary</CardTitle>
+        </CardHeader>
+        <CardContent className="px-5 pb-4">
+          <p className="text-neutral-300 leading-relaxed">
+            {stablecoin.executiveSummary || 'Coming soon'}
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -175,6 +175,7 @@ export class TopLedgerClient {
       'usdg': '2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH',
       'usd*': 'BenJy1n3WTx9mTjEvy63e8Q1j4RqUc6E4VBMz3ir4Wo6',
       'euroc': 'HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr',
+      'eurc': 'HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr',
       'veur': 'C4Kkr9NZU3VbyedcgutU6LKmi6MKz81sx6gRmk5pX519',
       'euroe': '2VhjJ9WxaGC3EZFwJG9BDUs9KxKCAjQY4vgd1qxgYWVg',
       'vgbp': '5H4voZhzySsVvwVYDAKku8MZGuYBC7cXaBKDPW4YHWW1',

@@ -96,6 +96,22 @@ await fastify.register(cors, {
 
 console.log('Supabase client created');
 
+// Helper function to get date from range
+function getDateFromRange(range: string): string {
+  const today = new Date();
+  switch (range) {
+    case '1M':
+      return new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    case '1Q':
+      return new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    case '1Y':
+      return new Date(today.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    case 'ALL':
+    default:
+      return '2024-01-01';
+  }
+}
+
 // Helper function to transform database fields from snake_case to camelCase
 function transformStablecoinData(dbData: StablecoinDbRecord) {
   return {
@@ -407,6 +423,122 @@ fastify.get('/api/stablecoins/by-currency-peg', async (request, reply) => {
     return reply.status(500).send({ error: 'Failed to fetch stablecoins by currency peg' });
   }
 });
+
+// GET /api/stablecoins/:id/charts/supply - Get supply chart data for a specific stablecoin
+fastify.get('/api/stablecoins/:id/charts/supply', async (request, reply) => {
+  try {
+    const { id } = request.params as { id: string };
+    const { range = '1M' } = request.query as { range?: string };
+    
+    const stablecoinId = parseInt(id);
+    if (isNaN(stablecoinId)) {
+      return reply.status(400).send({ error: 'Invalid stablecoin ID' });
+    }
+
+    const { data, error } = await supabase
+      .from('stablecoin_supply_history')
+      .select('date, total_supply, holders_count')
+      .eq('stablecoin_id', stablecoinId)
+      .gte('date', getDateFromRange(range))
+      .order('date', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching supply chart data:', error);
+      return reply.status(500).send({ error: 'Failed to fetch supply chart data' });
+    }
+
+    // Transform data for TradingView format
+    const chartData = data.map((record: any) => ({
+      time: record.date,
+      value: parseFloat(record.total_supply)
+    }));
+
+    return reply.send({
+      data: chartData,
+      range,
+      stablecoinId,
+      count: chartData.length
+    });
+  } catch (error) {
+    console.error('Error in supply chart endpoint:', error);
+    return reply.status(500).send({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/stablecoins/charts/supply/aggregated - Get aggregated supply data for all stablecoins
+fastify.get('/api/stablecoins/charts/supply/aggregated', async (request, reply) => {
+  try {
+    const { range = '1M' } = request.query as { range?: string };
+    
+    // Get aggregated supply data by date
+    const { data, error } = await supabase
+      .from('stablecoin_supply_history')
+      .select('date, total_supply')
+      .gte('date', getDateFromRange(range))
+      .order('date', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching aggregated supply data:', error);
+      return reply.status(500).send({ error: 'Failed to fetch aggregated supply data' });
+    }
+
+    // Group by date and sum total supply
+    const aggregatedData = data.reduce((acc: Record<string, number>, record: any) => {
+      const date = record.date;
+      if (!acc[date]) {
+        acc[date] = 0;
+      }
+      acc[date] += parseFloat(record.total_supply);
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Transform to TradingView format
+    const chartData = Object.entries(aggregatedData).map(([date, totalSupply]) => ({
+      time: date,
+      value: totalSupply
+    }));
+
+    return reply.send({
+      data: chartData,
+      range,
+      count: chartData.length
+    });
+  } catch (error) {
+    console.error('Error in aggregated supply chart endpoint:', error);
+    return reply.status(500).send({ error: 'Internal server error' });
+  }
+});
+
+  // GET /api/latest-data-date - Get the most recent data point date
+  fastify.get('/api/latest-data-date', async (request, reply) => {
+    try {
+      const { data, error } = await supabase
+        .from('stablecoin_supply_history')
+        .select('date')
+        .order('date', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error('Error fetching latest data date:', error);
+        return reply.status(500).send({ error: 'Failed to fetch latest data date' });
+      }
+
+      const latestDate = data && data.length > 0 ? data[0].date : null;
+      
+      return reply.send({
+        latestDataDate: latestDate,
+        formattedDate: latestDate ? new Date(latestDate).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        }) : 'No data available'
+      });
+    } catch (error) {
+      console.error('Error in latest data date endpoint:', error);
+      return reply.status(500).send({ error: 'Internal server error' });
+    }
+  });
+
 
 // Health check endpoint
 fastify.get('/api/health', async (request, reply) => {

@@ -134,6 +134,10 @@ async function updateStablecoinMetrics(slug: string, metrics: MetricsData) {
 
     if (data && data.length > 0) {
       console.log(`✅ Successfully updated ${slug} in database`);
+      
+      // Also update time-series data
+      await updateTimeSeriesData(data[0].id, metrics);
+      
       return true;
     } else {
       console.warn(`⚠️ No rows updated for ${slug} - stablecoin may not exist`);
@@ -141,6 +145,34 @@ async function updateStablecoinMetrics(slug: string, metrics: MetricsData) {
     }
   } catch (error) {
     console.error(`Error updating ${slug}:`, error);
+    return false;
+  }
+}
+
+async function updateTimeSeriesData(stablecoinId: number, metrics: MetricsData) {
+  try {
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    
+    // Insert or update time-series data for today
+    const { error } = await supabase
+      .from('stablecoin_supply_history')
+      .upsert({
+        stablecoin_id: stablecoinId,
+        date: today,
+        total_supply: metrics.totalSupply,
+        holders_count: metrics.dailyActiveUsers,
+        updated_at: new Date().toISOString()
+      });
+
+    if (error) {
+      console.error(`Failed to update time-series data for stablecoin ${stablecoinId}:`, error.message);
+      return false;
+    }
+
+    console.log(`📊 Updated time-series data for stablecoin ${stablecoinId} on ${today}`);
+    return true;
+  } catch (error) {
+    console.error(`Error updating time-series data for stablecoin ${stablecoinId}:`, error);
     return false;
   }
 }
@@ -343,6 +375,80 @@ async function testArtemisConnection(slug: string) {
   }
 }
 
+async function backfillHistoricalData(slug?: string) {
+  console.log('🔄 Starting historical data backfill...');
+  
+  const topledger = createTopLedgerClient();
+  
+  // Get stablecoins to backfill
+  let stablecoins: DatabaseStablecoin[];
+  if (slug) {
+    const { data, error } = await supabase
+      .from('stablecoins')
+      .select('id, slug, name, token_address')
+      .eq('slug', slug)
+      .single();
+    
+    if (error || !data) {
+      console.error(`Stablecoin ${slug} not found`);
+      return;
+    }
+    stablecoins = [data];
+  } else {
+    stablecoins = await getStablecoinsFromDb();
+  }
+  
+  console.log(`📊 Backfilling data for ${stablecoins.length} stablecoins...`);
+  
+  for (const stablecoin of stablecoins) {
+    console.log(`Processing ${stablecoin.slug}...`);
+    
+    try {
+      const mint = topledger.getMintFromSlug(stablecoin.slug);
+      if (!mint) {
+        console.warn(`No mint address found for ${stablecoin.slug}`);
+        continue;
+      }
+      
+      // Get historical supply data
+      const supplyData = await topledger.getCirculatingSupplyData();
+      const mintSupplyData = supplyData.filter(d => d.mint === mint);
+      
+      console.log(`Found ${mintSupplyData.length} historical supply records for ${stablecoin.slug}`);
+      
+      // Process and insert historical data
+      let insertedCount = 0;
+      for (const record of mintSupplyData) {
+        const { error } = await supabase
+          .from('stablecoin_supply_history')
+          .upsert({
+            stablecoin_id: stablecoin.id,
+            date: record.block_date,
+            total_supply: record.token_supply || 0,
+            holders_count: record.holders || 0,
+            updated_at: new Date().toISOString()
+          });
+        
+        if (error) {
+          console.error(`Failed to insert historical data for ${stablecoin.slug} on ${record.block_date}:`, error.message);
+        } else {
+          insertedCount++;
+        }
+      }
+      
+      console.log(`✅ Inserted ${insertedCount} historical records for ${stablecoin.slug}`);
+      
+      // Add delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+    } catch (error) {
+      console.error(`Error backfilling data for ${stablecoin.slug}:`, error);
+    }
+  }
+  
+  console.log('✅ Historical data backfill complete');
+}
+
 async function main() {
   const args = process.argv.slice(2);
 
@@ -354,12 +460,16 @@ async function main() {
     await listDatabaseStablecoins();
   } else if (args[0] === '--test' && args[1]) {
     await testArtemisConnection(args[1]);
+  } else if (args[0] === '--backfill') {
+    await backfillHistoricalData(args[1]); // Optional slug parameter
   } else {
     console.log('Usage:');
     console.log('  node update-metrics.js                    # Update all stablecoins');
     console.log('  node update-metrics.js --slug USDC        # Update specific stablecoin');
     console.log('  node update-metrics.js --list             # List stablecoins');
     console.log('  node update-metrics.js --test USDC        # Test Artemis API');
+    console.log('  node update-metrics.js --backfill         # Backfill historical data for all stablecoins');
+    console.log('  node update-metrics.js --backfill USDC    # Backfill historical data for specific stablecoin');
   }
 }
 
