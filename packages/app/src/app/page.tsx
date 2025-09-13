@@ -31,21 +31,28 @@ export default async function Home() {
               Solana Stablecoin Dashboard
             </h1>
             <p className="text-xl text-neutral-300 max-w-2xl mx-auto">
-              Track, analyze, and monitor stablecoins on the Solana blockchain with real-time data and insights
+              Track, analyze, and monitor stablecoins on the Solana blockchain with real-time data
+              and insights
             </p>
             <div className="flex items-center justify-center gap-8 mt-8">
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">{dashboardStats.stablecoinCount}</div>
+                <div className="text-2xl font-bold text-blue-400">
+                  {dashboardStats.stablecoinCount}
+                </div>
                 <div className="text-sm text-neutral-400">Active Stablecoins</div>
               </div>
               <div className="w-px h-12 bg-neutral-700"></div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">${formatCompactNumber(dashboardStats.totalMarketCap)}</div>
+                <div className="text-2xl font-bold text-green-400">
+                  ${formatCompactNumber(dashboardStats.totalMarketCap)}
+                </div>
                 <div className="text-sm text-neutral-400">Total Market Cap</div>
               </div>
               <div className="w-px h-12 bg-neutral-700"></div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-purple-400">${formatCompactNumber(dashboardStats.totalTransactionVolume.monthly)}</div>
+                <div className="text-2xl font-bold text-purple-400">
+                  ${formatCompactNumber(dashboardStats.totalTransactionVolume.monthly)}
+                </div>
                 <div className="text-sm text-neutral-400">Monthly Volume</div>
               </div>
             </div>
@@ -61,7 +68,6 @@ export default async function Home() {
           <StatsOverview
             totalMarketCap={dashboardStats.totalMarketCap}
             totalTransactionVolume={dashboardStats.totalTransactionVolume}
-            stablecoinCount={dashboardStats.stablecoinCount}
           />
         </div>
 
@@ -83,13 +89,23 @@ export default async function Home() {
               <h2 className="text-3xl font-bold text-white">Trending Stablecoins</h2>
               <p className="text-neutral-400">Top performing stablecoins by market cap</p>
             </div>
-            <a 
-              href="/stablecoins" 
+            <a
+              href="/stablecoins"
               className="group inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-medium rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25"
             >
               View all stablecoins
-              <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <svg
+                className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </a>
           </div>

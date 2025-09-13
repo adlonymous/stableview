@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export interface ChartDataPoint {
   time: string;
@@ -18,16 +18,12 @@ export interface UseChartDataOptions {
   enabled?: boolean;
 }
 
-export function useChartData({ 
-  stablecoinId, 
-  range = '1M', 
-  enabled = true 
-}: UseChartDataOptions) {
+export function useChartData({ stablecoinId, range = '1M', enabled = true }: UseChartDataOptions) {
   const [data, setData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchChartData = async () => {
+  const fetchChartData = useCallback(async () => {
     if (!enabled) return;
 
     setLoading(true);
@@ -35,7 +31,7 @@ export function useChartData({
 
     try {
       const baseUrl = process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:3004';
-      
+
       let url: string;
       if (stablecoinId) {
         // Individual stablecoin chart
@@ -47,9 +43,9 @@ export function useChartData({
 
       console.log('Fetching chart data from:', url);
       const response = await fetch(url);
-      
+
       console.log('Response status:', response.status, response.statusText);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch chart data: ${response.statusText}`);
       }
@@ -65,16 +61,16 @@ export function useChartData({
     } finally {
       setLoading(false);
     }
-  };
+  }, [enabled, stablecoinId, range]);
 
   useEffect(() => {
     console.log('useChartData useEffect triggered:', { stablecoinId, range, enabled });
-    console.log('Environment check:', { 
+    console.log('Environment check:', {
       NEXT_PUBLIC_CORE_API_URL: process.env.NEXT_PUBLIC_CORE_API_URL,
-      enabled 
+      enabled,
     });
     fetchChartData();
-  }, [stablecoinId, range, enabled]);
+  }, [stablecoinId, range, enabled, fetchChartData]);
 
   return {
     data,

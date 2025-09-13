@@ -5,49 +5,51 @@ import { createTopLedgerClient } from './topledger-client.js';
 import dotenv from 'dotenv';
 
 // Safety: Fields that should NEVER be overwritten by automated updates
-const PROTECTED_FIELDS = [
-  'id',
-  'slug', 
-  'name',
-  'token',
-  'pegged_asset',
-  'issuer',
-  'token_program',
-  'mint_authority',
-  'bridging_mechanisms',
-  'networks_live_on',
-  'redemption_mechanisms',
-  'solscan_link',
-  'artemis_link',
-  'asset_reserves_link',
-  'executive_summary',
-  'logo_url',
-  'created_at'
-];
+// const PROTECTED_FIELDS = [
+//   'id',
+//   'slug',
+//   'name',
+//   'token',
+//   'pegged_asset',
+//   'issuer',
+//   'token_program',
+//   'mint_authority',
+//   'bridging_mechanisms',
+//   'networks_live_on',
+//   'redemption_mechanisms',
+//   'solscan_link',
+//   'artemis_link',
+//   'asset_reserves_link',
+//   'executive_summary',
+//   'logo_url',
+//   'created_at'
+// ];
 
 // Fields that are safe to update automatically (metrics only)
 const SAFE_UPDATE_FIELDS = [
   'transaction_volume_30d',
-  'transaction_count_daily', 
+  'transaction_count_daily',
   'total_supply',
   'daily_active_users',
   'price',
-  'updated_at'
+  'updated_at',
 ];
 
 dotenv.config();
 
 // Safety function to validate that we're only updating safe fields
-function validateUpdateData(updateData: Record<string, any>): boolean {
+function validateUpdateData(updateData: Record<string, unknown>): boolean {
   const updateFields = Object.keys(updateData);
   const unsafeFields = updateFields.filter(field => !SAFE_UPDATE_FIELDS.includes(field));
-  
+
   if (unsafeFields.length > 0) {
-    console.error(`❌ SAFETY VIOLATION: Attempting to update protected fields: ${unsafeFields.join(', ')}`);
+    console.error(
+      `❌ SAFETY VIOLATION: Attempting to update protected fields: ${unsafeFields.join(', ')}`
+    );
     console.error(`Safe fields are: ${SAFE_UPDATE_FIELDS.join(', ')}`);
     return false;
   }
-  
+
   return true;
 }
 
@@ -70,14 +72,14 @@ async function fetchMetricsFromTopLedger(slug: string): Promise<MetricsData | nu
   try {
     const topledger = createTopLedgerClient();
     const mint = topledger.getMintFromSlug(slug);
-    
+
     if (!mint) {
       console.warn(`No mint address found for slug: ${slug}`);
       return null;
     }
 
     const data = await topledger.getLatestDataForMint(mint);
-    
+
     if (!data) {
       console.warn(`No data found for mint: ${mint} (slug: ${slug})`);
       return null;
@@ -117,7 +119,7 @@ async function updateStablecoinMetrics(slug: string, metrics: MetricsData) {
       volume: metrics.transactionVolume30d,
       count: metrics.transactionCountDaily,
       supply: metrics.totalSupply,
-      users: metrics.dailyActiveUsers
+      users: metrics.dailyActiveUsers,
     });
 
     // Use a targeted update that only affects metrics fields
@@ -125,7 +127,9 @@ async function updateStablecoinMetrics(slug: string, metrics: MetricsData) {
       .from('stablecoins')
       .update(updateData)
       .eq('slug', slug)
-      .select('id, slug, transaction_volume_30d, transaction_count_daily, total_supply, daily_active_users, updated_at');
+      .select(
+        'id, slug, transaction_volume_30d, transaction_count_daily, total_supply, daily_active_users, updated_at'
+      );
 
     if (error) {
       console.error(`Failed to update ${slug}:`, error.message);
@@ -134,10 +138,10 @@ async function updateStablecoinMetrics(slug: string, metrics: MetricsData) {
 
     if (data && data.length > 0) {
       console.log(`✅ Successfully updated ${slug} in database`);
-      
+
       // Also update time-series data
       await updateTimeSeriesData(data[0].id, metrics);
-      
+
       return true;
     } else {
       console.warn(`⚠️ No rows updated for ${slug} - stablecoin may not exist`);
@@ -152,20 +156,21 @@ async function updateStablecoinMetrics(slug: string, metrics: MetricsData) {
 async function updateTimeSeriesData(stablecoinId: number, metrics: MetricsData) {
   try {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-    
+
     // Insert or update time-series data for today
-    const { error } = await supabase
-      .from('stablecoin_supply_history')
-      .upsert({
-        stablecoin_id: stablecoinId,
-        date: today,
-        total_supply: metrics.totalSupply,
-        holders_count: metrics.dailyActiveUsers,
-        updated_at: new Date().toISOString()
-      });
+    const { error } = await supabase.from('stablecoin_supply_history').upsert({
+      stablecoin_id: stablecoinId,
+      date: today,
+      total_supply: metrics.totalSupply,
+      holders_count: metrics.dailyActiveUsers,
+      updated_at: new Date().toISOString(),
+    });
 
     if (error) {
-      console.error(`Failed to update time-series data for stablecoin ${stablecoinId}:`, error.message);
+      console.error(
+        `Failed to update time-series data for stablecoin ${stablecoinId}:`,
+        error.message
+      );
       return false;
     }
 
@@ -197,18 +202,20 @@ async function syncStablecoinsWithApi() {
     const topledger = createTopLedgerClient();
     const apiStablecoins = await topledger.getAllAvailableStablecoins();
     const dbStablecoins = await getStablecoinsFromDb();
-    
-    console.log(`Found ${apiStablecoins.length} stablecoins in API, ${dbStablecoins.length} in database`);
-    
+
+    console.log(
+      `Found ${apiStablecoins.length} stablecoins in API, ${dbStablecoins.length} in database`
+    );
+
     const dbSlugs = new Set(dbStablecoins.map(s => s.slug));
     // Filter out stablecoins that are already in DB and exclude VNXAU
-    const newStablecoins = apiStablecoins.filter(s => 
-      !dbSlugs.has(s.slug) && s.slug !== 'vnxau' // Exclude VNXAU from being added
+    const newStablecoins = apiStablecoins.filter(
+      s => !dbSlugs.has(s.slug) && s.slug !== 'vnxau' // Exclude VNXAU from being added
     );
-    
+
     if (newStablecoins.length > 0) {
       console.log(`Adding ${newStablecoins.length} new stablecoins to database:`);
-      
+
       for (const stablecoin of newStablecoins) {
         console.log(`  - ${stablecoin.slug} (${stablecoin.name})`);
         const success = await createStablecoinInDb(stablecoin);
@@ -219,7 +226,7 @@ async function syncStablecoinsWithApi() {
     } else {
       console.log('No new stablecoins to add');
     }
-    
+
     return apiStablecoins;
   } catch (error) {
     console.error('Failed to sync stablecoins with API:', error);
@@ -253,22 +260,20 @@ async function createStablecoinInDb(stablecoin: {
     }
 
     // Only insert essential fields, leave others as NULL for manual configuration
-    const { error } = await supabase
-      .from('stablecoins')
-      .insert({
-        slug: stablecoin.slug,
-        name: stablecoin.name,
-        token: stablecoin.name,
-        token_address: stablecoin.mint,
-        // Only set metrics data, leave other fields NULL for manual configuration
-        transaction_volume_30d: '0',
-        transaction_count_daily: '0',
-        total_supply: stablecoin.totalSupply.toString(),
-        daily_active_users: stablecoin.holders.toString(),
-        price: '1.00',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
+    const { error } = await supabase.from('stablecoins').insert({
+      slug: stablecoin.slug,
+      name: stablecoin.name,
+      token: stablecoin.name,
+      token_address: stablecoin.mint,
+      // Only set metrics data, leave other fields NULL for manual configuration
+      transaction_volume_30d: '0',
+      transaction_count_daily: '0',
+      total_supply: stablecoin.totalSupply.toString(),
+      daily_active_users: stablecoin.holders.toString(),
+      price: '1.00',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
 
     if (error) {
       console.error(`Failed to create stablecoin ${stablecoin.slug}:`, error.message);
@@ -285,11 +290,11 @@ async function createStablecoinInDb(stablecoin: {
 
 async function updateAllMetrics() {
   console.log('🔄 Starting update process...');
-  
+
   // First sync with API to ensure we have all stablecoins
   console.log('🔄 Syncing with API...');
-  const apiStablecoins = await syncStablecoinsWithApi();
-  
+  await syncStablecoinsWithApi();
+
   // Get updated list from database
   console.log('🔄 Getting updated database list...');
   const stablecoins = await getStablecoinsFromDb();
@@ -297,7 +302,7 @@ async function updateAllMetrics() {
     console.log('No stablecoins found in database');
     return;
   }
-  
+
   console.log(`📊 Found ${stablecoins.length} stablecoins in database after sync`);
 
   let successCount = 0;
@@ -377,9 +382,9 @@ async function testArtemisConnection(slug: string) {
 
 async function backfillHistoricalData(slug?: string) {
   console.log('🔄 Starting historical data backfill...');
-  
+
   const topledger = createTopLedgerClient();
-  
+
   // Get stablecoins to backfill
   let stablecoins: DatabaseStablecoin[];
   if (slug) {
@@ -388,7 +393,7 @@ async function backfillHistoricalData(slug?: string) {
       .select('id, slug, name, token_address')
       .eq('slug', slug)
       .single();
-    
+
     if (error || !data) {
       console.error(`Stablecoin ${slug} not found`);
       return;
@@ -397,55 +402,57 @@ async function backfillHistoricalData(slug?: string) {
   } else {
     stablecoins = await getStablecoinsFromDb();
   }
-  
+
   console.log(`📊 Backfilling data for ${stablecoins.length} stablecoins...`);
-  
+
   for (const stablecoin of stablecoins) {
     console.log(`Processing ${stablecoin.slug}...`);
-    
+
     try {
       const mint = topledger.getMintFromSlug(stablecoin.slug);
       if (!mint) {
         console.warn(`No mint address found for ${stablecoin.slug}`);
         continue;
       }
-      
+
       // Get historical supply data
       const supplyData = await topledger.getCirculatingSupplyData();
       const mintSupplyData = supplyData.filter(d => d.mint === mint);
-      
-      console.log(`Found ${mintSupplyData.length} historical supply records for ${stablecoin.slug}`);
-      
+
+      console.log(
+        `Found ${mintSupplyData.length} historical supply records for ${stablecoin.slug}`
+      );
+
       // Process and insert historical data
       let insertedCount = 0;
       for (const record of mintSupplyData) {
-        const { error } = await supabase
-          .from('stablecoin_supply_history')
-          .upsert({
-            stablecoin_id: stablecoin.id,
-            date: record.block_date,
-            total_supply: record.token_supply || 0,
-            holders_count: record.holders || 0,
-            updated_at: new Date().toISOString()
-          });
-        
+        const { error } = await supabase.from('stablecoin_supply_history').upsert({
+          stablecoin_id: stablecoin.id,
+          date: record.block_date,
+          total_supply: record.token_supply || 0,
+          holders_count: record.holders || 0,
+          updated_at: new Date().toISOString(),
+        });
+
         if (error) {
-          console.error(`Failed to insert historical data for ${stablecoin.slug} on ${record.block_date}:`, error.message);
+          console.error(
+            `Failed to insert historical data for ${stablecoin.slug} on ${record.block_date}:`,
+            error.message
+          );
         } else {
           insertedCount++;
         }
       }
-      
+
       console.log(`✅ Inserted ${insertedCount} historical records for ${stablecoin.slug}`);
-      
+
       // Add delay to avoid rate limiting
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
     } catch (error) {
       console.error(`Error backfilling data for ${stablecoin.slug}:`, error);
     }
   }
-  
+
   console.log('✅ Historical data backfill complete');
 }
 
@@ -468,8 +475,12 @@ async function main() {
     console.log('  node update-metrics.js --slug USDC        # Update specific stablecoin');
     console.log('  node update-metrics.js --list             # List stablecoins');
     console.log('  node update-metrics.js --test USDC        # Test Artemis API');
-    console.log('  node update-metrics.js --backfill         # Backfill historical data for all stablecoins');
-    console.log('  node update-metrics.js --backfill USDC    # Backfill historical data for specific stablecoin');
+    console.log(
+      '  node update-metrics.js --backfill         # Backfill historical data for all stablecoins'
+    );
+    console.log(
+      '  node update-metrics.js --backfill USDC    # Backfill historical data for specific stablecoin'
+    );
   }
 }
 

@@ -20,7 +20,7 @@ export function useLatestDataDate() {
 
         const baseUrl = 'http://localhost:3004'; // Hardcoded for debugging
         console.log('Fetching latest data date from:', `${baseUrl}/api/latest-data-date`);
-        
+
         const response = await fetch(`${baseUrl}/api/latest-data-date`);
 
         if (!response.ok) {
@@ -35,7 +35,7 @@ export function useLatestDataDate() {
         setError(err instanceof Error ? err.message : 'Failed to fetch latest data date');
         setData({
           latestDataDate: null,
-          formattedDate: 'No data available'
+          formattedDate: 'No data available',
         });
       } finally {
         setLoading(false);

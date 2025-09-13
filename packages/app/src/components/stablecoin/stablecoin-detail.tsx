@@ -22,13 +22,17 @@ interface StablecoinDetailProps {
 export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
   const [chartRange, setChartRange] = useState('1M');
   const hasRefreshed = useRef(false);
-  
-  const { data: chartData, loading: chartLoading, error: chartError, refetch } = useChartData({
+
+  const {
+    data: chartData,
+    loading: chartLoading,
+    error: chartError,
+    refetch,
+  } = useChartData({
     stablecoinId: stablecoin.id,
     range: chartRange,
     enabled: true,
   });
-  
 
   // Auto-refresh chart data once when component mounts
   useEffect(() => {
@@ -39,7 +43,13 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
     }
   }, [stablecoin.id, chartLoading, refetch]);
 
-  console.log('StablecoinDetail chart data:', { chartData, chartLoading, chartError, stablecoinId: stablecoin.id, range: chartRange });
+  console.log('StablecoinDetail chart data:', {
+    chartData,
+    chartLoading,
+    chartError,
+    stablecoinId: stablecoin.id,
+    range: chartRange,
+  });
 
   return (
     <div className="space-y-8">
@@ -64,7 +74,10 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                 <Badge className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-1.5 text-sm font-medium">
                   {stablecoin.token}
                 </Badge>
-                <Badge variant="outline" className="border-neutral-600 text-neutral-300 bg-neutral-800/50 px-4 py-1.5 text-sm">
+                <Badge
+                  variant="outline"
+                  className="border-neutral-600 text-neutral-300 bg-neutral-800/50 px-4 py-1.5 text-sm"
+                >
                   {stablecoin.tokenProgram}
                 </Badge>
                 <div className="flex items-center gap-2 text-green-400">
@@ -81,7 +94,11 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                 asChild
                 className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-medium px-6 py-2.5 shadow-lg hover:shadow-blue-500/25 transition-all duration-300"
               >
-                <Link href={`https://solscan.io/token/${stablecoin.tokenAddress}`} target="_blank" rel="noopener noreferrer">
+                <Link
+                  href={`https://solscan.io/token/${stablecoin.tokenAddress}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <span>View on Solscan</span>
                   <ExternalLink className="ml-2 h-4 w-4" />
                 </Link>
@@ -124,7 +141,9 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                 <BarChart3 className="h-6 w-6 text-blue-400" />
               </div>
               <div className="space-y-2">
-                <CardDescription className="text-blue-300 font-medium">Total Supply</CardDescription>
+                <CardDescription className="text-blue-300 font-medium">
+                  Total Supply
+                </CardDescription>
                 <CardTitle className="text-3xl font-bold text-white">
                   {formatCompactNumber(parseFloat(stablecoin.totalSupply))}
                 </CardTitle>
@@ -140,7 +159,9 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                 <Users className="h-6 w-6 text-green-400" />
               </div>
               <div className="space-y-2">
-                <CardDescription className="text-green-300 font-medium">Daily Active Users</CardDescription>
+                <CardDescription className="text-green-300 font-medium">
+                  Daily Active Users
+                </CardDescription>
                 <CardTitle className="text-3xl font-bold text-white">
                   {formatCompactNumber(parseFloat(stablecoin.dailyActiveUsers))}
                 </CardTitle>
@@ -171,14 +192,14 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
       {/* Enhanced Tabs for different data sections */}
       <Tabs defaultValue="metrics" className="w-full">
         <TabsList className="grid grid-cols-2 bg-gradient-to-r from-neutral-900 to-neutral-950 border border-neutral-800 rounded-xl p-1">
-          <TabsTrigger 
-            value="metrics" 
+          <TabsTrigger
+            value="metrics"
             className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-300"
           >
             Metrics
           </TabsTrigger>
-          <TabsTrigger 
-            value="details" 
+          <TabsTrigger
+            value="details"
             className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg transition-all duration-300"
           >
             Token Details
@@ -348,9 +369,7 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                 />
                 {chartError && (
                   <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-                    <p className="text-red-400 text-sm">
-                      Error loading chart data: {chartError}
-                    </p>
+                    <p className="text-red-400 text-sm">Error loading chart data: {chartError}</p>
                   </div>
                 )}
               </div>

@@ -43,12 +43,15 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
               {stablecoin.name}
             </CardDescription>
           </div>
-          <Badge variant="outline" className="border-neutral-700 text-neutral-300 bg-neutral-800/50 group-hover:border-blue-500/50 group-hover:text-blue-300 transition-colors duration-300">
+          <Badge
+            variant="outline"
+            className="border-neutral-700 text-neutral-300 bg-neutral-800/50 group-hover:border-blue-500/50 group-hover:text-blue-300 transition-colors duration-300"
+          >
             {stablecoin.tokenProgram}
           </Badge>
         </div>
       </CardHeader>
-      
+
       <CardContent className="px-6 pb-4">
         <div className="space-y-4">
           {/* Key Metrics Grid */}
@@ -96,10 +99,16 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
           </div>
         </div>
       </CardContent>
-      
+
       <CardFooter className="px-6 pb-6 pt-0">
-        <Button asChild className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-medium py-2.5 group/btn transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25">
-          <Link href={`/stablecoin/${stablecoin.id}`} className="flex items-center justify-center gap-2">
+        <Button
+          asChild
+          className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-medium py-2.5 group/btn transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25"
+        >
+          <Link
+            href={`/stablecoin/${stablecoin.id}`}
+            className="flex items-center justify-center gap-2"
+          >
             <span>View Details</span>
             <ChevronRight className="h-4 w-4 group-hover/btn:translate-x-0.5 transition-transform duration-300" />
           </Link>

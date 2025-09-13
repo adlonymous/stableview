@@ -1,7 +1,7 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatCompactNumber, formatCurrency } from '@/lib/utils';
+import { Card, CardHeader } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/utils';
 import { BarChart3, DollarSign } from 'lucide-react';
 
 interface StatsOverviewProps {
@@ -11,14 +11,9 @@ interface StatsOverviewProps {
     monthly: number;
     yearly: number;
   };
-  stablecoinCount: number;
 }
 
-export function StatsOverview({
-  totalMarketCap,
-  totalTransactionVolume,
-  stablecoinCount,
-}: StatsOverviewProps) {
+export function StatsOverview({ totalMarketCap, totalTransactionVolume }: StatsOverviewProps) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

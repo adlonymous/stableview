@@ -236,26 +236,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (pathname.startsWith('/api/stablecoins/') && pathname.includes('/charts/supply')) {
       const stablecoinIdMatch = pathname.match(/\/api\/stablecoins\/(\d+)\/charts\/supply/);
       const isAggregated = pathname.includes('/charts/supply/aggregated');
-      
+
       if (stablecoinIdMatch || isAggregated) {
         const url = new URL(req.url!, `http://${req.headers.host}`);
         const range = url.searchParams.get('range') || '1M';
-        
+
         // Helper function to get date from range
-        function getDateFromRange(range: string): string {
+        const getDateFromRange = (range: string): string => {
           const today = new Date();
           switch (range) {
             case '1M':
-              return new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+              return new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split('T')[0];
             case '1Q':
-              return new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+              return new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split('T')[0];
             case '1Y':
-              return new Date(today.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+              return new Date(today.getTime() - 365 * 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split('T')[0];
             case 'ALL':
             default:
               return '2024-01-01';
           }
-        }
+        };
 
         if (isAggregated) {
           // Get aggregated supply data
@@ -270,30 +276,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }
 
           // Group by date and sum total supply
-          const aggregatedData = data.reduce((acc: Record<string, number>, record: any) => {
-            const date = record.date;
-            if (!acc[date]) {
-              acc[date] = 0;
-            }
-            acc[date] += parseFloat(record.total_supply);
-            return acc;
-          }, {} as Record<string, number>);
+          const aggregatedData = data.reduce(
+            (
+              acc: Record<string, number>,
+              record: { date: string; total_supply: string | number }
+            ) => {
+              const date = record.date;
+              if (!acc[date]) {
+                acc[date] = 0;
+              }
+              acc[date] += parseFloat(String(record.total_supply));
+              return acc;
+            },
+            {} as Record<string, number>
+          );
 
           // Transform to TradingView format
           const chartData = Object.entries(aggregatedData).map(([date, totalSupply]) => ({
             time: date,
-            value: totalSupply
+            value: totalSupply,
           }));
 
           return res.status(200).json({
             data: chartData,
             range,
-            count: chartData.length
+            count: chartData.length,
           });
         } else {
           // Get specific stablecoin data
           const stablecoinId = parseInt(stablecoinIdMatch![1]);
-          
+
           const { data, error } = await supabase
             .from('stablecoin_supply_history')
             .select('date, total_supply, holders_count')
@@ -306,16 +318,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }
 
           // Transform data for TradingView format
-          const chartData = data.map((record: any) => ({
+          const chartData = data.map((record: { date: string; total_supply: string | number }) => ({
             time: record.date,
-            value: parseFloat(record.total_supply)
+            value: parseFloat(String(record.total_supply)),
           }));
 
           return res.status(200).json({
             data: chartData,
             range,
             stablecoinId,
-            count: chartData.length
+            count: chartData.length,
           });
         }
       }
@@ -336,21 +348,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const latestDate = data && data.length > 0 ? data[0].date : null;
-        
+
         return res.status(200).json({
           latestDataDate: latestDate,
-          formattedDate: latestDate ? new Date(latestDate).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-          }) : 'No data available'
+          formattedDate: latestDate
+            ? new Date(latestDate).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              })
+            : 'No data available',
         });
       } catch (error) {
         console.error('Error in latest data date endpoint:', error);
         return res.status(500).json({ error: 'Internal server error' });
       }
     }
-
 
     // If no route matches, return 404
     return res.status(404).json({ error: 'Route not found', pathname });
