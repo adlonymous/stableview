@@ -22,7 +22,7 @@ interface StablecoinCardProps {
 }
 
 export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
-  const { priceData, loading: priceLoading } = usePriceData(stablecoin.id);
+  const { priceData } = usePriceData(stablecoin.id);
 
   const formatPrice = (price: number | null | undefined) => {
     if (price === null || price === undefined || price === -1) return 'N/A';

@@ -122,7 +122,7 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                       ) : (
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-green-400">
-                            {stablecoin.price === 'N/A' || stablecoin.price === '-1'
+                            {stablecoin.price === null || stablecoin.price === undefined || stablecoin.price === -1
                               ? 'N/A'
                               : `$${stablecoin.price}`}
                           </span>

@@ -8,6 +8,7 @@ import type { Metadata } from 'next';
 import { AggregatedCharts } from '@/components/charts/aggregated-charts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
+import type { Stablecoin } from '@/types/stablecoin';
 
 export const metadata: Metadata = generateDashboardMetadata();
 
@@ -37,7 +38,7 @@ function StablecoinCardsSkeleton() {
 
 export default async function Home() {
   // Fetch data with better error handling
-  let stablecoins: any[] = [];
+  let stablecoins: Stablecoin[] = [];
   let dashboardStats = {
     stablecoinCount: 0,
     totalMarketCap: 0,

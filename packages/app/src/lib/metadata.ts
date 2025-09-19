@@ -257,7 +257,7 @@ export function generateStablecoinStructuredData(stablecoin: Stablecoin) {
     tokenAddress: stablecoin.tokenAddress,
     totalSupply: stablecoin.totalSupply,
     price: stablecoin.price,
-    marketCap: parseFloat(stablecoin.price) * parseFloat(stablecoin.totalSupply),
+    marketCap: stablecoin.price * parseFloat(stablecoin.totalSupply),
     dailyActiveUsers: stablecoin.dailyActiveUsers,
     transactionVolume30d: stablecoin.transactionVolume30d,
     url: `${baseUrl}/stablecoin/${stablecoin.slug}`,

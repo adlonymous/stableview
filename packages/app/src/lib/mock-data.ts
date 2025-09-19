@@ -21,7 +21,7 @@ export const mockStablecoins: Stablecoin[] = [
     transactionCountDaily: '1250000',
     totalSupply: '45000000000',
     dailyActiveUsers: '1250000',
-    price: '1.00',
+    price: 1.00,
     executiveSummary:
       "USDC is a fully-backed stablecoin issued by Circle, with transparent reserves held in cash and short-term US Treasury bonds. It's the most widely used stablecoin on Solana with deep liquidity across DEXs and CEXs.",
     logoUrl: 'https://i.postimg.cc/y6mGy9m7/image.png',
@@ -48,7 +48,7 @@ export const mockStablecoins: Stablecoin[] = [
     transactionCountDaily: '950000',
     totalSupply: '85000000000',
     dailyActiveUsers: '950000',
-    price: '1.00',
+    price: 1.00,
     executiveSummary:
       'USDT is the largest stablecoin by market cap, issued by Tether Limited. While historically facing questions about its reserves, it maintains its peg and provides high liquidity across Solana DeFi.',
     logoUrl: 'https://cryptologos.cc/logos/tether-usdt-logo.png',
@@ -75,7 +75,7 @@ export const mockStablecoins: Stablecoin[] = [
     transactionCountDaily: '125000',
     totalSupply: '750000000',
     dailyActiveUsers: '125000',
-    price: '1.00',
+    price: 1.00,
     executiveSummary:
       "PYUSD is PayPal's stablecoin, fully backed by USD deposits, US Treasuries and cash equivalents. Its integration with PayPal's payment infrastructure provides a bridge between traditional finance and crypto.",
     logoUrl: 'https://cryptologos.cc/logos/paypal-pyusd-logo.png',
@@ -102,7 +102,7 @@ export const mockStablecoins: Stablecoin[] = [
     transactionCountDaily: '32000',
     totalSupply: '85000000',
     dailyActiveUsers: '32000',
-    price: '1.00',
+    price: 1.00,
     executiveSummary:
       'UXD is an algorithmic stablecoin that maintains its peg through delta-neutral positions using derivatives. This design allows for a fully decentralized stablecoin without governance control.',
     logoUrl: 'https://assets.coingecko.com/coins/images/25444/small/uxd-icon-dark.png',
