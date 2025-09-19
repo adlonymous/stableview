@@ -96,7 +96,7 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                       {priceData && priceData.price !== null && priceData.price !== undefined ? (
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-green-400">
-                            ${priceData.price}
+                            ${Number(priceData.price.toFixed(7))}
                           </span>
                           {priceData.priceChange24h !== null &&
                             priceData.priceChange24h !== undefined && (
@@ -114,7 +114,7 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                                   }`}
                                 >
                                   {priceData.priceChange24h >= 0 ? '+' : ''}
-                                  {priceData.priceChange24h * 100}%
+                                  {Number((priceData.priceChange24h * 100).toFixed(7))}%
                                 </span>
                               </div>
                             )}
@@ -122,9 +122,11 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                       ) : (
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-green-400">
-                            {stablecoin.price === null || stablecoin.price === undefined || stablecoin.price === -1
+                            {stablecoin.price === null ||
+                            stablecoin.price === undefined ||
+                            stablecoin.price === -1
                               ? 'N/A'
-                              : `$${stablecoin.price}`}
+                              : `$${Number(stablecoin.price.toFixed(7))}`}
                           </span>
                           <span className="text-xs text-neutral-400">(Static)</span>
                         </div>
@@ -391,7 +393,7 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                 <div className="space-y-2">
                   <div className="text-sm text-neutral-400">Current Price</div>
                   <div className="text-2xl font-semibold text-white">
-                    ${stablecoin.price?.toFixed(4) || 'N/A'}
+                    ${stablecoin.price ? Number(stablecoin.price.toFixed(7)) : 'N/A'}
                   </div>
                 </div>
               </div>

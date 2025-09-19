@@ -270,7 +270,7 @@ async function createStablecoinInDb(stablecoin: {
       transaction_count_daily: '0',
       total_supply: stablecoin.totalSupply.toString(),
       daily_active_users: stablecoin.holders.toString(),
-      price: 1.00,
+      price: 1.0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });

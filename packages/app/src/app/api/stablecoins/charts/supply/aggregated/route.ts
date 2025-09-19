@@ -6,8 +6,10 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const range = searchParams.get('range') || '1M';
-    
-    const response = await fetch(`${CORE_API_BASE_URL}/api/stablecoins/charts/supply/aggregated?range=${range}`);
+
+    const response = await fetch(
+      `${CORE_API_BASE_URL}/api/stablecoins/charts/supply/aggregated?range=${range}`
+    );
 
     if (!response.ok) {
       throw new Error(`Core API responded with status: ${response.status}`);

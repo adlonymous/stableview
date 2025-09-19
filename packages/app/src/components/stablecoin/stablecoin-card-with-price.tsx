@@ -50,21 +50,20 @@ export function StablecoinCardWithPrice({
 }: StablecoinCardWithPriceProps) {
   // Use real-time price if available, otherwise fall back to static price
   const staticPrice =
-    stablecoin.price === null || stablecoin.price === -1
-      ? null
-      : stablecoin.price;
+    stablecoin.price === null || stablecoin.price === -1 ? null : stablecoin.price;
   const displayPrice = priceData?.price ?? staticPrice;
   const priceChange24h = priceData?.priceChange24h ?? 0;
   const isPriceLoading = priceLoading;
 
   const formatPrice = (price: number | null) => {
     if (price === null || price === -1) return 'N/A';
-    return `$${price}`;
+    return `$${Number(price.toFixed(7))}`;
   };
 
   const formatPriceChange = (change: number) => {
     const sign = change >= 0 ? '+' : '';
-    return `${sign}${change}%`;
+    const roundedChange = Number(change.toFixed(7));
+    return `${sign}${roundedChange}%`;
   };
 
   const getPriceChangeIcon = (change: number) => {

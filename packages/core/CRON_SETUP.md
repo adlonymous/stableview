@@ -126,9 +126,9 @@ curl -X POST https://your-domain.vercel.app/api/cron/update-prices \
 
 ## Schedule Reference
 
-| Job        | Schedule    | Description           |
-| ---------- | ----------- | --------------------- |
-| Metrics    | `0 0 * * *` | Daily at midnight UTC |
+| Job                 | Schedule    | Description           |
+| ------------------- | ----------- | --------------------- |
+| Metrics             | `0 0 * * *` | Daily at midnight UTC |
 | Prices & Peg Prices | `0 0 * * *` | Daily at midnight UTC |
 
 ## Dependencies

@@ -304,12 +304,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(500).json({ error: 'Failed to fetch latest data date' });
           }
 
-          const latestDate = latestData && latestData.length > 0 ? latestData[0].date : new Date().toISOString().split('T')[0];
-          
+          const latestDate =
+            latestData && latestData.length > 0
+              ? latestData[0].date
+              : new Date().toISOString().split('T')[0];
+
           // Calculate the actual start date based on the latest available data
           const endDate = new Date(latestDate);
           const startDate = new Date(endDate);
-          
+
           switch (range) {
             case '1M':
               startDate.setMonth(startDate.getMonth() - 1);
@@ -350,19 +353,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
           // Group by date and check for complete data
           const dateGroups: Record<string, { totalSupply: number; stablecoinCount: number }> = {};
-          
-          data.forEach((record: { date: string; total_supply: string | number; stablecoin_id: number }) => {
-            const date = record.date;
-            if (!dateGroups[date]) {
-              dateGroups[date] = { totalSupply: 0, stablecoinCount: 0 };
+
+          data.forEach(
+            (record: { date: string; total_supply: string | number; stablecoin_id: number }) => {
+              const date = record.date;
+              if (!dateGroups[date]) {
+                dateGroups[date] = { totalSupply: 0, stablecoinCount: 0 };
+              }
+              dateGroups[date].totalSupply += parseFloat(String(record.total_supply));
+              dateGroups[date].stablecoinCount += 1;
             }
-            dateGroups[date].totalSupply += parseFloat(String(record.total_supply));
-            dateGroups[date].stablecoinCount += 1;
-          });
+          );
 
           // Filter out dates that don't have data for all stablecoins
           const filteredData: Record<string, number> = {};
-          
+
           for (const [date, group] of Object.entries(dateGroups)) {
             if (group.stablecoinCount === totalStablecoins) {
               filteredData[date] = group.totalSupply;
@@ -460,12 +465,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(500).json({ error: 'Failed to fetch latest data date' });
           }
 
-          const latestDate = latestData && latestData.length > 0 ? latestData[0].date : new Date().toISOString().split('T')[0];
-          
+          const latestDate =
+            latestData && latestData.length > 0
+              ? latestData[0].date
+              : new Date().toISOString().split('T')[0];
+
           // Calculate the actual start date based on the latest available data
           const endDate = new Date(latestDate);
           const startDate = new Date(endDate);
-          
+
           switch (range) {
             case '1M':
               startDate.setMonth(startDate.getMonth() - 1);
@@ -506,19 +514,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
           // Group by date and check for complete data
           const dateGroups: Record<string, { totalDAU: number; stablecoinCount: number }> = {};
-          
-          data.forEach((record: { date: string; holders_count: string | number; stablecoin_id: number }) => {
-            const date = record.date;
-            if (!dateGroups[date]) {
-              dateGroups[date] = { totalDAU: 0, stablecoinCount: 0 };
+
+          data.forEach(
+            (record: { date: string; holders_count: string | number; stablecoin_id: number }) => {
+              const date = record.date;
+              if (!dateGroups[date]) {
+                dateGroups[date] = { totalDAU: 0, stablecoinCount: 0 };
+              }
+              dateGroups[date].totalDAU += parseFloat(String(record.holders_count));
+              dateGroups[date].stablecoinCount += 1;
             }
-            dateGroups[date].totalDAU += parseFloat(String(record.holders_count));
-            dateGroups[date].stablecoinCount += 1;
-          });
+          );
 
           // Filter out dates that don't have data for all stablecoins
           const filteredData: Record<string, number> = {};
-          
+
           for (const [date, group] of Object.entries(dateGroups)) {
             if (group.stablecoinCount === totalStablecoins) {
               filteredData[date] = group.totalDAU;

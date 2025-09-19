@@ -26,7 +26,7 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
 
   const formatPrice = (price: number | null | undefined) => {
     if (price === null || price === undefined || price === -1) return 'N/A';
-    return `$${price}`;
+    return `$${Number(price.toFixed(7))}`;
   };
 
   const getPriceDisplay = () => {
@@ -60,7 +60,9 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
     return (
       <div className="flex items-center gap-1">
         <p className="font-bold text-green-400 text-sm">
-          {stablecoin.price === null || stablecoin.price === -1 ? 'N/A' : `$${stablecoin.price}`}
+          {stablecoin.price === null || stablecoin.price === -1
+            ? 'N/A'
+            : `$${Number(stablecoin.price.toFixed(7))}`}
         </p>
         <span className="text-xs text-neutral-400">(Static)</span>
       </div>
@@ -70,7 +72,8 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
   const formatPriceChange = (change: number | null | undefined) => {
     if (change === null || change === undefined) return null;
     const percentage = change * 100;
-    return change >= 0 ? `+${percentage}%` : `${percentage}%`;
+    const roundedPercentage = Number(percentage.toFixed(7));
+    return change >= 0 ? `+${roundedPercentage}%` : `${roundedPercentage}%`;
   };
 
   const getPriceChangeColor = (change: number | null | undefined) => {

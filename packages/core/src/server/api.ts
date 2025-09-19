@@ -512,12 +512,15 @@ fastify.get('/api/stablecoins/charts/supply/aggregated', async (request, reply) 
       return reply.status(500).send({ error: 'Failed to fetch latest data date' });
     }
 
-    const latestDate = latestData && latestData.length > 0 ? latestData[0].date : new Date().toISOString().split('T')[0];
-    
+    const latestDate =
+      latestData && latestData.length > 0
+        ? latestData[0].date
+        : new Date().toISOString().split('T')[0];
+
     // Calculate the actual start date based on the latest available data
     const endDate = new Date(latestDate);
     const startDate = new Date(endDate);
-    
+
     switch (range) {
       case '1M':
         startDate.setMonth(startDate.getMonth() - 1);
@@ -560,26 +563,29 @@ fastify.get('/api/stablecoins/charts/supply/aggregated', async (request, reply) 
 
     // Group by date and check for complete data
     const dateGroups: Record<string, { totalSupply: number; stablecoinCount: number }> = {};
-    
-    data.forEach((record: { date: string; total_supply: string | number; stablecoin_id: number }) => {
-      const date = record.date;
-      if (!dateGroups[date]) {
-        dateGroups[date] = { totalSupply: 0, stablecoinCount: 0 };
+
+    data.forEach(
+      (record: { date: string; total_supply: string | number; stablecoin_id: number }) => {
+        const date = record.date;
+        if (!dateGroups[date]) {
+          dateGroups[date] = { totalSupply: 0, stablecoinCount: 0 };
+        }
+        dateGroups[date].totalSupply += parseFloat(String(record.total_supply));
+        dateGroups[date].stablecoinCount += 1;
       }
-      dateGroups[date].totalSupply += parseFloat(String(record.total_supply));
-      dateGroups[date].stablecoinCount += 1;
-    });
+    );
 
     // Filter data based on range - be more flexible for longer ranges
     const filteredData: Record<string, number> = {};
-    
+
     for (const [date, group] of Object.entries(dateGroups)) {
       // For 1M and 1Q, require all stablecoins to have data
       // For 1Y and ALL, be more flexible and show data if at least 50% of stablecoins have data
-      const requiredStablecoins = (range === '1Y' || range === 'ALL') 
-        ? Math.max(1, Math.floor(totalStablecoins * 0.5)) 
-        : totalStablecoins;
-      
+      const requiredStablecoins =
+        range === '1Y' || range === 'ALL'
+          ? Math.max(1, Math.floor(totalStablecoins * 0.5))
+          : totalStablecoins;
+
       if (group.stablecoinCount >= requiredStablecoins) {
         filteredData[date] = group.totalSupply;
       }
@@ -661,12 +667,15 @@ fastify.get('/api/stablecoins/charts/dau/aggregated', async (request, reply) => 
       return reply.status(500).send({ error: 'Failed to fetch latest data date' });
     }
 
-    const latestDate = latestData && latestData.length > 0 ? latestData[0].date : new Date().toISOString().split('T')[0];
-    
+    const latestDate =
+      latestData && latestData.length > 0
+        ? latestData[0].date
+        : new Date().toISOString().split('T')[0];
+
     // Calculate the actual start date based on the latest available data
     const endDate = new Date(latestDate);
     const startDate = new Date(endDate);
-    
+
     switch (range) {
       case '1M':
         startDate.setMonth(startDate.getMonth() - 1);
@@ -709,26 +718,29 @@ fastify.get('/api/stablecoins/charts/dau/aggregated', async (request, reply) => 
 
     // Group by date and check for complete data
     const dateGroups: Record<string, { totalDAU: number; stablecoinCount: number }> = {};
-    
-    data.forEach((record: { date: string; holders_count: string | number; stablecoin_id: number }) => {
-      const date = record.date;
-      if (!dateGroups[date]) {
-        dateGroups[date] = { totalDAU: 0, stablecoinCount: 0 };
+
+    data.forEach(
+      (record: { date: string; holders_count: string | number; stablecoin_id: number }) => {
+        const date = record.date;
+        if (!dateGroups[date]) {
+          dateGroups[date] = { totalDAU: 0, stablecoinCount: 0 };
+        }
+        dateGroups[date].totalDAU += parseFloat(String(record.holders_count));
+        dateGroups[date].stablecoinCount += 1;
       }
-      dateGroups[date].totalDAU += parseFloat(String(record.holders_count));
-      dateGroups[date].stablecoinCount += 1;
-    });
+    );
 
     // Filter data based on range - be more flexible for longer ranges
     const filteredData: Record<string, number> = {};
-    
+
     for (const [date, group] of Object.entries(dateGroups)) {
       // For 1M and 1Q, require all stablecoins to have data
       // For 1Y and ALL, be more flexible and show data if at least 50% of stablecoins have data
-      const requiredStablecoins = (range === '1Y' || range === 'ALL') 
-        ? Math.max(1, Math.floor(totalStablecoins * 0.5)) 
-        : totalStablecoins;
-      
+      const requiredStablecoins =
+        range === '1Y' || range === 'ALL'
+          ? Math.max(1, Math.floor(totalStablecoins * 0.5))
+          : totalStablecoins;
+
       if (group.stablecoinCount >= requiredStablecoins) {
         filteredData[date] = group.totalDAU;
       }

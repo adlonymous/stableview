@@ -25,10 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { updatePegPrices } = await import('../../src/scripts/update-peg-prices.js');
 
     // Run both updates in parallel
-    const [priceResult, pegPriceResult] = await Promise.all([
-      updatePrices(),
-      updatePegPrices()
-    ]);
+    const [priceResult, pegPriceResult] = await Promise.all([updatePrices(), updatePegPrices()]);
 
     const allSuccessful = priceResult.success && pegPriceResult.success;
 
@@ -40,8 +37,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         timestamp: new Date().toISOString(),
         results: {
           prices: priceResult,
-          pegPrices: pegPriceResult
-        }
+          pegPrices: pegPriceResult,
+        },
       });
     } else {
       console.error('❌ Price/peg price update failed:', { priceResult, pegPriceResult });
@@ -51,8 +48,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         timestamp: new Date().toISOString(),
         results: {
           prices: priceResult,
-          pegPrices: pegPriceResult
-        }
+          pegPrices: pegPriceResult,
+        },
       });
     }
   } catch (error) {

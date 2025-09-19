@@ -54,8 +54,12 @@ export function AggregatedCharts() {
             </div>
             <div>
               <h3 className="text-2xl font-bold text-white mb-2">Coming Soon</h3>
-              <p className="text-neutral-300 text-lg">Advanced aggregated analytics are in development</p>
-              <p className="text-neutral-400 text-sm mt-2">Stay tuned for comprehensive market insights</p>
+              <p className="text-neutral-300 text-lg">
+                Advanced aggregated analytics are in development
+              </p>
+              <p className="text-neutral-400 text-sm mt-2">
+                Stay tuned for comprehensive market insights
+              </p>
             </div>
           </div>
         </div>
