@@ -2,7 +2,7 @@
 import dotenv from 'dotenv';
 import { supabase } from '../src/db/index.js';
 import { createBirdeyeClient } from '../src/services/birdeye-client.js';
-import { currencyClient } from '../src/services/currency-client.js';
+import { getCurrencyClient } from '../src/services/currency-client.js';
 
 // Load environment variables
 dotenv.config();
@@ -738,7 +738,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           if (!currencyCode) return null;
 
           try {
-            const rate = await currencyClient.getExchangeRate(currencyCode, 'USD');
+            const rate = await getCurrencyClient().getExchangeRate(currencyCode, 'USD');
             if (rate === null || rate === undefined) {
               console.warn(`No exchange rate found for ${currencyCode}`);
               return { id: stablecoin.id, error: `No exchange rate found for ${currencyCode}` };
