@@ -53,22 +53,10 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
   useEffect(() => {
     if (!hasRefreshed.current && !supplyLoading && !dauLoading) {
       hasRefreshed.current = true;
-      console.log('Auto-refreshing chart data for stablecoin:', stablecoin.id);
       refetchSupply();
       refetchDau();
     }
   }, [stablecoin.id, supplyLoading, dauLoading, refetchSupply, refetchDau]);
-
-  console.log('StablecoinDetail chart data:', {
-    supplyData,
-    dauData,
-    supplyLoading,
-    dauLoading,
-    supplyError,
-    dauError,
-    stablecoinId: stablecoin.id,
-    range: chartRange,
-  });
 
   return (
     <div className="space-y-8">
@@ -403,7 +391,7 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                 <div className="space-y-2">
                   <div className="text-sm text-neutral-400">Current Price</div>
                   <div className="text-2xl font-semibold text-white">
-                    ${parseFloat(stablecoin.price).toFixed(4)}
+                    ${stablecoin.price?.toFixed(4) || 'N/A'}
                   </div>
                 </div>
               </div>

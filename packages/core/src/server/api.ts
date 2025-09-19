@@ -54,7 +54,7 @@ interface StablecoinDbRecord {
   transaction_count_daily: string;
   total_supply: string;
   daily_active_users: string;
-  price: string;
+  price: number;
   peg_price?: number;
   peg_price_updated_at?: string;
   executive_summary: string;
@@ -500,11 +500,57 @@ fastify.get('/api/stablecoins/charts/supply/aggregated', async (request, reply) 
   try {
     const { range = '1M' } = request.query as { range?: string };
 
-    // Get aggregated supply data by date
+    // Get the latest data date first to determine the actual end date
+    const { data: latestData, error: latestError } = await supabase
+      .from('stablecoin_supply_history')
+      .select('date')
+      .order('date', { ascending: false })
+      .limit(1);
+
+    if (latestError) {
+      console.error('Error fetching latest data date:', latestError);
+      return reply.status(500).send({ error: 'Failed to fetch latest data date' });
+    }
+
+    const latestDate = latestData && latestData.length > 0 ? latestData[0].date : new Date().toISOString().split('T')[0];
+    
+    // Calculate the actual start date based on the latest available data
+    const endDate = new Date(latestDate);
+    const startDate = new Date(endDate);
+    
+    switch (range) {
+      case '1M':
+        startDate.setMonth(startDate.getMonth() - 1);
+        break;
+      case '1Q':
+        startDate.setMonth(startDate.getMonth() - 3);
+        break;
+      case '1Y':
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        break;
+      case 'ALL':
+        startDate.setFullYear(2024, 0, 1); // January 1, 2024
+        break;
+    }
+
+    // Get all stablecoins to check for complete data
+    const { data: stablecoins, error: stablecoinsError } = await supabase
+      .from('stablecoins')
+      .select('id');
+
+    if (stablecoinsError) {
+      console.error('Error fetching stablecoins:', stablecoinsError);
+      return reply.status(500).send({ error: 'Failed to fetch stablecoins' });
+    }
+
+    const totalStablecoins = stablecoins.length;
+
+    // Get aggregated supply data by date within the calculated range
     const { data, error } = await supabase
       .from('stablecoin_supply_history')
-      .select('date, total_supply')
-      .gte('date', getDateFromRange(range))
+      .select('date, total_supply, stablecoin_id')
+      .gte('date', startDate.toISOString().split('T')[0])
+      .lte('date', latestDate)
       .order('date', { ascending: true });
 
     if (error) {
@@ -512,21 +558,35 @@ fastify.get('/api/stablecoins/charts/supply/aggregated', async (request, reply) 
       return reply.status(500).send({ error: 'Failed to fetch aggregated supply data' });
     }
 
-    // Group by date and sum total supply
-    const aggregatedData = data.reduce(
-      (acc: Record<string, number>, record: { date: string; total_supply: string | number }) => {
-        const date = record.date;
-        if (!acc[date]) {
-          acc[date] = 0;
-        }
-        acc[date] += parseFloat(String(record.total_supply));
-        return acc;
-      },
-      {} as Record<string, number>
-    );
+    // Group by date and check for complete data
+    const dateGroups: Record<string, { totalSupply: number; stablecoinCount: number }> = {};
+    
+    data.forEach((record: { date: string; total_supply: string | number; stablecoin_id: number }) => {
+      const date = record.date;
+      if (!dateGroups[date]) {
+        dateGroups[date] = { totalSupply: 0, stablecoinCount: 0 };
+      }
+      dateGroups[date].totalSupply += parseFloat(String(record.total_supply));
+      dateGroups[date].stablecoinCount += 1;
+    });
+
+    // Filter data based on range - be more flexible for longer ranges
+    const filteredData: Record<string, number> = {};
+    
+    for (const [date, group] of Object.entries(dateGroups)) {
+      // For 1M and 1Q, require all stablecoins to have data
+      // For 1Y and ALL, be more flexible and show data if at least 50% of stablecoins have data
+      const requiredStablecoins = (range === '1Y' || range === 'ALL') 
+        ? Math.max(1, Math.floor(totalStablecoins * 0.5)) 
+        : totalStablecoins;
+      
+      if (group.stablecoinCount >= requiredStablecoins) {
+        filteredData[date] = group.totalSupply;
+      }
+    }
 
     // Transform to TradingView format
-    const chartData = Object.entries(aggregatedData).map(([date, totalSupply]) => ({
+    const chartData = Object.entries(filteredData).map(([date, totalSupply]) => ({
       time: date,
       value: totalSupply,
     }));
@@ -589,11 +649,57 @@ fastify.get('/api/stablecoins/charts/dau/aggregated', async (request, reply) => 
   try {
     const { range = '1M' } = request.query as { range?: string };
 
-    // Get aggregated DAU data by date
+    // Get the latest data date first to determine the actual end date
+    const { data: latestData, error: latestError } = await supabase
+      .from('stablecoin_supply_history')
+      .select('date')
+      .order('date', { ascending: false })
+      .limit(1);
+
+    if (latestError) {
+      console.error('Error fetching latest data date:', latestError);
+      return reply.status(500).send({ error: 'Failed to fetch latest data date' });
+    }
+
+    const latestDate = latestData && latestData.length > 0 ? latestData[0].date : new Date().toISOString().split('T')[0];
+    
+    // Calculate the actual start date based on the latest available data
+    const endDate = new Date(latestDate);
+    const startDate = new Date(endDate);
+    
+    switch (range) {
+      case '1M':
+        startDate.setMonth(startDate.getMonth() - 1);
+        break;
+      case '1Q':
+        startDate.setMonth(startDate.getMonth() - 3);
+        break;
+      case '1Y':
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        break;
+      case 'ALL':
+        startDate.setFullYear(2024, 0, 1); // January 1, 2024
+        break;
+    }
+
+    // Get all stablecoins to check for complete data
+    const { data: stablecoins, error: stablecoinsError } = await supabase
+      .from('stablecoins')
+      .select('id');
+
+    if (stablecoinsError) {
+      console.error('Error fetching stablecoins:', stablecoinsError);
+      return reply.status(500).send({ error: 'Failed to fetch stablecoins' });
+    }
+
+    const totalStablecoins = stablecoins.length;
+
+    // Get aggregated DAU data by date within the calculated range
     const { data, error } = await supabase
       .from('stablecoin_supply_history')
-      .select('date, holders_count')
-      .gte('date', getDateFromRange(range))
+      .select('date, holders_count, stablecoin_id')
+      .gte('date', startDate.toISOString().split('T')[0])
+      .lte('date', latestDate)
       .order('date', { ascending: true });
 
     if (error) {
@@ -601,21 +707,35 @@ fastify.get('/api/stablecoins/charts/dau/aggregated', async (request, reply) => 
       return reply.status(500).send({ error: 'Failed to fetch aggregated DAU data' });
     }
 
-    // Group by date and sum holders_count
-    const aggregatedData = data.reduce(
-      (acc: Record<string, number>, record: { date: string; holders_count: string | number }) => {
-        const date = record.date;
-        if (!acc[date]) {
-          acc[date] = 0;
-        }
-        acc[date] += parseFloat(String(record.holders_count));
-        return acc;
-      },
-      {} as Record<string, number>
-    );
+    // Group by date and check for complete data
+    const dateGroups: Record<string, { totalDAU: number; stablecoinCount: number }> = {};
+    
+    data.forEach((record: { date: string; holders_count: string | number; stablecoin_id: number }) => {
+      const date = record.date;
+      if (!dateGroups[date]) {
+        dateGroups[date] = { totalDAU: 0, stablecoinCount: 0 };
+      }
+      dateGroups[date].totalDAU += parseFloat(String(record.holders_count));
+      dateGroups[date].stablecoinCount += 1;
+    });
+
+    // Filter data based on range - be more flexible for longer ranges
+    const filteredData: Record<string, number> = {};
+    
+    for (const [date, group] of Object.entries(dateGroups)) {
+      // For 1M and 1Q, require all stablecoins to have data
+      // For 1Y and ALL, be more flexible and show data if at least 50% of stablecoins have data
+      const requiredStablecoins = (range === '1Y' || range === 'ALL') 
+        ? Math.max(1, Math.floor(totalStablecoins * 0.5)) 
+        : totalStablecoins;
+      
+      if (group.stablecoinCount >= requiredStablecoins) {
+        filteredData[date] = group.totalDAU;
+      }
+    }
 
     // Transform to TradingView format
-    const chartData = Object.entries(aggregatedData).map(([date, totalDAU]) => ({
+    const chartData = Object.entries(filteredData).map(([date, totalDAU]) => ({
       time: date,
       value: totalDAU,
     }));
@@ -707,7 +827,7 @@ fastify.get('/api/stablecoins/:id/price', async (request, reply) => {
             tokenAddress: updatedStablecoin.token_address,
             name: updatedStablecoin.name,
             token: updatedStablecoin.token,
-            price: updatedStablecoin.price ? parseFloat(updatedStablecoin.price) : null,
+            price: updatedStablecoin.price || null,
             priceChange24h: null, // We don't store price change in DB yet
             lastUpdated: updatedStablecoin.updated_at,
             updateUnixTime: updatedStablecoin.updated_at
@@ -726,7 +846,7 @@ fastify.get('/api/stablecoins/:id/price', async (request, reply) => {
       tokenAddress: stablecoin.token_address,
       name: stablecoin.name,
       token: stablecoin.token,
-      price: stablecoin.price ? parseFloat(stablecoin.price) : null,
+      price: stablecoin.price || null,
       priceChange24h: null, // We don't store price change in DB yet
       lastUpdated: stablecoin.updated_at,
       updateUnixTime: stablecoin.updated_at
@@ -778,7 +898,7 @@ fastify.get('/api/stablecoins/prices', async (request, reply) => {
             tokenAddress: stablecoin.token_address,
             name: stablecoin.name,
             token: stablecoin.token,
-            price: stablecoin.price ? parseFloat(stablecoin.price) : null,
+            price: stablecoin.price || null,
             priceChange24h: null, // We don't store price change in DB yet
             lastUpdated: stablecoin.updated_at,
             updateUnixTime: stablecoin.updated_at
@@ -799,7 +919,7 @@ fastify.get('/api/stablecoins/prices', async (request, reply) => {
       tokenAddress: stablecoin.token_address,
       name: stablecoin.name,
       token: stablecoin.token,
-      price: stablecoin.price ? parseFloat(stablecoin.price) : null,
+      price: stablecoin.price || null,
       priceChange24h: null, // We don't store price change in DB yet
       lastUpdated: stablecoin.updated_at,
       updateUnixTime: stablecoin.updated_at

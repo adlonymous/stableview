@@ -1,4 +1,4 @@
-// Vercel cron job for updating stablecoin prices every 30 minutes
+// Vercel cron job for updating stablecoin prices and peg prices daily
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import dotenv from 'dotenv';
 
@@ -18,31 +18,45 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    console.log('🔄 Starting price update...');
+    console.log('🔄 Starting price and peg price update...');
 
-    // Import and run the update-prices script
+    // Import and run both update scripts
     const { updatePrices } = await import('../../src/scripts/update-prices.js');
+    const { updatePegPrices } = await import('../../src/scripts/update-peg-prices.js');
 
-    const result = await updatePrices();
+    // Run both updates in parallel
+    const [priceResult, pegPriceResult] = await Promise.all([
+      updatePrices(),
+      updatePegPrices()
+    ]);
 
-    if (result.success) {
-      console.log('✅ Price update completed successfully');
+    const allSuccessful = priceResult.success && pegPriceResult.success;
+
+    if (allSuccessful) {
+      console.log('✅ Price and peg price update completed successfully');
       return res.status(200).json({
         success: true,
-        message: 'Price update completed successfully',
+        message: 'Price and peg price update completed successfully',
         timestamp: new Date().toISOString(),
-        result,
+        results: {
+          prices: priceResult,
+          pegPrices: pegPriceResult
+        }
       });
     } else {
-      console.error('❌ Price update failed:', result.error);
+      console.error('❌ Price/peg price update failed:', { priceResult, pegPriceResult });
       return res.status(500).json({
         success: false,
-        error: result.error,
+        error: 'One or more updates failed',
         timestamp: new Date().toISOString(),
+        results: {
+          prices: priceResult,
+          pegPrices: pegPriceResult
+        }
       });
     }
   } catch (error) {
-    console.error('❌ Price update error:', error);
+    console.error('❌ Price/peg price update error:', error);
     return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

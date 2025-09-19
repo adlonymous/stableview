@@ -206,5 +206,13 @@ class CurrencyClient {
   }
 }
 
-export const currencyClient = new CurrencyClient();
+// Lazy instantiation to avoid environment variable issues during module import
+let _currencyClient: CurrencyClient | null = null;
+
+export function getCurrencyClient(): CurrencyClient {
+  if (!_currencyClient) {
+    _currencyClient = new CurrencyClient();
+  }
+  return _currencyClient;
+}
 export type { CurrencyExchangeResponse, CurrencyExchangeError };

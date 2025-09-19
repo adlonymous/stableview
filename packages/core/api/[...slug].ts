@@ -293,35 +293,84 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         };
 
         if (isAggregated) {
-          // Get aggregated supply data
+          // Get the latest data date first to determine the actual end date
+          const { data: latestData, error: latestError } = await supabase
+            .from('stablecoin_supply_history')
+            .select('date')
+            .order('date', { ascending: false })
+            .limit(1);
+
+          if (latestError) {
+            return res.status(500).json({ error: 'Failed to fetch latest data date' });
+          }
+
+          const latestDate = latestData && latestData.length > 0 ? latestData[0].date : new Date().toISOString().split('T')[0];
+          
+          // Calculate the actual start date based on the latest available data
+          const endDate = new Date(latestDate);
+          const startDate = new Date(endDate);
+          
+          switch (range) {
+            case '1M':
+              startDate.setMonth(startDate.getMonth() - 1);
+              break;
+            case '1Q':
+              startDate.setMonth(startDate.getMonth() - 3);
+              break;
+            case '1Y':
+              startDate.setFullYear(startDate.getFullYear() - 1);
+              break;
+            case 'ALL':
+              startDate.setFullYear(2024, 0, 1); // January 1, 2024
+              break;
+          }
+
+          // Get all stablecoins to check for complete data
+          const { data: stablecoins, error: stablecoinsError } = await supabase
+            .from('stablecoins')
+            .select('id');
+
+          if (stablecoinsError) {
+            return res.status(500).json({ error: 'Failed to fetch stablecoins' });
+          }
+
+          const totalStablecoins = stablecoins.length;
+
+          // Get aggregated supply data by date within the calculated range
           const { data, error } = await supabase
             .from('stablecoin_supply_history')
-            .select('date, total_supply')
-            .gte('date', getDateFromRange(range))
+            .select('date, total_supply, stablecoin_id')
+            .gte('date', startDate.toISOString().split('T')[0])
+            .lte('date', latestDate)
             .order('date', { ascending: true });
 
           if (error) {
             return res.status(500).json({ error: 'Failed to fetch aggregated supply data' });
           }
 
-          // Group by date and sum total supply
-          const aggregatedData = data.reduce(
-            (
-              acc: Record<string, number>,
-              record: { date: string; total_supply: string | number }
-            ) => {
-              const date = record.date;
-              if (!acc[date]) {
-                acc[date] = 0;
-              }
-              acc[date] += parseFloat(String(record.total_supply));
-              return acc;
-            },
-            {} as Record<string, number>
-          );
+          // Group by date and check for complete data
+          const dateGroups: Record<string, { totalSupply: number; stablecoinCount: number }> = {};
+          
+          data.forEach((record: { date: string; total_supply: string | number; stablecoin_id: number }) => {
+            const date = record.date;
+            if (!dateGroups[date]) {
+              dateGroups[date] = { totalSupply: 0, stablecoinCount: 0 };
+            }
+            dateGroups[date].totalSupply += parseFloat(String(record.total_supply));
+            dateGroups[date].stablecoinCount += 1;
+          });
+
+          // Filter out dates that don't have data for all stablecoins
+          const filteredData: Record<string, number> = {};
+          
+          for (const [date, group] of Object.entries(dateGroups)) {
+            if (group.stablecoinCount === totalStablecoins) {
+              filteredData[date] = group.totalSupply;
+            }
+          }
 
           // Transform to TradingView format
-          const chartData = Object.entries(aggregatedData).map(([date, totalSupply]) => ({
+          const chartData = Object.entries(filteredData).map(([date, totalSupply]) => ({
             time: date,
             value: totalSupply,
           }));
@@ -400,35 +449,84 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         };
 
         if (isAggregated) {
-          // Get aggregated DAU data
+          // Get the latest data date first to determine the actual end date
+          const { data: latestData, error: latestError } = await supabase
+            .from('stablecoin_supply_history')
+            .select('date')
+            .order('date', { ascending: false })
+            .limit(1);
+
+          if (latestError) {
+            return res.status(500).json({ error: 'Failed to fetch latest data date' });
+          }
+
+          const latestDate = latestData && latestData.length > 0 ? latestData[0].date : new Date().toISOString().split('T')[0];
+          
+          // Calculate the actual start date based on the latest available data
+          const endDate = new Date(latestDate);
+          const startDate = new Date(endDate);
+          
+          switch (range) {
+            case '1M':
+              startDate.setMonth(startDate.getMonth() - 1);
+              break;
+            case '1Q':
+              startDate.setMonth(startDate.getMonth() - 3);
+              break;
+            case '1Y':
+              startDate.setFullYear(startDate.getFullYear() - 1);
+              break;
+            case 'ALL':
+              startDate.setFullYear(2024, 0, 1); // January 1, 2024
+              break;
+          }
+
+          // Get all stablecoins to check for complete data
+          const { data: stablecoins, error: stablecoinsError } = await supabase
+            .from('stablecoins')
+            .select('id');
+
+          if (stablecoinsError) {
+            return res.status(500).json({ error: 'Failed to fetch stablecoins' });
+          }
+
+          const totalStablecoins = stablecoins.length;
+
+          // Get aggregated DAU data by date within the calculated range
           const { data, error } = await supabase
             .from('stablecoin_supply_history')
-            .select('date, holders_count')
-            .gte('date', getDateFromRange(range))
+            .select('date, holders_count, stablecoin_id')
+            .gte('date', startDate.toISOString().split('T')[0])
+            .lte('date', latestDate)
             .order('date', { ascending: true });
 
           if (error) {
             return res.status(500).json({ error: 'Failed to fetch aggregated DAU data' });
           }
 
-          // Group by date and sum holders_count
-          const aggregatedData = data.reduce(
-            (
-              acc: Record<string, number>,
-              record: { date: string; holders_count: string | number }
-            ) => {
-              const date = record.date;
-              if (!acc[date]) {
-                acc[date] = 0;
-              }
-              acc[date] += parseFloat(String(record.holders_count));
-              return acc;
-            },
-            {} as Record<string, number>
-          );
+          // Group by date and check for complete data
+          const dateGroups: Record<string, { totalDAU: number; stablecoinCount: number }> = {};
+          
+          data.forEach((record: { date: string; holders_count: string | number; stablecoin_id: number }) => {
+            const date = record.date;
+            if (!dateGroups[date]) {
+              dateGroups[date] = { totalDAU: 0, stablecoinCount: 0 };
+            }
+            dateGroups[date].totalDAU += parseFloat(String(record.holders_count));
+            dateGroups[date].stablecoinCount += 1;
+          });
+
+          // Filter out dates that don't have data for all stablecoins
+          const filteredData: Record<string, number> = {};
+          
+          for (const [date, group] of Object.entries(dateGroups)) {
+            if (group.stablecoinCount === totalStablecoins) {
+              filteredData[date] = group.totalDAU;
+            }
+          }
 
           // Transform to TradingView format
-          const chartData = Object.entries(aggregatedData).map(([date, totalDAU]) => ({
+          const chartData = Object.entries(filteredData).map(([date, totalDAU]) => ({
             time: date,
             value: totalDAU,
           }));

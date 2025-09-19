@@ -86,19 +86,19 @@ class PriceUpdater {
               });
             }
           } else {
-            console.log(`No price data available for ${stablecoin.name} - setting to N/A`);
+            console.log(`No price data available for ${stablecoin.name} - setting to null`);
 
-            // Update database with N/A when no price data is available
+            // Update database with null when no price data is available
             const { error: updateError } = await supabase
               .from('stablecoins')
               .update({
-                price: 'N/A',
+                price: null,
                 updated_at: new Date().toISOString(),
               })
               .eq('id', stablecoin.id);
 
             if (updateError) {
-              console.error(`Error updating price to N/A for ${stablecoin.name}:`, updateError);
+              console.error(`Error updating price to null for ${stablecoin.name}:`, updateError);
               results.push({
                 stablecoinId: stablecoin.id,
                 price: null,
@@ -108,7 +108,7 @@ class PriceUpdater {
                 error: updateError.message,
               });
             } else {
-              console.log(`Set price to N/A for ${stablecoin.name}`);
+              console.log(`Set price to null for ${stablecoin.name}`);
               results.push({
                 stablecoinId: stablecoin.id,
                 price: null,
@@ -177,7 +177,7 @@ class PriceUpdater {
         const { error: updateError } = await supabase
           .from('stablecoins')
           .update({
-            price: priceData.price.toString(),
+            price: priceData.price,
             updated_at: new Date().toISOString(),
           })
           .eq('id', stablecoinId);
@@ -204,20 +204,20 @@ class PriceUpdater {
         };
       } else {
         console.log(
-          `No valid price data available for ${stablecoin.name} (price: ${priceData?.price}) - setting to N/A`
+          `No valid price data available for ${stablecoin.name} (price: ${priceData?.price}) - setting to null`
         );
 
-        // Update database with N/A when no price data is available
+        // Update database with null when no price data is available
         const { error: updateError } = await supabase
           .from('stablecoins')
           .update({
-            price: 'N/A',
+            price: null,
             updated_at: new Date().toISOString(),
           })
           .eq('id', stablecoinId);
 
         if (updateError) {
-          console.error(`Error updating price to N/A for ${stablecoin.name}:`, updateError);
+          console.error(`Error updating price to null for ${stablecoin.name}:`, updateError);
           return {
             stablecoinId,
             price: null,
@@ -228,7 +228,7 @@ class PriceUpdater {
           };
         }
 
-        console.log(`Set price to N/A for ${stablecoin.name}`);
+        console.log(`Set price to null for ${stablecoin.name}`);
         return {
           stablecoinId,
           price: null,
@@ -278,7 +278,7 @@ class PriceUpdater {
         Date.now() - new Date(stablecoin.updated_at).getTime() > 60 * 60 * 1000; // 1 hour
 
       return {
-        price: stablecoin.price ? parseFloat(stablecoin.price) : null,
+        price: stablecoin.price || null,
         priceChange24h: null, // We don't store price change in DB yet
         lastUpdated: stablecoin.updated_at,
         isStale,
@@ -321,7 +321,7 @@ class PriceUpdater {
 
         return {
           stablecoinId: stablecoin.id,
-          price: stablecoin.price ? parseFloat(stablecoin.price) : null,
+          price: stablecoin.price || null,
           priceChange24h: null, // We don't store price change in DB yet
           lastUpdated: stablecoin.updated_at,
           isStale,

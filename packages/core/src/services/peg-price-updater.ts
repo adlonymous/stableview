@@ -1,4 +1,4 @@
-import { currencyClient } from './currency-client.js';
+import { getCurrencyClient } from './currency-client.js';
 import { supabase } from '../db/index.js';
 
 interface PegPriceUpdateResult {
@@ -253,7 +253,7 @@ class PegPriceUpdater {
       }
 
       // Get exchange rate to USD from API
-      const exchangeRate = await currencyClient.getExchangeRate(currencyCode, 'USD');
+      const exchangeRate = await getCurrencyClient().getExchangeRate(currencyCode, 'USD');
       if (exchangeRate === null) {
         return {
           success: false,
@@ -360,7 +360,7 @@ class PegPriceUpdater {
             }
 
             // Get exchange rate for this asset
-            exchangeRate = await currencyClient.getExchangeRate(currencyCode, 'USD');
+            exchangeRate = await getCurrencyClient().getExchangeRate(currencyCode, 'USD');
 
             if (exchangeRate === null) {
               console.warn(`Failed to get exchange rate for ${asset} (${currencyCode})`);

@@ -4,11 +4,10 @@ This document explains how to set up and configure the Vercel cron jobs for the 
 
 ## Overview
 
-The application includes three automated cron jobs:
+The application includes two automated cron jobs:
 
 1. **Daily Metrics Update** - Runs every day at midnight UTC
-2. **Price Updates** - Runs every day at midnight UTC
-3. **Peg Price Updates** - Runs every day at midnight UTC
+2. **Price & Peg Price Updates** - Runs every day at midnight UTC (combined)
 
 ## Setup Instructions
 
@@ -61,17 +60,11 @@ After deployment, you can verify the cron jobs are working by:
 - **Duration**: Up to 5 minutes
 - **Purpose**: Updates stablecoin metrics including total supply, daily active users, and transaction data
 
-### Price Updates (`/api/cron/update-prices`)
+### Price & Peg Price Updates (`/api/cron/update-prices`)
 
 - **Schedule**: `0 0 * * *` (Daily at midnight UTC)
 - **Duration**: Up to 5 minutes
-- **Purpose**: Updates current market prices for all stablecoins
-
-### Peg Price Updates (`/api/cron/update-peg-prices`)
-
-- **Schedule**: `0 0 * * *` (Daily at midnight UTC)
-- **Duration**: Up to 5 minutes
-- **Purpose**: Updates peg prices for stablecoins based on their pegged assets
+- **Purpose**: Updates current market prices and peg prices for all stablecoins
 
 ## Security
 
@@ -126,12 +119,8 @@ You can test the cron jobs manually using curl:
 curl -X POST https://your-domain.vercel.app/api/cron/update-metrics \
   -H "Authorization: Bearer your_cron_secret"
 
-# Test price update
+# Test price and peg price update
 curl -X POST https://your-domain.vercel.app/api/cron/update-prices \
-  -H "Authorization: Bearer your_cron_secret"
-
-# Test peg price update
-curl -X POST https://your-domain.vercel.app/api/cron/update-peg-prices \
   -H "Authorization: Bearer your_cron_secret"
 ```
 
@@ -140,8 +129,7 @@ curl -X POST https://your-domain.vercel.app/api/cron/update-peg-prices \
 | Job        | Schedule    | Description           |
 | ---------- | ----------- | --------------------- |
 | Metrics    | `0 0 * * *` | Daily at midnight UTC |
-| Prices     | `0 0 * * *` | Daily at midnight UTC |
-| Peg Prices | `0 0 * * *` | Daily at midnight UTC |
+| Prices & Peg Prices | `0 0 * * *` | Daily at midnight UTC |
 
 ## Dependencies
 

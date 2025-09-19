@@ -24,14 +24,8 @@ interface StablecoinCardProps {
 export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
   const { priceData, loading: priceLoading } = usePriceData(stablecoin.id);
 
-  console.log(`StablecoinCard for ${stablecoin.token} (ID: ${stablecoin.id}):`, {
-    priceData,
-    priceLoading,
-    staticPrice: stablecoin.price,
-  });
-
-  const formatPrice = (price: number | string | null | undefined) => {
-    if (price === null || price === undefined || price === -1 || price === '-1') return 'N/A';
+  const formatPrice = (price: number | null | undefined) => {
+    if (price === null || price === undefined || price === -1) return 'N/A';
     return `$${price}`;
   };
 
@@ -66,7 +60,7 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
     return (
       <div className="flex items-center gap-1">
         <p className="font-bold text-green-400 text-sm">
-          {stablecoin.price === 'N/A' || stablecoin.price === '-1' ? 'N/A' : `$${stablecoin.price}`}
+          {stablecoin.price === null || stablecoin.price === -1 ? 'N/A' : `$${stablecoin.price}`}
         </p>
         <span className="text-xs text-neutral-400">(Static)</span>
       </div>

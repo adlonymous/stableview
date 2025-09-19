@@ -1,4 +1,8 @@
 import { pegPriceUpdater } from '../services/peg-price-updater.js';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 // Export the main update function for cron jobs
 export async function updatePegPrices() {
