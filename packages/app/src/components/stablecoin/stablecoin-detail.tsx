@@ -10,7 +10,7 @@ import { formatCompactNumber, formatCurrency } from '@/lib/utils';
 import { usePriceData } from '@/hooks/usePriceData';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ExternalLink, Info, BarChart3, TrendingUp, TrendingDown } from 'lucide-react';
+import { ExternalLink, Info, BarChart3 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { StablecoinChart } from '@/components/charts/stablecoin-chart';
 import { useChartData } from '@/hooks/useChartData';
@@ -98,26 +98,6 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                           <span className="text-sm font-medium text-green-400">
                             ${Number(priceData.price.toFixed(7))}
                           </span>
-                          {priceData.priceChange24h !== null &&
-                            priceData.priceChange24h !== undefined && (
-                              <div className="flex items-center gap-1">
-                                {priceData.priceChange24h >= 0 ? (
-                                  <TrendingUp className="h-3 w-3 text-green-400" />
-                                ) : (
-                                  <TrendingDown className="h-3 w-3 text-red-400" />
-                                )}
-                                <span
-                                  className={`text-xs ${
-                                    priceData.priceChange24h >= 0
-                                      ? 'text-green-400'
-                                      : 'text-red-400'
-                                  }`}
-                                >
-                                  {priceData.priceChange24h >= 0 ? '+' : ''}
-                                  {Number((priceData.priceChange24h * 100).toFixed(7))}%
-                                </span>
-                              </div>
-                            )}
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">

@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { formatCompactNumber } from '@/lib/utils';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 interface PriceData {
   stablecoinId: number;
@@ -52,30 +52,11 @@ export function StablecoinCardWithPrice({
   const staticPrice =
     stablecoin.price === null || stablecoin.price === -1 ? null : stablecoin.price;
   const displayPrice = priceData?.price ?? staticPrice;
-  const priceChange24h = priceData?.priceChange24h ?? 0;
   const isPriceLoading = priceLoading;
 
   const formatPrice = (price: number | null) => {
     if (price === null || price === -1) return 'N/A';
     return `$${Number(price.toFixed(7))}`;
-  };
-
-  const formatPriceChange = (change: number) => {
-    const sign = change >= 0 ? '+' : '';
-    const roundedChange = Number(change.toFixed(7));
-    return `${sign}${roundedChange}%`;
-  };
-
-  const getPriceChangeIcon = (change: number) => {
-    if (change > 0) return <TrendingUp className="h-4 w-4 text-green-500" />;
-    if (change < 0) return <TrendingDown className="h-4 w-4 text-red-500" />;
-    return null;
-  };
-
-  const getPriceChangeColor = (change: number) => {
-    if (change > 0) return 'text-green-500';
-    if (change < 0) return 'text-red-500';
-    return 'text-neutral-400';
   };
 
   return (
@@ -117,14 +98,6 @@ export function StablecoinCardWithPrice({
               <div className="h-5 w-16 bg-neutral-700 animate-pulse rounded" />
             ) : (
               <div className="text-lg font-bold text-white">{formatPrice(displayPrice)}</div>
-            )}
-            {priceChange24h !== 0 && !isPriceLoading && (
-              <div
-                className={`flex items-center gap-1 text-sm ${getPriceChangeColor(priceChange24h)}`}
-              >
-                {getPriceChangeIcon(priceChange24h)}
-                <span>{formatPriceChange(priceChange24h)}</span>
-              </div>
             )}
           </div>
         </div>

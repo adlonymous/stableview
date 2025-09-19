@@ -15,7 +15,7 @@ import { formatCompactNumber } from '@/lib/utils';
 import { usePriceData } from '@/hooks/usePriceData';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 interface StablecoinCardProps {
   stablecoin: Stablecoin;
@@ -40,18 +40,6 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
       return (
         <>
           <p className="font-bold text-green-400 text-sm">{formatPrice(priceData.price)}</p>
-          {priceData.priceChange24h !== null && priceData.priceChange24h !== undefined && (
-            <div className="flex items-center gap-1">
-              {priceData.priceChange24h >= 0 ? (
-                <TrendingUp className="h-3 w-3 text-green-400" />
-              ) : (
-                <TrendingDown className="h-3 w-3 text-red-400" />
-              )}
-              <span className={`text-xs ${getPriceChangeColor(priceData.priceChange24h)}`}>
-                {formatPriceChange(priceData.priceChange24h)}
-              </span>
-            </div>
-          )}
         </>
       );
     }
@@ -67,18 +55,6 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
         <span className="text-xs text-neutral-400">(Static)</span>
       </div>
     );
-  };
-
-  const formatPriceChange = (change: number | null | undefined) => {
-    if (change === null || change === undefined) return null;
-    const percentage = change * 100;
-    const roundedPercentage = Number(percentage.toFixed(7));
-    return change >= 0 ? `+${roundedPercentage}%` : `${roundedPercentage}%`;
-  };
-
-  const getPriceChangeColor = (change: number | null | undefined) => {
-    if (change === null || change === undefined) return 'text-neutral-400';
-    return change >= 0 ? 'text-green-400' : 'text-red-400';
   };
 
   return (
