@@ -12,15 +12,75 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatCompactNumber } from '@/lib/utils';
+import { usePriceData } from '@/hooks/usePriceData';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
 
 interface StablecoinCardProps {
   stablecoin: Stablecoin;
 }
 
 export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
+  const { priceData, loading: priceLoading } = usePriceData(stablecoin.id);
+
+  console.log(`StablecoinCard for ${stablecoin.token} (ID: ${stablecoin.id}):`, {
+    priceData,
+    priceLoading,
+    staticPrice: stablecoin.price
+  });
+
+  const formatPrice = (price: number | string | null | undefined) => {
+    if (price === null || price === undefined || price === -1 || price === '-1') return 'N/A';
+    return `$${price}`;
+  };
+
+  const getPriceDisplay = () => {
+    // Show live price data if available and valid
+    if (priceData && priceData.price !== null && priceData.price !== undefined && priceData.price !== -1 && priceData.price !== '-1') {
+      return (
+        <>
+          <p className="font-bold text-green-400 text-sm">
+            {formatPrice(priceData.price)}
+          </p>
+          {priceData.priceChange24h !== null && priceData.priceChange24h !== undefined && (
+            <div className="flex items-center gap-1">
+              {priceData.priceChange24h >= 0 ? (
+                <TrendingUp className="h-3 w-3 text-green-400" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-red-400" />
+              )}
+              <span className={`text-xs ${getPriceChangeColor(priceData.priceChange24h)}`}>
+                {formatPriceChange(priceData.priceChange24h)}
+              </span>
+            </div>
+          )}
+        </>
+      );
+    }
+
+    // Show static price as fallback
+    return (
+      <div className="flex items-center gap-1">
+        <p className="font-bold text-green-400 text-sm">
+          {stablecoin.price === 'N/A' || stablecoin.price === '-1' ? 'N/A' : `$${stablecoin.price}`}
+        </p>
+        <span className="text-xs text-neutral-400">(Static)</span>
+      </div>
+    );
+  };
+
+  const formatPriceChange = (change: number | null | undefined) => {
+    if (change === null || change === undefined) return null;
+    const percentage = change * 100;
+    return change >= 0 ? `+${percentage}%` : `${percentage}%`;
+  };
+
+  const getPriceChangeColor = (change: number | null | undefined) => {
+    if (change === null || change === undefined) return 'text-neutral-400';
+    return change >= 0 ? 'text-green-400' : 'text-red-400';
+  };
+
   return (
     <Card className="group overflow-hidden border-neutral-800 bg-gradient-to-br from-neutral-900 to-neutral-950 hover:border-blue-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1">
       <CardHeader className="pb-3 px-6 pt-6">
@@ -93,8 +153,10 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
               <p className="font-medium text-neutral-200 text-sm truncate">{stablecoin.issuer}</p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-neutral-500 mb-1">Price</p>
-              <p className="font-bold text-green-400 text-sm">${stablecoin.price}</p>
+              <p className="text-xs text-neutral-500 mb-1">Live Price</p>
+              <div className="flex items-center gap-1 justify-end">
+                {getPriceDisplay()}
+              </div>
             </div>
           </div>
         </div>
@@ -106,7 +168,7 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
           className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-medium py-2.5 group/btn transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25"
         >
           <Link
-            href={`/stablecoin/${stablecoin.id}`}
+            href={`/stablecoin/${stablecoin.slug}`}
             className="flex items-center justify-center gap-2"
           >
             <span>View Details</span>

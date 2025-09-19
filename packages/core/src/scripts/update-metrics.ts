@@ -456,6 +456,20 @@ async function backfillHistoricalData(slug?: string) {
   console.log('✅ Historical data backfill complete');
 }
 
+// Export the main update function for cron jobs
+export async function updateMetrics() {
+  try {
+    await updateAllMetrics();
+    return { success: true, message: 'All metrics updated successfully' };
+  } catch (error) {
+    console.error('Error updating metrics:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    };
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
 
@@ -484,4 +498,7 @@ async function main() {
   }
 }
 
-main().catch(console.error);
+// Only run main if this file is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch(console.error);
+}

@@ -75,6 +75,31 @@ export function useStablecoin(id: number) {
   return { stablecoin, isLoading, error, fetchStablecoin };
 }
 
+// Hook for fetching a single stablecoin by slug
+export function useStablecoinBySlug(slug: string) {
+  const [stablecoin, setStablecoin] = useState<Stablecoin | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // MEMOIZE this function too
+  const fetchStablecoin = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const data = await coreApi.getStablecoinBySlug(slug);
+      setStablecoin(data);
+    } catch (err) {
+      console.error(`Error fetching stablecoin with slug ${slug}:`, err);
+      setError('Failed to load stablecoin');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [slug]); // Only depends on slug
+
+  return { stablecoin, isLoading, error, fetchStablecoin };
+}
+
 // Hook for creating a new stablecoin
 export function useCreateStablecoin() {
   const [isSubmitting, setIsSubmitting] = useState(false);

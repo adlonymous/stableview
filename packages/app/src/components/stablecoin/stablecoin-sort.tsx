@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { ArrowDownUp } from 'lucide-react';
 
-export type SortOption = 'name' | 'marketCap' | 'uniqueAddresses' | 'transactionVolume';
+export type SortOption = 'name' | 'marketCap' | 'uniqueAddresses' | 'transactionVolume' | 'dailyTransactions';
 export type SortDirection = 'asc' | 'desc';
 
 export type StablecoinSort = {
@@ -65,6 +65,15 @@ export function StablecoinSort({ sort, onSortChange }: StablecoinSortProps) {
       >
         Volume
         {getSortIcon('transactionVolume')}
+      </Button>
+      <Button
+        variant={sort.sortBy === 'dailyTransactions' ? 'default' : 'outline'}
+        size="sm"
+        onClick={() => handleSortChange('dailyTransactions')}
+        className="flex items-center gap-1"
+      >
+        Daily Transactions
+        {getSortIcon('dailyTransactions')}
       </Button>
     </div>
   );

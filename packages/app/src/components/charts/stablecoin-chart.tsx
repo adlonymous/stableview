@@ -30,8 +30,9 @@ interface ChartDataPoint {
   value: number;
 }
 
-interface SupplyChartProps {
-  data: ChartDataPoint[];
+interface StablecoinChartProps {
+  supplyData: ChartDataPoint[];
+  dauData: ChartDataPoint[];
   title?: string;
   stablecoinName?: string;
   onRangeChange?: (range: string) => void;
@@ -46,15 +47,21 @@ const RANGE_OPTIONS = [
   { value: 'ALL', label: 'All Time' },
 ];
 
-export function SupplyChart({
-  data,
-  title = 'Total Supply Over Time',
+const CHART_TYPES = [
+  { value: 'supply', label: 'Total Supply' },
+  { value: 'dau', label: 'Daily Active Users' },
+];
+
+export function StablecoinChart({
+  supplyData,
+  dauData,
+  title = 'Stablecoin Metrics',
   stablecoinName,
   onRangeChange,
   currentRange = '1M',
   loading = false,
-}: SupplyChartProps) {
-
+}: StablecoinChartProps) {
+  const [chartType, setChartType] = useState<'supply' | 'dau'>('supply');
   const chartContainerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chartRef = useRef<any>(null);
@@ -63,6 +70,10 @@ export function SupplyChart({
   const [isLoading, setIsLoading] = useState(loading);
   const [isChartReady, setIsChartReady] = useState(false);
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Get current data based on chart type
+  const currentData = chartType === 'supply' ? supplyData : dauData;
+  const currentTitle = chartType === 'supply' ? 'Total Supply Over Time' : 'Daily Active Users Over Time';
 
   // Chart theme matching the dashboard
   const getChartTheme = () => ({
@@ -234,13 +245,13 @@ export function SupplyChart({
             });
 
             const series = chart.addSeries(LineSeries, {
-              color: '#3b82f6', // Blue color matching dashboard theme
+              color: chartType === 'supply' ? '#3b82f6' : '#10b981', // Blue for supply, green for DAU
               lineWidth: 3,
               lineStyle: LineStyle.Solid,
               crosshairMarkerVisible: true,
               crosshairMarkerRadius: 8,
               crosshairMarkerBorderColor: '#ffffff',
-              crosshairMarkerBackgroundColor: '#3b82f6',
+              crosshairMarkerBackgroundColor: chartType === 'supply' ? '#3b82f6' : '#10b981',
               crosshairMarkerBorderWidth: 2,
               priceLineVisible: false, // Hide price line initially
               lastValueVisible: false, // Hide last value initially
@@ -284,7 +295,7 @@ export function SupplyChart({
 
       // Chart cleanup complete
     };
-  }, []);
+  }, [chartType]);
 
   // One-time page refresh effect
   useEffect(() => {
@@ -397,16 +408,16 @@ export function SupplyChart({
     };
   }, []);
 
-  // Update chart data
+  // Update chart data when chart type or data changes
   useEffect(() => {
-    if (!isChartReady || !seriesRef.current || !data.length) {
+    if (!isChartReady || !seriesRef.current || !currentData.length) {
       return;
     }
 
     setIsLoading(true);
 
     // Transform data for TradingView format - convert date string to timestamp
-    const chartData = data.map(point => {
+    const chartData = currentData.map(point => {
       // Convert date string to timestamp (TradingView expects number)
       const date = new Date(point.time);
       const timestamp = Math.floor(date.getTime() / 1000); // Convert to seconds
@@ -418,6 +429,12 @@ export function SupplyChart({
     });
 
     try {
+      // Update series color based on chart type
+      seriesRef.current.applyOptions({
+        color: chartType === 'supply' ? '#3b82f6' : '#10b981',
+        crosshairMarkerBackgroundColor: chartType === 'supply' ? '#3b82f6' : '#10b981',
+      });
+
       seriesRef.current.setData(chartData);
 
       // Wait for chart to process data and ensure proper sizing
@@ -450,7 +467,7 @@ export function SupplyChart({
     }
 
     setIsLoading(false);
-  }, [data, isChartReady]);
+  }, [currentData, isChartReady, chartType]);
 
   // Format value for display
   const formatValue = (value: number) => {
@@ -465,47 +482,72 @@ export function SupplyChart({
   };
 
   // Get current value (last data point)
-  const currentValue = data.length > 0 ? data[data.length - 1].value : 0;
+  const currentValue = currentData.length > 0 ? currentData[currentData.length - 1].value : 0;
 
   return (
     <Card className="w-full bg-gradient-to-br from-neutral-900/80 to-neutral-800/60 border-neutral-700/60 shadow-2xl backdrop-blur-sm">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-xl font-bold text-white">{title}</CardTitle>
+            <CardTitle className="text-xl font-bold text-white">{currentTitle}</CardTitle>
             {stablecoinName && (
-              <p className="text-sm text-neutral-400 mt-1">{stablecoinName} Supply History</p>
+              <p className="text-sm text-neutral-400 mt-1">{stablecoinName} Metrics</p>
             )}
           </div>
 
-          {/* Range Switcher */}
-          {onRangeChange && (
+          <div className="flex gap-3">
+            {/* Chart Type Switcher */}
             <div className="flex gap-1 bg-neutral-800/70 rounded-xl p-1.5 border border-neutral-700/50">
-              {RANGE_OPTIONS.map(option => (
+              {CHART_TYPES.map(type => (
                 <Button
-                  key={option.value}
-                  variant={currentRange === option.value ? 'default' : 'ghost'}
+                  key={type.value}
+                  variant={chartType === type.value ? 'default' : 'ghost'}
                   size="sm"
-                  onClick={() => onRangeChange(option.value)}
+                  onClick={() => setChartType(type.value as 'supply' | 'dau')}
                   className={`text-xs px-4 py-2 h-8 font-medium transition-all duration-200 ${
-                    currentRange === option.value
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/25'
+                    chartType === type.value
+                      ? type.value === 'supply'
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/25'
+                        : 'bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/25'
                       : 'text-neutral-400 hover:text-white hover:bg-neutral-700/60'
                   }`}
                 >
-                  {option.label}
+                  {type.label}
                 </Button>
               ))}
             </div>
-          )}
+
+            {/* Range Switcher */}
+            {onRangeChange && (
+              <div className="flex gap-1 bg-neutral-800/70 rounded-xl p-1.5 border border-neutral-700/50">
+                {RANGE_OPTIONS.map(option => (
+                  <Button
+                    key={option.value}
+                    variant={currentRange === option.value ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => onRangeChange(option.value)}
+                    className={`text-xs px-4 py-2 h-8 font-medium transition-all duration-200 ${
+                      currentRange === option.value
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/25'
+                        : 'text-neutral-400 hover:text-white hover:bg-neutral-700/60'
+                    }`}
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Current Value Display */}
-        {data.length > 0 && (
+        {currentData.length > 0 && (
           <div className="flex items-center gap-6 mt-6">
             <div className="bg-neutral-800/50 rounded-xl p-4 border border-neutral-700/50">
               <p className="text-3xl font-bold text-white mb-1">{formatValue(currentValue)}</p>
-              <p className="text-sm text-neutral-300 font-medium">Current Supply</p>
+              <p className="text-sm text-neutral-300 font-medium">
+                Current {chartType === 'supply' ? 'Supply' : 'Daily Active Users'}
+              </p>
             </div>
           </div>
         )}
@@ -531,12 +573,12 @@ export function SupplyChart({
               height: '400px',
               width: '100%',
               position: 'relative',
-              visibility: data.length > 0 ? 'visible' : 'hidden',
+              visibility: currentData.length > 0 ? 'visible' : 'hidden',
               display: 'block',
             }}
           />
 
-          {!isLoading && data.length === 0 && (
+          {!isLoading && currentData.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/50 backdrop-blur-sm rounded-lg">
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-neutral-800/50 flex items-center justify-center border border-neutral-700/50">
@@ -562,19 +604,23 @@ export function SupplyChart({
         </div>
 
         {/* Chart Info */}
-        {data.length > 0 && (
+        {currentData.length > 0 && (
           <div className="mt-6 pt-4 border-t border-neutral-700/50">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-4 text-neutral-400">
                 <span className="bg-neutral-800/50 px-3 py-1.5 rounded-lg border border-neutral-700/50">
-                  {data.length} data points
+                  {currentData.length} data points
                 </span>
                 <span className="text-neutral-500">
-                  {data[0]?.time} to {data[data.length - 1]?.time}
+                  {currentData[0]?.time} to {currentData[currentData.length - 1]?.time}
                 </span>
               </div>
-              <div className="bg-blue-500/10 text-blue-400 px-3 py-1.5 rounded-lg border border-blue-500/20">
-                Range: {RANGE_OPTIONS.find(opt => opt.value === currentRange)?.label}
+              <div className={`px-3 py-1.5 rounded-lg border ${
+                chartType === 'supply' 
+                  ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                  : 'bg-green-500/10 text-green-400 border-green-500/20'
+              }`}>
+                {chartType === 'supply' ? 'Supply' : 'DAU'} • {RANGE_OPTIONS.find(opt => opt.value === currentRange)?.label}
               </div>
             </div>
           </div>

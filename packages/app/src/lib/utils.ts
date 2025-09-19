@@ -84,12 +84,12 @@ export function filterStablecoins(
 ): Stablecoin[] {
   return stablecoins.filter(stablecoin => {
     // Filter by token program
-    if (filters.tokenProgram && stablecoin.tokenProgram !== filters.tokenProgram) {
+    if (filters.tokenProgram && filters.tokenProgram.length > 0 && !filters.tokenProgram.includes(stablecoin.tokenProgram)) {
       return false;
     }
 
     // Filter by issuer
-    if (filters.issuer && stablecoin.issuer !== filters.issuer) {
+    if (filters.issuer && filters.issuer.length > 0 && !filters.issuer.includes(stablecoin.issuer)) {
       return false;
     }
 
@@ -99,7 +99,7 @@ export function filterStablecoins(
     }
 
     // Filter by pegged asset
-    if (filters.peggedAsset && stablecoin.peggedAsset !== filters.peggedAsset) {
+    if (filters.peggedAsset && filters.peggedAsset.length > 0 && !filters.peggedAsset.includes(stablecoin.peggedAsset)) {
       return false;
     }
 
@@ -127,6 +127,9 @@ export function sortStablecoins(
         break;
       case 'transactionVolume':
         comparison = parseFloat(a.transactionVolume30d) - parseFloat(b.transactionVolume30d);
+        break;
+      case 'dailyTransactions':
+        comparison = parseFloat(a.transactionCountDaily) - parseFloat(b.transactionCountDaily);
         break;
     }
 

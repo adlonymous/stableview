@@ -76,7 +76,7 @@ export default function StablecoinsPage() {
           <ul className="divide-y divide-gray-200">
             {stablecoins.map(stablecoin => (
               <li key={stablecoin.id}>
-                <Link href={`/stablecoins/${stablecoin.id}`} className="block hover:bg-gray-50">
+                <Link href={`/stablecoins/${stablecoin.slug}`} className="block hover:bg-gray-50">
                   <div className="px-4 py-4 sm:px-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">

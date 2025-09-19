@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { fetchStablecoinsByCurrencyPegWithFallback } from '@/lib/api';
@@ -121,17 +121,17 @@ const getRegionShading = (geo: GeographyData, stablecoinData: CurrencyPegStablec
       );
 
       if (isMatch) {
-        // Calculate brightness based on number of stablecoins
+        // Calculate darkness based on number of stablecoins (more stablecoins = darker)
         const stablecoinCount = stablecoinData[currency].length;
         const maxCount = Math.max(...Object.values(stablecoinData).map(arr => arr.length));
 
-        // Normalize count to 0-1 range, with minimum brightness of 0.3
-        const normalizedCount = Math.max(0.3, stablecoinCount / maxCount);
+        // Normalize count to 0-1 range
+        const normalizedCount = stablecoinCount / maxCount;
 
-        // Convert to HSL and adjust lightness
+        // Convert to HSL and adjust lightness (inverted: more stablecoins = darker)
         const baseHue = 217; // Blue hue
         const baseSaturation = 91; // Blue saturation
-        const lightness = Math.round(30 + normalizedCount * 40); // Range from 30% to 70% lightness
+        const lightness = Math.round(70 - normalizedCount * 40); // Range from 30% to 70% lightness (inverted)
 
         return `hsl(${baseHue}, ${baseSaturation}%, ${lightness}%)`;
       }
@@ -140,7 +140,7 @@ const getRegionShading = (geo: GeographyData, stablecoinData: CurrencyPegStablec
 
   // No stablecoins for this region
   return '#1f2937'; // Dark gray (same as background)
-};
+});
 
 // Function to get region type and currency for tooltip
 const getRegionInfo = (
@@ -174,33 +174,116 @@ const getRegionInfo = (
   return { type: 'other', currency: '', hasStablecoins: false, displayName: 'Other Region' };
 };
 
-export function WorldMap({ className }: WorldMapProps) {
+// Memoized Geography component for better performance
+const MemoizedGeography = memo(({ geo, stablecoinData }: { geo: GeographyData; stablecoinData: CurrencyPegStablecoins }) => {
+  const regionInfo = useMemo(() => getRegionInfo(geo, stablecoinData), [geo, stablecoinData]);
+  const hasStablecoins = regionInfo.hasStablecoins;
+  const fillColor = useMemo(() => getRegionShading(geo, stablecoinData), [geo, stablecoinData]);
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Geography
+          geography={geo}
+          fill={fillColor}
+          stroke="#374151"
+          strokeWidth={0.5}
+          style={{
+            default: { outline: 'none' },
+            hover: {
+              fill: hasStablecoins
+                ? (() => {
+                    if (regionInfo.hasStablecoins && stablecoinData[regionInfo.currency]) {
+                      const stablecoinCount = stablecoinData[regionInfo.currency].length;
+                      const maxCount = Math.max(
+                        ...Object.values(stablecoinData).map(arr => arr.length)
+                      );
+                      const normalizedCount = stablecoinCount / maxCount;
+                      const lightness = Math.round(60 - normalizedCount * 30); // Inverted: more stablecoins = darker hover
+                      return `hsl(217, 91%, ${lightness}%)`;
+                    }
+                    return '#374151';
+                  })()
+                : '#374151',
+              outline: 'none',
+            },
+            pressed: { outline: 'none' },
+          }}
+          className={hasStablecoins ? 'cursor-pointer' : 'cursor-default'}
+        />
+      </TooltipTrigger>
+      {hasStablecoins && (
+        <TooltipContent className="max-w-xs bg-neutral-800 border border-neutral-600 rounded-lg shadow-xl p-3">
+          <div className="max-w-xs">
+            <h4 className="font-semibold text-white mb-2">
+              {regionInfo.currency} Stablecoins ({regionInfo.displayName})
+            </h4>
+            <div className="space-y-1 max-h-32 overflow-y-auto">
+              {stablecoinData[regionInfo.currency]
+                ?.sort((a, b) => {
+                  const supplyA = parseFloat(a.totalSupply || '0');
+                  const supplyB = parseFloat(b.totalSupply || '0');
+                  return supplyB - supplyA;
+                })
+                .map(stablecoin => (
+                  <div
+                    key={stablecoin.slug}
+                    className="flex justify-between items-center text-xs"
+                  >
+                    <span className="text-neutral-300">{stablecoin.name}</span>
+                    <span className="text-neutral-400 text-right">
+                      {stablecoin.token || stablecoin.slug}
+                    </span>
+                  </div>
+                ))}
+            </div>
+            <div className="text-xs text-neutral-500 mt-2">
+              {stablecoinData[regionInfo.currency]?.length || 0} stablecoin
+              {(stablecoinData[regionInfo.currency]?.length || 0) !== 1 ? 's' : ''}
+            </div>
+          </div>
+        </TooltipContent>
+      )}
+    </Tooltip>
+  );
+});
+
+MemoizedGeography.displayName = 'MemoizedGeography';
+
+export const WorldMap = memo(({ className }: WorldMapProps) => {
   const [stablecoinData, setStablecoinData] = React.useState<CurrencyPegStablecoins>({});
+  const [isLoading, setIsLoading] = React.useState(true);
 
   // Fetch stablecoin data on component mount
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log('🌍 WorldMap: Starting to fetch stablecoin data...');
-        console.log(
-          '🌍 WorldMap: API URL will be:',
-          process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:3004'
-        );
-
+        setIsLoading(true);
         const data = await fetchStablecoinsByCurrencyPegWithFallback();
-        console.log('🌍 WorldMap: Received stablecoin data:', data);
-        console.log('🌍 WorldMap: Data keys:', Object.keys(data));
-        console.log('🌍 WorldMap: USD stablecoins count:', data.USD?.length || 0);
-        console.log('🌍 WorldMap: EUR stablecoins count:', data.EUR?.length || 0);
-
         setStablecoinData(data);
       } catch (error) {
         console.error('🌍 WorldMap: Failed to fetch stablecoin data:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchData();
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className={`relative ${className}`}>
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-white mb-2">Global Stablecoin Coverage</h3>
+          <p className="text-sm text-neutral-400">Loading stablecoin data...</p>
+        </div>
+        <div className="w-full h-[400px] rounded-lg border border-neutral-700 bg-neutral-800 animate-pulse flex items-center justify-center">
+          <div className="text-neutral-400">Loading map...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <TooltipProvider>
@@ -208,7 +291,7 @@ export function WorldMap({ className }: WorldMapProps) {
         <div className="mb-4">
           <h3 className="text-lg font-semibold text-white mb-2">Global Stablecoin Coverage</h3>
           <p className="text-sm text-neutral-400">
-            Countries and regions with stablecoins pegged to their currencies. Brighter blue
+            Countries and regions with stablecoins pegged to their currencies. Darker blue
             indicates more stablecoins pegged to that region&apos;s currency. Hover over regions to
             explore available stablecoins and their market data.
           </p>
@@ -226,87 +309,13 @@ export function WorldMap({ className }: WorldMapProps) {
             <ZoomableGroup zoom={1} maxZoom={3}>
               <Geographies geography={geoUrl}>
                 {({ geographies }: { geographies: GeographyData[] }) =>
-                  geographies.map((geo: GeographyData) => {
-                    const regionInfo = getRegionInfo(geo, stablecoinData);
-                    const hasStablecoins = regionInfo.hasStablecoins;
-
-                    return (
-                      <Tooltip key={geo.rsmKey}>
-                        <TooltipTrigger asChild>
-                          <Geography
-                            geography={geo}
-                            fill={getRegionShading(geo, stablecoinData)}
-                            stroke="#374151"
-                            strokeWidth={0.5}
-                            style={{
-                              default: { outline: 'none' },
-                              hover: {
-                                fill: hasStablecoins
-                                  ? (() => {
-                                      const regionInfo = getRegionInfo(geo, stablecoinData);
-                                      if (
-                                        regionInfo.hasStablecoins &&
-                                        stablecoinData[regionInfo.currency]
-                                      ) {
-                                        const stablecoinCount =
-                                          stablecoinData[regionInfo.currency].length;
-                                        const maxCount = Math.max(
-                                          ...Object.values(stablecoinData).map(arr => arr.length)
-                                        );
-                                        const normalizedCount = Math.max(
-                                          0.3,
-                                          stablecoinCount / maxCount
-                                        );
-                                        const lightness = Math.round(20 + normalizedCount * 50); // Darker on hover
-                                        return `hsl(217, 91%, ${lightness}%)`;
-                                      }
-                                      return '#374151';
-                                    })()
-                                  : '#374151',
-                                outline: 'none',
-                              },
-                              pressed: { outline: 'none' },
-                            }}
-                            className={hasStablecoins ? 'cursor-pointer' : 'cursor-default'}
-                          />
-                        </TooltipTrigger>
-                        {hasStablecoins && (
-                          <TooltipContent className="max-w-xs bg-neutral-800 border border-neutral-600 rounded-lg shadow-xl p-3">
-                            <div className="max-w-xs">
-                              <h4 className="font-semibold text-white mb-2">
-                                {regionInfo.currency} Stablecoins ({regionInfo.displayName})
-                              </h4>
-                              <div className="space-y-1 max-h-32 overflow-y-auto">
-                                {stablecoinData[regionInfo.currency]
-                                  ?.sort((a, b) => {
-                                    const supplyA = parseFloat(a.totalSupply || '0');
-                                    const supplyB = parseFloat(b.totalSupply || '0');
-                                    return supplyB - supplyA; // Descending order (highest first)
-                                  })
-                                  .map(stablecoin => (
-                                    <div
-                                      key={stablecoin.slug}
-                                      className="flex justify-between items-center text-xs"
-                                    >
-                                      <span className="text-neutral-300">{stablecoin.name}</span>
-                                      <span className="text-neutral-400 text-right">
-                                        {stablecoin.token || stablecoin.slug}
-                                      </span>
-                                    </div>
-                                  ))}
-                              </div>
-                              <div className="text-xs text-neutral-500 mt-2">
-                                {stablecoinData[regionInfo.currency]?.length || 0} stablecoin
-                                {(stablecoinData[regionInfo.currency]?.length || 0) !== 1
-                                  ? 's'
-                                  : ''}
-                              </div>
-                            </div>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    );
-                  })
+                  geographies.map((geo: GeographyData) => (
+                    <MemoizedGeography
+                      key={geo.rsmKey}
+                      geo={geo}
+                      stablecoinData={stablecoinData}
+                    />
+                  ))
                 }
               </Geographies>
             </ZoomableGroup>
@@ -314,27 +323,27 @@ export function WorldMap({ className }: WorldMapProps) {
 
           {/* Legend */}
           <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-sm">
-            <div className="flex items-center space-x-2">
-              <div
-                className="w-4 h-4 rounded"
-                style={{ backgroundColor: 'hsl(217, 91%, 30%)' }}
-              ></div>
-              <span className="text-white">Fewer Stablecoins</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div
-                className="w-4 h-4 rounded"
-                style={{ backgroundColor: 'hsl(217, 91%, 50%)' }}
-              ></div>
-              <span className="text-white">More Stablecoins</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div
-                className="w-4 h-4 rounded"
-                style={{ backgroundColor: 'hsl(217, 91%, 70%)' }}
-              ></div>
-              <span className="text-white">Most Stablecoins</span>
-            </div>
+              <div className="flex items-center space-x-2">
+                <div
+                  className="w-4 h-4 rounded"
+                  style={{ backgroundColor: 'hsl(217, 91%, 70%)' }}
+                ></div>
+                <span className="text-white">Fewer Stablecoins</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div
+                  className="w-4 h-4 rounded"
+                  style={{ backgroundColor: 'hsl(217, 91%, 50%)' }}
+                ></div>
+                <span className="text-white">More Stablecoins</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div
+                  className="w-4 h-4 rounded"
+                  style={{ backgroundColor: 'hsl(217, 91%, 30%)' }}
+                ></div>
+                <span className="text-white">Most Stablecoins</span>
+              </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-[#1f2937] rounded border border-neutral-600"></div>
               <span className="text-white">No Stablecoins</span>
@@ -349,4 +358,6 @@ export function WorldMap({ className }: WorldMapProps) {
       </div>
     </TooltipProvider>
   );
-}
+});
+
+WorldMap.displayName = 'WorldMap';

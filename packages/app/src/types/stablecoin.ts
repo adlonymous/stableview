@@ -26,6 +26,8 @@ export interface Stablecoin {
   totalSupply: string;
   dailyActiveUsers: string;
   price: string;
+  pegPrice?: number;
+  pegPriceUpdatedAt?: string;
 
   // Summary
   executiveSummary?: string;

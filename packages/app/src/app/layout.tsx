@@ -15,8 +15,67 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'StableView - Solana Stablecoin Dashboard',
-  description: 'A comprehensive dashboard for stablecoins on Solana',
+  title: {
+    default: 'StableView - Solana Stablecoin Dashboard',
+    template: '%s | StableView',
+  },
+  description: 'A comprehensive dashboard for stablecoins on Solana with real-time data, analytics, and insights. Track USDC, USDT, PYUSD, FDUSD, and more.',
+  keywords: [
+    'Solana',
+    'stablecoin',
+    'dashboard',
+    'cryptocurrency',
+    'DeFi',
+    'blockchain',
+    'analytics',
+    'USDC',
+    'USDT',
+    'PYUSD',
+    'FDUSD',
+    'price tracking',
+    'market data'
+  ],
+  authors: [{ name: 'StableView' }],
+  creator: 'StableView',
+  publisher: 'StableView',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://stableview.vercel.app'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: '/',
+    title: 'StableView - Solana Stablecoin Dashboard',
+    description: 'A comprehensive dashboard for stablecoins on Solana with real-time data, analytics, and insights.',
+    siteName: 'StableView',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'StableView - Solana Stablecoin Dashboard',
+    description: 'A comprehensive dashboard for stablecoins on Solana with real-time data, analytics, and insights.',
+    creator: '@stableview',
+    site: '@stableview',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
+  },
 };
 
 export default function RootLayout({

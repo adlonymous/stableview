@@ -29,19 +29,18 @@ const mockStablecoins = [
   },
 ];
 
-export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(_: Request, { params }: { params: Promise<{ slug: string }> }) {
   try {
-    const { id } = await params;
-    const numericId = Number(id);
+    const { slug } = await params;
 
     // Try to get data from the core API first
     try {
-      const response = await fetch(`${config.coreApi.url}/api/stablecoins/${numericId}`, {
+      const response = await fetch(`${config.coreApi.url}/api/stablecoins/slug/${slug}`, {
         signal: AbortSignal.timeout(config.coreApi.timeout),
       });
       if (response.ok) {
         const data = await response.json();
-        console.log(`Successfully fetched stablecoin ${numericId} from core API`);
+        console.log(`Successfully fetched stablecoin ${slug} from core API`);
         return NextResponse.json(data);
       }
     } catch (apiError) {
@@ -49,21 +48,20 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     }
 
     // Fall back to mock data if core API is not available
-    const mockItem = mockStablecoins.find(coin => coin.id === numericId);
+    const mockItem = mockStablecoins.find(coin => coin.slug === slug);
     if (mockItem) {
-      console.log(`Using mock data for stablecoin ID ${numericId}`);
+      console.log(`Using mock data for stablecoin slug ${slug}`);
       return NextResponse.json(mockItem);
     }
 
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   } catch (error: unknown) {
-    console.error('Error fetching stablecoin by id:', error);
+    console.error('Error fetching stablecoin by slug:', error);
 
     // Try to return mock data as last resort
     try {
-      const { id } = await params;
-      const numericId = Number(id);
-      const mockItem = mockStablecoins.find(coin => coin.id === numericId);
+      const { slug } = await params;
+      const mockItem = mockStablecoins.find(coin => coin.slug === slug);
       if (mockItem) {
         return NextResponse.json(mockItem);
       }

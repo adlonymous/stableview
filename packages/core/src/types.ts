@@ -26,6 +26,8 @@ export interface Stablecoin {
   totalSupply: string;
   dailyActiveUsers: string;
   price: string;
+  pegPrice?: number;
+  pegPriceUpdatedAt?: string;
 
   // Summary
   executiveSummary?: string;
@@ -85,6 +87,8 @@ export interface DatabaseStablecoin {
   total_supply: string;
   daily_active_users: string;
   price: string;
+  peg_price?: number;
+  peg_price_updated_at?: string;
   executive_summary?: string;
   logo_url?: string;
   created_at: string;

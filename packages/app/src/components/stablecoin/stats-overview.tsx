@@ -11,13 +11,14 @@ interface StatsOverviewProps {
     monthly: number;
     yearly: number;
   };
+  stablecoinCount: number;
 }
 
-export function StatsOverview({ totalMarketCap, totalTransactionVolume }: StatsOverviewProps) {
+export function StatsOverview({ totalMarketCap, totalTransactionVolume, stablecoinCount }: StatsOverviewProps) {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Total Supply Card */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Total Market Cap Card */}
         <Card className="group bg-gradient-to-br from-neutral-900 to-neutral-800 border-neutral-700 hover:border-blue-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10">
           <CardHeader className="p-6">
             <div className="flex items-center justify-between">
@@ -27,7 +28,7 @@ export function StatsOverview({ totalMarketCap, totalTransactionVolume }: StatsO
                     <DollarSign className="h-5 w-5 text-blue-400" />
                   </div>
                   <div className="text-sm font-medium text-neutral-400 uppercase tracking-wide">
-                    Total Supply
+                    Total Market Cap
                   </div>
                 </div>
                 <div className="text-3xl font-bold text-white group-hover:text-blue-100 transition-colors duration-300">
@@ -74,6 +75,27 @@ export function StatsOverview({ totalMarketCap, totalTransactionVolume }: StatsO
                 </div>
                 <div className="text-3xl font-bold text-white group-hover:text-purple-100 transition-colors duration-300">
                   {formatCurrency(totalTransactionVolume.daily)}
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+
+        {/* Yearly Volume Card */}
+        <Card className="group bg-gradient-to-br from-neutral-900 to-neutral-800 border-neutral-700 hover:border-orange-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/10">
+          <CardHeader className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 flex items-center justify-center group-hover:from-orange-500/30 group-hover:to-orange-600/30 transition-all duration-300">
+                    <BarChart3 className="h-5 w-5 text-orange-400" />
+                  </div>
+                  <div className="text-sm font-medium text-neutral-400 uppercase tracking-wide">
+                    Yearly Volume
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-white group-hover:text-orange-100 transition-colors duration-300">
+                  {formatCurrency(totalTransactionVolume.yearly)}
                 </div>
               </div>
             </div>

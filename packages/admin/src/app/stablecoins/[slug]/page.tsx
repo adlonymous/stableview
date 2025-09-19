@@ -2,26 +2,25 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useStablecoin } from '../../../hooks/useStablecoins';
+import { useStablecoinBySlug } from '../../../hooks/useStablecoins';
 
-export default function StablecoinDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const [id, setId] = useState<number | null>(null);
-  const { stablecoin, isLoading, error, fetchStablecoin } = useStablecoin(id || 0);
+export default function StablecoinDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const [slug, setSlug] = useState<string | null>(null);
+  const { stablecoin, isLoading, error, fetchStablecoin } = useStablecoinBySlug(slug || '');
 
   useEffect(() => {
     async function getParams() {
-      const { id: paramId } = await params;
-      const numericId = Number(paramId);
-      setId(numericId);
+      const { slug: paramSlug } = await params;
+      setSlug(paramSlug);
     }
     getParams();
   }, [params]);
 
   useEffect(() => {
-    if (id) {
+    if (slug) {
       fetchStablecoin();
     }
-  }, [id, fetchStablecoin]);
+  }, [slug, fetchStablecoin]);
 
   if (isLoading) {
     return (

@@ -23,6 +23,15 @@ export const coreApi = {
     return response.json();
   },
 
+  // Get stablecoin by slug
+  async getStablecoinBySlug(slug: string) {
+    const response = await fetch(`${CORE_API_URL}/api/stablecoins/slug/${slug}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch stablecoin: ${response.statusText}`);
+    }
+    return response.json();
+  },
+
   // Create new stablecoin
   async createStablecoin(data: NewStablecoin) {
     const response = await fetch(`${CORE_API_URL}/api/stablecoins`, {

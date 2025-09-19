@@ -14,7 +14,7 @@ StableView is designed to be the go-to platform for understanding stablecoin act
 
 ## Key Features
 
-- 🚀 **Real-time Data**: Live metrics from Solana blockchain and Artemis API
+- 🚀 **Real-time Data**: Live metrics from Solana blockchain
 - 📊 **Comprehensive Analytics**: Transaction volume, user counts, supply data
 - 🌍 **Global Insights**: World map visualization of stablecoin usage
 - 🎯 **Popular Stablecoins**: Curated list of top-performing stablecoins
@@ -35,7 +35,7 @@ This is a monorepo containing three main packages:
 
 - **Frontend**: Next.js 15, React 19, Tailwind CSS, shadcn/ui
 - **Backend**: Fastify, tRPC, PostgreSQL (via Supabase)
-- **Data Sources**: Solana blockchain, Artemis API
+- **Data Sources**: Solana blockchain, Birdeye API
 - **Package Manager**: Yarn with workspace management
 - **Language**: TypeScript throughout
 

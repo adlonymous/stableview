@@ -7,12 +7,14 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { formatCompactNumber, formatCurrency } from '@/lib/utils';
+import { usePriceData } from '@/hooks/usePriceData';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ExternalLink, Info, BarChart3, Users, DollarSign } from 'lucide-react';
+import { ExternalLink, Info, BarChart3, TrendingUp, TrendingDown } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { SupplyChart } from '@/components/charts/supply-chart';
+import { StablecoinChart } from '@/components/charts/stablecoin-chart';
 import { useChartData } from '@/hooks/useChartData';
+import { useDauData } from '@/hooks/useDauData';
 import { useState, useEffect, useRef } from 'react';
 
 interface StablecoinDetailProps {
@@ -24,29 +26,46 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
   const hasRefreshed = useRef(false);
 
   const {
-    data: chartData,
-    loading: chartLoading,
-    error: chartError,
-    refetch,
+    data: supplyData,
+    loading: supplyLoading,
+    error: supplyError,
+    refetch: refetchSupply,
   } = useChartData({
     stablecoinId: stablecoin.id,
     range: chartRange,
     enabled: true,
   });
 
+  const {
+    data: dauData,
+    loading: dauLoading,
+    error: dauError,
+    refetch: refetchDau,
+  } = useDauData({
+    stablecoinId: stablecoin.id,
+    range: chartRange,
+    enabled: true,
+  });
+
+  const { priceData } = usePriceData(stablecoin.id);
+
   // Auto-refresh chart data once when component mounts
   useEffect(() => {
-    if (!hasRefreshed.current && !chartLoading) {
+    if (!hasRefreshed.current && !supplyLoading && !dauLoading) {
       hasRefreshed.current = true;
       console.log('Auto-refreshing chart data for stablecoin:', stablecoin.id);
-      refetch();
+      refetchSupply();
+      refetchDau();
     }
-  }, [stablecoin.id, chartLoading, refetch]);
+  }, [stablecoin.id, supplyLoading, dauLoading, refetchSupply, refetchDau]);
 
   console.log('StablecoinDetail chart data:', {
-    chartData,
-    chartLoading,
-    chartError,
+    supplyData,
+    dauData,
+    supplyLoading,
+    dauLoading,
+    supplyError,
+    dauError,
     stablecoinId: stablecoin.id,
     range: chartRange,
   });
@@ -80,9 +99,61 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                 >
                   {stablecoin.tokenProgram}
                 </Badge>
-                <div className="flex items-center gap-2 text-green-400">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-sm font-medium">${stablecoin.price}</span>
+                <div className="flex items-center gap-6">
+                  {/* Current Price */}
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <div className="flex flex-col">
+                      <span className="text-xs text-neutral-400">Current Price</span>
+                      {priceData && priceData.price !== null && priceData.price !== undefined ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-green-400">
+                            ${priceData.price}
+                          </span>
+                          {priceData.priceChange24h !== null && priceData.priceChange24h !== undefined && (
+                            <div className="flex items-center gap-1">
+                              {priceData.priceChange24h >= 0 ? (
+                                <TrendingUp className="h-3 w-3 text-green-400" />
+                              ) : (
+                                <TrendingDown className="h-3 w-3 text-red-400" />
+                              )}
+                              <span className={`text-xs ${
+                                priceData.priceChange24h >= 0 ? 'text-green-400' : 'text-red-400'
+                              }`}>
+                                {priceData.priceChange24h >= 0 ? '+' : ''}
+                                {priceData.priceChange24h * 100}%
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-green-400">
+                            {stablecoin.price === 'N/A' || stablecoin.price === '-1' ? 'N/A' : `$${stablecoin.price}`}
+                          </span>
+                          <span className="text-xs text-neutral-400">(Static)</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Peg Price */}
+                  {stablecoin.pegPrice && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                      <div className="flex flex-col">
+                        <span className="text-xs text-neutral-400">Peg Price</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-blue-400">
+                            ${stablecoin.pegPrice.toFixed(4)}
+                          </span>
+                          <span className="text-xs text-neutral-400">
+                            ({stablecoin.peggedAsset})
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -132,62 +203,6 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
         </div>
       </div>
 
-      {/* Enhanced Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="group bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20 hover:border-blue-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10">
-          <CardHeader className="pb-4 px-6 pt-6">
-            <div className="flex items-start gap-4">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-                <BarChart3 className="h-6 w-6 text-blue-400" />
-              </div>
-              <div className="space-y-2">
-                <CardDescription className="text-blue-300 font-medium">
-                  Total Supply
-                </CardDescription>
-                <CardTitle className="text-3xl font-bold text-white">
-                  {formatCompactNumber(parseFloat(stablecoin.totalSupply))}
-                </CardTitle>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
-
-        <Card className="group bg-gradient-to-br from-green-500/10 to-green-600/5 border border-green-500/20 hover:border-green-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-green-500/10">
-          <CardHeader className="pb-4 px-6 pt-6">
-            <div className="flex items-start gap-4">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-                <Users className="h-6 w-6 text-green-400" />
-              </div>
-              <div className="space-y-2">
-                <CardDescription className="text-green-300 font-medium">
-                  Daily Active Users
-                </CardDescription>
-                <CardTitle className="text-3xl font-bold text-white">
-                  {formatCompactNumber(parseFloat(stablecoin.dailyActiveUsers))}
-                </CardTitle>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
-
-        <Card className="group bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10">
-          <CardHeader className="pb-4 px-6 pt-6">
-            <div className="flex items-start gap-4">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-                <DollarSign className="h-6 w-6 text-purple-400" />
-              </div>
-              <div className="space-y-2">
-                <CardDescription className="text-purple-300 font-medium">
-                  Daily Transactions
-                </CardDescription>
-                <CardTitle className="text-3xl font-bold text-white">
-                  {formatCompactNumber(parseFloat(stablecoin.transactionCountDaily))}
-                </CardTitle>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
-      </div>
 
       {/* Enhanced Tabs for different data sections */}
       <Tabs defaultValue="metrics" className="w-full">
@@ -218,7 +233,14 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
 
                   <div>
                     <h3 className="text-sm font-medium text-neutral-400 mb-1">Pegged Asset</h3>
-                    <p className="text-white">{stablecoin.peggedAsset}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-white">{stablecoin.peggedAsset}</p>
+                      {stablecoin.pegPrice && (
+                        <span className="text-sm text-neutral-300">
+                          (${stablecoin.pegPrice})
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <div>
@@ -331,7 +353,7 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
               </div>
             </CardHeader>
             <CardContent className="px-5 pb-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="space-y-2">
                   <div className="text-sm text-neutral-400">Total Supply</div>
                   <div className="text-2xl font-semibold text-white">
@@ -356,20 +378,47 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                     {formatCurrency(parseFloat(stablecoin.transactionVolume30d))}
                   </div>
                 </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-neutral-400">Peg Price</div>
+                  <div className="text-2xl font-semibold text-white">
+                    {stablecoin.pegPrice ? (
+                      <div className="flex items-center gap-2">
+                        <span>{stablecoin.pegPrice.toFixed(4)}</span>
+                        <span className="text-sm text-neutral-400">{stablecoin.peggedAsset}</span>
+                      </div>
+                    ) : (
+                      <span className="text-neutral-500">N/A</span>
+                    )}
+                  </div>
+                  {stablecoin.pegPriceUpdatedAt && (
+                    <div className="text-xs text-neutral-500">
+                      Updated {new Date(stablecoin.pegPriceUpdatedAt).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-neutral-400">Current Price</div>
+                  <div className="text-2xl font-semibold text-white">
+                    ${parseFloat(stablecoin.price).toFixed(4)}
+                  </div>
+                </div>
               </div>
 
               <div className="mt-6">
-                <SupplyChart
-                  data={chartData}
-                  title="Total Supply Over Time"
+                <StablecoinChart
+                  supplyData={supplyData}
+                  dauData={dauData}
+                  title="Stablecoin Metrics"
                   stablecoinName={stablecoin.name}
                   currentRange={chartRange}
                   onRangeChange={setChartRange}
-                  loading={chartLoading}
+                  loading={supplyLoading || dauLoading}
                 />
-                {chartError && (
+                {(supplyError || dauError) && (
                   <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-                    <p className="text-red-400 text-sm">Error loading chart data: {chartError}</p>
+                    <p className="text-red-400 text-sm">
+                      Error loading chart data: {supplyError || dauError}
+                    </p>
                   </div>
                 )}
               </div>
@@ -378,17 +427,6 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
         </TabsContent>
       </Tabs>
 
-      {/* Executive Summary */}
-      <Card className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all">
-        <CardHeader className="px-5 pt-4 pb-2">
-          <CardTitle className="text-white">Executive Summary</CardTitle>
-        </CardHeader>
-        <CardContent className="px-5 pb-4">
-          <p className="text-neutral-300 leading-relaxed">
-            {stablecoin.executiveSummary || 'Coming soon'}
-          </p>
-        </CardContent>
-      </Card>
     </div>
   );
 }

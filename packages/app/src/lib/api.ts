@@ -75,6 +75,15 @@ export async function fetchStablecoinById(id: number): Promise<Stablecoin> {
   }
 }
 
+export async function fetchStablecoinBySlug(slug: string): Promise<Stablecoin> {
+  try {
+    return await fetchApi<Stablecoin>(`/api/stablecoins/slug/${slug}`);
+  } catch (error) {
+    console.error(`Failed to fetch stablecoin ${slug}:`, error);
+    throw error;
+  }
+}
+
 // Fallback to mock data if API fails
 export async function fetchStablecoinsWithFallback(): Promise<Stablecoin[]> {
   try {
@@ -98,6 +107,38 @@ export async function fetchStablecoinByIdWithFallback(id: number): Promise<Stabl
       throw new Error(`Stablecoin ${id} not found`);
     }
     return mockStablecoin;
+  }
+}
+
+export async function fetchStablecoinBySlugWithFallback(slug: string): Promise<Stablecoin> {
+  try {
+    return await fetchStablecoinBySlug(slug);
+  } catch (error) {
+    console.warn(`API failed for stablecoin ${slug}, falling back to mock data:`, error);
+    const { mockStablecoins } = await import('./mock-data');
+    const mockStablecoin = mockStablecoins.find(coin => coin.slug === slug);
+    if (!mockStablecoin) {
+      throw new Error(`Stablecoin ${slug} not found`);
+    }
+    return mockStablecoin;
+  }
+}
+
+export async function fetchAllStablecoinPrices(): Promise<Record<string, number>> {
+  try {
+    const response = await fetchApi<{ prices: Array<{ stablecoinId: number; price: number | null }> }>('/api/stablecoins/prices');
+    const priceMap: Record<string, number> = {};
+    
+    response.prices.forEach(priceData => {
+      if (priceData.price !== null) {
+        priceMap[priceData.stablecoinId.toString()] = priceData.price;
+      }
+    });
+    
+    return priceMap;
+  } catch (error) {
+    console.error('Failed to fetch stablecoin prices:', error);
+    return {};
   }
 }
 

@@ -2,6 +2,10 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import dotenv from 'dotenv';
 import { supabase } from '../db/index.js';
+import { createBirdeyeClient } from '../services/birdeye-client.js';
+import { currencyClient } from '../services/currency-client.js';
+import { priceUpdater } from '../services/price-updater.js';
+import { pegPriceUpdater } from '../services/peg-price-updater.js';
 
 // Load environment variables
 dotenv.config();
@@ -53,6 +57,8 @@ interface StablecoinDbRecord {
   total_supply: string;
   daily_active_users: string;
   price: string;
+  peg_price?: number;
+  peg_price_updated_at?: string;
   executive_summary: string;
   logo_url: string;
   created_at: string;
@@ -135,6 +141,8 @@ function transformStablecoinData(dbData: StablecoinDbRecord) {
     totalSupply: dbData.total_supply,
     dailyActiveUsers: dbData.daily_active_users,
     price: dbData.price,
+    pegPrice: dbData.peg_price,
+    pegPriceUpdatedAt: dbData.peg_price_updated_at,
     executiveSummary: dbData.executive_summary,
     logoUrl: dbData.logo_url,
     createdAt: dbData.created_at,
@@ -181,6 +189,30 @@ fastify.get('/api/stablecoins/:id', async (request, reply) => {
     return reply.send(transformedData);
   } catch (error) {
     console.error('Error fetching stablecoin:', error);
+    return reply.status(500).send({ error: 'Failed to fetch stablecoin' });
+  }
+});
+
+// GET /api/stablecoins/slug/:slug - Get stablecoin by slug
+fastify.get('/api/stablecoins/slug/:slug', async (request, reply) => {
+  try {
+    const { slug } = request.params as { slug: string };
+
+    const { data, error } = await supabase
+      .from('stablecoins')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+
+    if (error) {
+      return reply.status(404).send({ error: 'Not found' });
+    }
+
+    // Transform the data to camelCase for frontend compatibility
+    const transformedData = transformStablecoinData(data);
+    return reply.send(transformedData);
+  } catch (error) {
+    console.error('Error fetching stablecoin by slug:', error);
     return reply.status(500).send({ error: 'Failed to fetch stablecoin' });
   }
 });
@@ -512,6 +544,95 @@ fastify.get('/api/stablecoins/charts/supply/aggregated', async (request, reply) 
   }
 });
 
+// GET /api/stablecoins/:id/charts/dau - Get DAU chart data for a specific stablecoin
+fastify.get('/api/stablecoins/:id/charts/dau', async (request, reply) => {
+  try {
+    const { id } = request.params as { id: string };
+    const { range = '1M' } = request.query as { range?: string };
+
+    const stablecoinId = parseInt(id);
+    if (isNaN(stablecoinId)) {
+      return reply.status(400).send({ error: 'Invalid stablecoin ID' });
+    }
+
+    // Get DAU data for the specific stablecoin
+    const { data, error } = await supabase
+      .from('stablecoin_supply_history')
+      .select('date, holders_count')
+      .eq('stablecoin_id', stablecoinId)
+      .gte('date', getDateFromRange(range))
+      .order('date', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching DAU data:', error);
+      return reply.status(500).send({ error: 'Failed to fetch DAU data' });
+    }
+
+    // Transform to TradingView format
+    const chartData = data.map(record => ({
+      time: record.date,
+      value: parseFloat(String(record.holders_count)),
+    }));
+
+    return reply.send({
+      data: chartData,
+      range,
+      stablecoinId,
+      count: chartData.length,
+    });
+  } catch (error) {
+    console.error('Error in DAU chart endpoint:', error);
+    return reply.status(500).send({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/stablecoins/charts/dau/aggregated - Get aggregated DAU data for all stablecoins
+fastify.get('/api/stablecoins/charts/dau/aggregated', async (request, reply) => {
+  try {
+    const { range = '1M' } = request.query as { range?: string };
+
+    // Get aggregated DAU data by date
+    const { data, error } = await supabase
+      .from('stablecoin_supply_history')
+      .select('date, holders_count')
+      .gte('date', getDateFromRange(range))
+      .order('date', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching aggregated DAU data:', error);
+      return reply.status(500).send({ error: 'Failed to fetch aggregated DAU data' });
+    }
+
+    // Group by date and sum holders_count
+    const aggregatedData = data.reduce(
+      (acc: Record<string, number>, record: { date: string; holders_count: string | number }) => {
+        const date = record.date;
+        if (!acc[date]) {
+          acc[date] = 0;
+        }
+        acc[date] += parseFloat(String(record.holders_count));
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+    // Transform to TradingView format
+    const chartData = Object.entries(aggregatedData).map(([date, totalDAU]) => ({
+      time: date,
+      value: totalDAU,
+    }));
+
+    return reply.send({
+      data: chartData,
+      range,
+      count: chartData.length,
+    });
+  } catch (error) {
+    console.error('Error in aggregated DAU chart endpoint:', error);
+    return reply.status(500).send({ error: 'Internal server error' });
+  }
+});
+
 // GET /api/latest-data-date - Get the most recent data point date
 fastify.get('/api/latest-data-date', async (request, reply) => {
   try {
@@ -541,6 +662,348 @@ fastify.get('/api/latest-data-date', async (request, reply) => {
   } catch (error) {
     console.error('Error in latest data date endpoint:', error);
     return reply.status(500).send({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/stablecoins/:id/price - Get price for a specific stablecoin from database
+fastify.get('/api/stablecoins/:id/price', async (request, reply) => {
+  try {
+    const { id } = request.params as { id: string };
+    const stablecoinId = parseInt(id);
+    
+    if (isNaN(stablecoinId)) {
+      return reply.status(400).send({ error: 'Invalid stablecoin ID' });
+    }
+
+    // Get stablecoin data
+    const { data: stablecoin, error: stablecoinError } = await supabase
+      .from('stablecoins')
+      .select('id, token_address, name, token, price, updated_at')
+      .eq('id', stablecoinId)
+      .single();
+
+    if (stablecoinError || !stablecoin) {
+      return reply.status(404).send({ error: 'Stablecoin not found' });
+    }
+
+    // Check if price is stale (older than 1 hour)
+    const isStale = !stablecoin.updated_at || 
+      (Date.now() - new Date(stablecoin.updated_at).getTime()) > 60 * 60 * 1000;
+
+    // If price is stale, try to update it
+    if (isStale && stablecoin.token_address) {
+      console.log(`Price is stale for ${stablecoin.name}, updating...`);
+      try {
+        await priceUpdater.updateSinglePrice(stablecoinId);
+        // Refetch the updated data
+        const { data: updatedStablecoin } = await supabase
+          .from('stablecoins')
+          .select('id, token_address, name, token, price, updated_at')
+          .eq('id', stablecoinId)
+          .single();
+        
+        if (updatedStablecoin) {
+          return reply.send({
+            stablecoinId: updatedStablecoin.id,
+            tokenAddress: updatedStablecoin.token_address,
+            name: updatedStablecoin.name,
+            token: updatedStablecoin.token,
+            price: updatedStablecoin.price ? parseFloat(updatedStablecoin.price) : null,
+            priceChange24h: null, // We don't store price change in DB yet
+            lastUpdated: updatedStablecoin.updated_at,
+            updateUnixTime: updatedStablecoin.updated_at ? Math.floor(new Date(updatedStablecoin.updated_at).getTime() / 1000) : null,
+          });
+        }
+      } catch (updateError) {
+        console.error(`Failed to update price for ${stablecoin.name}:`, updateError);
+        // Continue with stale data
+      }
+    }
+
+    return reply.send({
+      stablecoinId: stablecoin.id,
+      tokenAddress: stablecoin.token_address,
+      name: stablecoin.name,
+      token: stablecoin.token,
+      price: stablecoin.price ? parseFloat(stablecoin.price) : null,
+      priceChange24h: null, // We don't store price change in DB yet
+      lastUpdated: stablecoin.updated_at,
+      updateUnixTime: stablecoin.updated_at ? Math.floor(new Date(stablecoin.updated_at).getTime() / 1000) : null,
+    });
+  } catch (error) {
+    console.error('Error fetching stablecoin price:', error);
+    return reply.status(500).send({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/stablecoins/prices - Get prices for all stablecoins from database
+fastify.get('/api/stablecoins/prices', async (request, reply) => {
+  try {
+    // Get all stablecoins with prices from database
+    const { data: stablecoins, error } = await supabase
+      .from('stablecoins')
+      .select('id, token_address, name, token, price, updated_at')
+      .order('id');
+
+    if (error) {
+      console.error('Error fetching stablecoins:', error);
+      return reply.status(500).send({ error: 'Failed to fetch stablecoins' });
+    }
+
+    if (!stablecoins || stablecoins.length === 0) {
+      return reply.send({ prices: [] });
+    }
+
+    // Check if any prices are stale and update them if needed
+    const staleStablecoins = stablecoins.filter(coin => 
+      !coin.updated_at || 
+      (Date.now() - new Date(coin.updated_at).getTime()) > 60 * 60 * 1000
+    );
+
+    if (staleStablecoins.length > 0) {
+      console.log(`Found ${staleStablecoins.length} stale prices, updating...`);
+      try {
+        await priceUpdater.updateAllPrices();
+        // Refetch updated data
+        const { data: updatedStablecoins } = await supabase
+          .from('stablecoins')
+          .select('id, token_address, name, token, price, updated_at')
+          .order('id');
+        
+        if (updatedStablecoins) {
+          const prices = updatedStablecoins.map(stablecoin => ({
+            stablecoinId: stablecoin.id,
+            tokenAddress: stablecoin.token_address,
+            name: stablecoin.name,
+            token: stablecoin.token,
+            price: stablecoin.price ? parseFloat(stablecoin.price) : null,
+            priceChange24h: null, // We don't store price change in DB yet
+            lastUpdated: stablecoin.updated_at,
+            updateUnixTime: stablecoin.updated_at ? Math.floor(new Date(stablecoin.updated_at).getTime() / 1000) : null,
+          }));
+          return reply.send({ prices });
+        }
+      } catch (updateError) {
+        console.error('Failed to update prices:', updateError);
+        // Continue with existing data
+      }
+    }
+
+    // Return current prices from database
+    const prices = stablecoins.map(stablecoin => ({
+      stablecoinId: stablecoin.id,
+      tokenAddress: stablecoin.token_address,
+      name: stablecoin.name,
+      token: stablecoin.token,
+      price: stablecoin.price ? parseFloat(stablecoin.price) : null,
+      priceChange24h: null, // We don't store price change in DB yet
+      lastUpdated: stablecoin.updated_at,
+      updateUnixTime: stablecoin.updated_at ? Math.floor(new Date(stablecoin.updated_at).getTime() / 1000) : null,
+    }));
+
+    return reply.send({ prices });
+  } catch (error) {
+    console.error('Error fetching stablecoin prices:', error);
+    return reply.status(500).send({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/stablecoins/update-prices - Manually trigger price update for all stablecoins
+fastify.post('/api/stablecoins/update-prices', async (request, reply) => {
+  try {
+    console.log('Manual price update triggered');
+    const results = await priceUpdater.updateAllPrices();
+
+    const successCount = results.filter(r => r.success).length;
+    const errorCount = results.filter(r => !r.success).length;
+
+    return reply.send({
+      message: `Price update completed: ${successCount} successful, ${errorCount} failed`,
+      total: results.length,
+      successful: successCount,
+      failed: errorCount,
+      results: results
+    });
+  } catch (error) {
+    console.error('Error in manual price update:', error);
+    return reply.status(500).send({
+      error: 'Failed to update prices',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// GET /api/stablecoins/:id/peg-price - Get peg price for a specific stablecoin
+fastify.get('/api/stablecoins/:id/peg-price', async (request, reply) => {
+  try {
+    const { id } = request.params as { id: string };
+    const stablecoinId = parseInt(id);
+
+    if (isNaN(stablecoinId)) {
+      return reply.status(400).send({ error: 'Invalid stablecoin ID' });
+    }
+
+    // Get stablecoin data
+    const { data: stablecoin, error: stablecoinError } = await supabase
+      .from('stablecoins')
+      .select('id, pegged_asset, name, peg_price, peg_price_updated_at')
+      .eq('id', stablecoinId)
+      .single();
+
+    if (stablecoinError || !stablecoin) {
+      return reply.status(404).send({ error: 'Stablecoin not found' });
+    }
+
+    if (!stablecoin.pegged_asset) {
+      return reply.send({
+        stablecoinId: stablecoin.id,
+        peggedAsset: null,
+        pegPrice: null,
+        pegPriceUpdatedAt: null,
+        message: 'No pegged asset specified'
+      });
+    }
+
+    // Check if peg price is stale (older than 24 hours)
+    const isStale = !stablecoin.peg_price_updated_at || 
+      (Date.now() - new Date(stablecoin.peg_price_updated_at).getTime()) > 24 * 60 * 60 * 1000;
+
+    // If peg price is stale, try to update it
+    if (isStale) {
+      console.log(`Peg price is stale for ${stablecoin.name}, updating...`);
+      try {
+        const updateResult = await pegPriceUpdater.updateSinglePegPrice(stablecoinId);
+        if (updateResult.success) {
+          // Refetch the updated data
+          const { data: updatedStablecoin } = await supabase
+            .from('stablecoins')
+            .select('id, pegged_asset, name, peg_price, peg_price_updated_at')
+            .eq('id', stablecoinId)
+            .single();
+
+          if (updatedStablecoin) {
+            return reply.send({
+              stablecoinId: updatedStablecoin.id,
+              peggedAsset: updatedStablecoin.pegged_asset,
+              pegPrice: updatedStablecoin.peg_price,
+              pegPriceUpdatedAt: updatedStablecoin.peg_price_updated_at,
+              lastUpdated: updatedStablecoin.peg_price_updated_at,
+              updateUnixTime: updatedStablecoin.peg_price_updated_at ? Math.floor(new Date(updatedStablecoin.peg_price_updated_at).getTime() / 1000) : null,
+            });
+          }
+        }
+      } catch (updateError) {
+        console.error(`Failed to update peg price for ${stablecoin.name}:`, updateError);
+        // Continue with stale data
+      }
+    }
+
+    return reply.send({
+      stablecoinId: stablecoin.id,
+      peggedAsset: stablecoin.pegged_asset,
+      pegPrice: stablecoin.peg_price,
+      pegPriceUpdatedAt: stablecoin.peg_price_updated_at,
+      lastUpdated: stablecoin.peg_price_updated_at,
+      updateUnixTime: stablecoin.peg_price_updated_at ? Math.floor(new Date(stablecoin.peg_price_updated_at).getTime() / 1000) : null,
+    });
+  } catch (error) {
+    console.error('Error fetching stablecoin peg price:', error);
+    return reply.status(500).send({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/stablecoins/peg-prices - Get peg prices for all stablecoins
+fastify.get('/api/stablecoins/peg-prices', async (request, reply) => {
+  try {
+    // Get all stablecoins with peg prices from database
+    const { data: stablecoins, error } = await supabase
+      .from('stablecoins')
+      .select('id, pegged_asset, name, peg_price, peg_price_updated_at')
+      .order('id');
+
+    if (error) {
+      console.error('Error fetching stablecoins:', error);
+      return reply.status(500).send({ error: 'Failed to fetch stablecoins' });
+    }
+
+    if (!stablecoins || stablecoins.length === 0) {
+      return reply.send({ pegPrices: [] });
+    }
+
+    // Check if any peg prices are stale and update them if needed
+    const staleStablecoins = stablecoins.filter(coin =>
+      coin.pegged_asset && (
+        !coin.peg_price_updated_at ||
+        (Date.now() - new Date(coin.peg_price_updated_at).getTime()) > 24 * 60 * 60 * 1000
+      )
+    );
+
+    if (staleStablecoins.length > 0) {
+      console.log(`Found ${staleStablecoins.length} stale peg prices, updating...`);
+      try {
+        await pegPriceUpdater.updateAllPegPrices();
+        // Refetch updated data
+        const { data: updatedStablecoins } = await supabase
+          .from('stablecoins')
+          .select('id, pegged_asset, name, peg_price, peg_price_updated_at')
+          .order('id');
+
+        if (updatedStablecoins) {
+          const pegPrices = updatedStablecoins.map(stablecoin => ({
+            stablecoinId: stablecoin.id,
+            peggedAsset: stablecoin.pegged_asset,
+            name: stablecoin.name,
+            pegPrice: stablecoin.peg_price,
+            lastUpdated: stablecoin.peg_price_updated_at,
+            updateUnixTime: stablecoin.peg_price_updated_at ? Math.floor(new Date(stablecoin.peg_price_updated_at).getTime() / 1000) : null,
+          }));
+          return reply.send({ pegPrices });
+        }
+      } catch (updateError) {
+        console.error('Failed to update peg prices:', updateError);
+        // Continue with existing data
+      }
+    }
+
+    // Return current peg prices from database
+    const pegPrices = stablecoins.map(stablecoin => ({
+      stablecoinId: stablecoin.id,
+      peggedAsset: stablecoin.pegged_asset,
+      name: stablecoin.name,
+      pegPrice: stablecoin.peg_price,
+      lastUpdated: stablecoin.peg_price_updated_at,
+      updateUnixTime: stablecoin.peg_price_updated_at ? Math.floor(new Date(stablecoin.peg_price_updated_at).getTime() / 1000) : null,
+    }));
+
+    return reply.send({ pegPrices });
+  } catch (error) {
+    console.error('Error fetching stablecoin peg prices:', error);
+    return reply.status(500).send({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/stablecoins/update-peg-prices - Manually trigger peg price update for all stablecoins
+fastify.post('/api/stablecoins/update-peg-prices', async (request, reply) => {
+  try {
+    console.log('Manual peg price update triggered');
+    const results = await pegPriceUpdater.updateAllPegPrices();
+
+    const successCount = results.filter(r => r.success).length;
+    const errorCount = results.filter(r => !r.success).length;
+
+    return reply.send({
+      message: `Peg price update completed: ${successCount} successful, ${errorCount} failed`,
+      total: results.length,
+      successful: successCount,
+      failed: errorCount,
+      results: results
+    });
+  } catch (error) {
+    console.error('Error in manual peg price update:', error);
+    return reply.status(500).send({
+      error: 'Failed to update peg prices',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
