@@ -12,7 +12,7 @@ interface StablecoinPageProps {
 
 export async function generateMetadata({ params }: StablecoinPageProps): Promise<Metadata> {
   const { slug } = await params;
-  
+
   try {
     const stablecoin = await fetchStablecoinBySlugWithFallback(slug);
     return generateStablecoinMetadata(stablecoin);

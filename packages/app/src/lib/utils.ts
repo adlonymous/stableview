@@ -84,12 +84,20 @@ export function filterStablecoins(
 ): Stablecoin[] {
   return stablecoins.filter(stablecoin => {
     // Filter by token program
-    if (filters.tokenProgram && filters.tokenProgram.length > 0 && !filters.tokenProgram.includes(stablecoin.tokenProgram)) {
+    if (
+      filters.tokenProgram &&
+      filters.tokenProgram.length > 0 &&
+      !filters.tokenProgram.includes(stablecoin.tokenProgram)
+    ) {
       return false;
     }
 
     // Filter by issuer
-    if (filters.issuer && filters.issuer.length > 0 && !filters.issuer.includes(stablecoin.issuer)) {
+    if (
+      filters.issuer &&
+      filters.issuer.length > 0 &&
+      !filters.issuer.includes(stablecoin.issuer)
+    ) {
       return false;
     }
 
@@ -99,7 +107,11 @@ export function filterStablecoins(
     }
 
     // Filter by pegged asset
-    if (filters.peggedAsset && filters.peggedAsset.length > 0 && !filters.peggedAsset.includes(stablecoin.peggedAsset)) {
+    if (
+      filters.peggedAsset &&
+      filters.peggedAsset.length > 0 &&
+      !filters.peggedAsset.includes(stablecoin.peggedAsset)
+    ) {
       return false;
     }
 

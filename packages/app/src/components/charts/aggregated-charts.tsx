@@ -32,7 +32,7 @@ export function AggregatedCharts() {
         <h2 className="text-3xl font-bold text-white">Market Analytics</h2>
         <p className="text-neutral-400">Aggregated metrics across all stablecoins</p>
       </div>
-      
+
       <StablecoinChart
         supplyData={supplyData}
         dauData={dauData}
@@ -41,7 +41,7 @@ export function AggregatedCharts() {
         onRangeChange={setChartRange}
         loading={supplyLoading || dauLoading}
       />
-      
+
       {(supplyError || dauError) && (
         <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
           <p className="text-red-400 text-sm">

@@ -28,7 +28,7 @@ export function StablecoinFilters({
     const newPrograms = currentPrograms.includes(program)
       ? currentPrograms.filter(p => p !== program)
       : [...currentPrograms, program];
-    
+
     onFilterChange({
       ...filters,
       tokenProgram: newPrograms.length > 0 ? newPrograms : undefined,
@@ -47,7 +47,7 @@ export function StablecoinFilters({
     const newAssets = currentAssets.includes(peggedAsset)
       ? currentAssets.filter(a => a !== peggedAsset)
       : [...currentAssets, peggedAsset];
-    
+
     onFilterChange({
       ...filters,
       peggedAsset: newAssets.length > 0 ? newAssets : undefined,
@@ -58,8 +58,8 @@ export function StablecoinFilters({
     onFilterChange({});
   };
 
-  const hasActiveFilters = Object.values(filters).some(value => 
-    value !== undefined && (Array.isArray(value) ? value.length > 0 : true)
+  const hasActiveFilters = Object.values(filters).some(
+    value => value !== undefined && (Array.isArray(value) ? value.length > 0 : true)
   );
 
   return (
@@ -158,7 +158,10 @@ export function StablecoinFilters({
             <span className="text-xs text-neutral-400">Active:</span>
             <div className="flex flex-wrap gap-1.5">
               {filters.peggedAsset?.map(asset => (
-                <Badge key={asset} className="bg-blue-600/20 text-blue-300 border-blue-500/30 flex items-center gap-1 text-xs px-2 py-1">
+                <Badge
+                  key={asset}
+                  className="bg-blue-600/20 text-blue-300 border-blue-500/30 flex items-center gap-1 text-xs px-2 py-1"
+                >
                   {asset}
                   <X
                     className="h-3 w-3 cursor-pointer hover:text-blue-100"
@@ -167,7 +170,10 @@ export function StablecoinFilters({
                 </Badge>
               ))}
               {filters.tokenProgram?.map(program => (
-                <Badge key={program} className="bg-green-600/20 text-green-300 border-green-500/30 flex items-center gap-1 text-xs px-2 py-1">
+                <Badge
+                  key={program}
+                  className="bg-green-600/20 text-green-300 border-green-500/30 flex items-center gap-1 text-xs px-2 py-1"
+                >
                   {program}
                   <X
                     className="h-3 w-3 cursor-pointer hover:text-green-100"

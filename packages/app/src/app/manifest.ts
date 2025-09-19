@@ -1,11 +1,11 @@
 import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
-  
   return {
     name: 'StableView - Solana Stablecoin Dashboard',
     short_name: 'StableView',
-    description: 'A comprehensive dashboard for stablecoins on Solana with real-time data, analytics, and insights.',
+    description:
+      'A comprehensive dashboard for stablecoins on Solana with real-time data, analytics, and insights.',
     start_url: '/',
     display: 'standalone',
     background_color: '#0a0a0a',

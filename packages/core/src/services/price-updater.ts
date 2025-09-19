@@ -1,6 +1,5 @@
 import { supabase } from '../db/index.js';
 import { createBirdeyeClient } from './birdeye-client.js';
-import { DatabaseStablecoin } from '../types';
 
 interface PriceUpdateResult {
   stablecoinId: number;
@@ -20,7 +19,7 @@ class PriceUpdater {
 
   async updateAllPrices(): Promise<PriceUpdateResult[]> {
     console.log('Starting price update for all stablecoins...');
-    
+
     try {
       // Fetch all stablecoins from database
       const { data: stablecoins, error } = await supabase
@@ -52,17 +51,17 @@ class PriceUpdater {
 
       // Update database with new prices
       const results: PriceUpdateResult[] = [];
-      const updatePromises = stablecoins.map(async (stablecoin) => {
+      const updatePromises = stablecoins.map(async stablecoin => {
         try {
           const priceData = priceMap.get(stablecoin.token_address);
-          
+
           if (priceData && priceData.price !== undefined && priceData.price !== null) {
             // Update database with new price
             const { error: updateError } = await supabase
               .from('stablecoins')
               .update({
                 price: priceData.price.toString(),
-                updated_at: new Date().toISOString()
+                updated_at: new Date().toISOString(),
               })
               .eq('id', stablecoin.id);
 
@@ -74,7 +73,7 @@ class PriceUpdater {
                 priceChange24h: null,
                 lastUpdated: new Date().toISOString(),
                 success: false,
-                error: updateError.message
+                error: updateError.message,
               });
             } else {
               console.log(`Updated price for ${stablecoin.name}: $${priceData.price}`);
@@ -83,18 +82,18 @@ class PriceUpdater {
                 price: priceData.price,
                 priceChange24h: priceData.priceChange24h,
                 lastUpdated: priceData.lastUpdated,
-                success: true
+                success: true,
               });
             }
           } else {
             console.log(`No price data available for ${stablecoin.name} - setting to N/A`);
-            
+
             // Update database with N/A when no price data is available
             const { error: updateError } = await supabase
               .from('stablecoins')
               .update({
                 price: 'N/A',
-                updated_at: new Date().toISOString()
+                updated_at: new Date().toISOString(),
               })
               .eq('id', stablecoin.id);
 
@@ -106,7 +105,7 @@ class PriceUpdater {
                 priceChange24h: null,
                 lastUpdated: new Date().toISOString(),
                 success: false,
-                error: updateError.message
+                error: updateError.message,
               });
             } else {
               console.log(`Set price to N/A for ${stablecoin.name}`);
@@ -115,7 +114,7 @@ class PriceUpdater {
                 price: null,
                 priceChange24h: null,
                 lastUpdated: new Date().toISOString(),
-                success: true
+                success: true,
               });
             }
           }
@@ -127,7 +126,7 @@ class PriceUpdater {
             priceChange24h: null,
             lastUpdated: new Date().toISOString(),
             success: false,
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
@@ -166,7 +165,7 @@ class PriceUpdater {
           priceChange24h: null,
           lastUpdated: new Date().toISOString(),
           success: false,
-          error: 'No token address available'
+          error: 'No token address available',
         };
       }
 
@@ -179,7 +178,7 @@ class PriceUpdater {
           .from('stablecoins')
           .update({
             price: priceData.price.toString(),
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
           .eq('id', stablecoinId);
 
@@ -191,7 +190,7 @@ class PriceUpdater {
             priceChange24h: null,
             lastUpdated: new Date().toISOString(),
             success: false,
-            error: updateError.message
+            error: updateError.message,
           };
         }
 
@@ -201,17 +200,19 @@ class PriceUpdater {
           price: priceData.price,
           priceChange24h: priceData.priceChange24h,
           lastUpdated: priceData.lastUpdated,
-          success: true
+          success: true,
         };
       } else {
-        console.log(`No valid price data available for ${stablecoin.name} (price: ${priceData?.price}) - setting to N/A`);
-        
+        console.log(
+          `No valid price data available for ${stablecoin.name} (price: ${priceData?.price}) - setting to N/A`
+        );
+
         // Update database with N/A when no price data is available
         const { error: updateError } = await supabase
           .from('stablecoins')
           .update({
             price: 'N/A',
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
           .eq('id', stablecoinId);
 
@@ -223,7 +224,7 @@ class PriceUpdater {
             priceChange24h: null,
             lastUpdated: new Date().toISOString(),
             success: false,
-            error: updateError.message
+            error: updateError.message,
           };
         }
 
@@ -233,7 +234,7 @@ class PriceUpdater {
           price: null,
           priceChange24h: null,
           lastUpdated: new Date().toISOString(),
-          success: true
+          success: true,
         };
       }
     } catch (error) {
@@ -244,7 +245,7 @@ class PriceUpdater {
         priceChange24h: null,
         lastUpdated: new Date().toISOString(),
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -268,18 +269,19 @@ class PriceUpdater {
           price: null,
           priceChange24h: null,
           lastUpdated: null,
-          isStale: true
+          isStale: true,
         };
       }
 
-      const isStale = !stablecoin.updated_at || 
-        (Date.now() - new Date(stablecoin.updated_at).getTime()) > 60 * 60 * 1000; // 1 hour
+      const isStale =
+        !stablecoin.updated_at ||
+        Date.now() - new Date(stablecoin.updated_at).getTime() > 60 * 60 * 1000; // 1 hour
 
       return {
         price: stablecoin.price ? parseFloat(stablecoin.price) : null,
         priceChange24h: null, // We don't store price change in DB yet
         lastUpdated: stablecoin.updated_at,
-        isStale
+        isStale,
       };
     } catch (error) {
       console.error(`Error getting price for stablecoin ${stablecoinId}:`, error);
@@ -287,18 +289,20 @@ class PriceUpdater {
         price: null,
         priceChange24h: null,
         lastUpdated: null,
-        isStale: true
+        isStale: true,
       };
     }
   }
 
-  async getAllStablecoinPrices(): Promise<Array<{
-    stablecoinId: number;
-    price: number | null;
-    priceChange24h: number | null;
-    lastUpdated: string | null;
-    isStale: boolean;
-  }>> {
+  async getAllStablecoinPrices(): Promise<
+    Array<{
+      stablecoinId: number;
+      price: number | null;
+      priceChange24h: number | null;
+      lastUpdated: string | null;
+      isStale: boolean;
+    }>
+  > {
     try {
       const { data: stablecoins, error } = await supabase
         .from('stablecoins')
@@ -311,15 +315,16 @@ class PriceUpdater {
       }
 
       return stablecoins.map(stablecoin => {
-        const isStale = !stablecoin.updated_at || 
-          (Date.now() - new Date(stablecoin.updated_at).getTime()) > 60 * 60 * 1000; // 1 hour
+        const isStale =
+          !stablecoin.updated_at ||
+          Date.now() - new Date(stablecoin.updated_at).getTime() > 60 * 60 * 1000; // 1 hour
 
         return {
           stablecoinId: stablecoin.id,
           price: stablecoin.price ? parseFloat(stablecoin.price) : null,
           priceChange24h: null, // We don't store price change in DB yet
           lastUpdated: stablecoin.updated_at,
-          isStale
+          isStale,
         };
       });
     } catch (error) {

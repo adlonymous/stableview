@@ -126,15 +126,17 @@ export async function fetchStablecoinBySlugWithFallback(slug: string): Promise<S
 
 export async function fetchAllStablecoinPrices(): Promise<Record<string, number>> {
   try {
-    const response = await fetchApi<{ prices: Array<{ stablecoinId: number; price: number | null }> }>('/api/stablecoins/prices');
+    const response = await fetchApi<{
+      prices: Array<{ stablecoinId: number; price: number | null }>;
+    }>('/api/stablecoins/prices');
     const priceMap: Record<string, number> = {};
-    
+
     response.prices.forEach(priceData => {
       if (priceData.price !== null) {
         priceMap[priceData.stablecoinId.toString()] = priceData.price;
       }
     });
-    
+
     return priceMap;
   } catch (error) {
     console.error('Failed to fetch stablecoin prices:', error);

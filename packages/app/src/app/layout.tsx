@@ -19,7 +19,8 @@ export const metadata: Metadata = {
     default: 'StableView - Solana Stablecoin Dashboard',
     template: '%s | StableView',
   },
-  description: 'A comprehensive dashboard for stablecoins on Solana with real-time data, analytics, and insights. Track USDC, USDT, PYUSD, FDUSD, and more.',
+  description:
+    'A comprehensive dashboard for stablecoins on Solana with real-time data, analytics, and insights. Track USDC, USDT, PYUSD, FDUSD, and more.',
   keywords: [
     'Solana',
     'stablecoin',
@@ -33,7 +34,7 @@ export const metadata: Metadata = {
     'PYUSD',
     'FDUSD',
     'price tracking',
-    'market data'
+    'market data',
   ],
   authors: [{ name: 'StableView' }],
   creator: 'StableView',
@@ -52,13 +53,15 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: '/',
     title: 'StableView - Solana Stablecoin Dashboard',
-    description: 'A comprehensive dashboard for stablecoins on Solana with real-time data, analytics, and insights.',
+    description:
+      'A comprehensive dashboard for stablecoins on Solana with real-time data, analytics, and insights.',
     siteName: 'StableView',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'StableView - Solana Stablecoin Dashboard',
-    description: 'A comprehensive dashboard for stablecoins on Solana with real-time data, analytics, and insights.',
+    description:
+      'A comprehensive dashboard for stablecoins on Solana with real-time data, analytics, and insights.',
     creator: '@stableview',
     site: '@stableview',
   },

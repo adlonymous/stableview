@@ -463,9 +463,9 @@ export async function updateMetrics() {
     return { success: true, message: 'All metrics updated successfully' };
   } catch (error) {
     console.error('Error updating metrics:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }

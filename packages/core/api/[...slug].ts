@@ -115,9 +115,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Get stablecoin by slug - handle both /api/stablecoins/slug/usdc and /api/stablecoins/slug/usdc/
-    if (pathname.match(/^\/api\/stablecoins\/slug\/[^\/]+\/?$/)) {
+    if (pathname.match(/^\/api\/stablecoins\/slug\/[^/]+\/?$/)) {
       const slug = pathname.split('/').filter(Boolean).pop();
-      const { data, error } = await supabase.from('stablecoins').select('*').eq('slug', slug).single();
+      const { data, error } = await supabase
+        .from('stablecoins')
+        .select('*')
+        .eq('slug', slug)
+        .single();
 
       if (error) {
         throw error;
@@ -254,7 +258,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Chart data endpoints
-    if (pathname.startsWith('/api/stablecoins/') && pathname.includes('/charts/supply') && req.method === 'GET') {
+    if (
+      pathname.startsWith('/api/stablecoins/') &&
+      pathname.includes('/charts/supply') &&
+      req.method === 'GET'
+    ) {
       const stablecoinIdMatch = pathname.match(/\/api\/stablecoins\/(\d+)\/charts\/supply/);
       const isAggregated = pathname.includes('/charts/supply/aggregated');
 
@@ -356,7 +364,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Chart data endpoints for Daily Active Users
     console.log('Checking DAU route:', pathname, req.method);
-    if (pathname.startsWith('/api/stablecoins/') && pathname.includes('/charts/dau') && req.method === 'GET') {
+    if (
+      pathname.startsWith('/api/stablecoins/') &&
+      pathname.includes('/charts/dau') &&
+      req.method === 'GET'
+    ) {
       console.log('DAU route matched!');
       const stablecoinIdMatch = pathname.match(/\/api\/stablecoins\/(\d+)\/charts\/dau/);
       const isAggregated = pathname.includes('/charts/dau/aggregated');
@@ -442,10 +454,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }
 
           // Transform data for TradingView format
-          const chartData = data.map((record: { date: string; holders_count: string | number }) => ({
-            time: record.date,
-            value: parseFloat(String(record.holders_count)),
-          }));
+          const chartData = data.map(
+            (record: { date: string; holders_count: string | number }) => ({
+              time: record.date,
+              value: parseFloat(String(record.holders_count)),
+            })
+          );
 
           return res.status(200).json({
             data: chartData,
@@ -494,7 +508,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (priceMatch && req.method === 'GET') {
       try {
         const stablecoinId = parseInt(priceMatch[1]);
-        
+
         if (isNaN(stablecoinId)) {
           return res.status(400).json({ error: 'Invalid stablecoin ID' });
         }
@@ -528,7 +542,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             priceChange24h: null,
             lastUpdated: null,
             updateUnixTime: null,
-            error: 'Price data not available'
+            error: 'Price data not available',
           });
         }
 
@@ -597,121 +611,129 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (pathname === '/api/stablecoins/update-peg-prices' && req.method === 'POST') {
       try {
         // Use the imported currencyClient directly
-        
+
         // Get all stablecoins with their pegged assets
         const { data: stablecoins, error: fetchError } = await supabase
           .from('stablecoins')
           .select('id, pegged_asset')
           .not('pegged_asset', 'is', null);
-        
+
         if (fetchError) {
           throw new Error(`Failed to fetch stablecoins: ${fetchError.message}`);
         }
-        
+
         if (!stablecoins || stablecoins.length === 0) {
-          return res.json({ 
+          return res.json({
             message: 'No stablecoins found',
             updated: 0,
-            errors: []
+            errors: [],
           });
         }
-        
+
         // Get unique currency codes
         const currencyCodes = [...new Set(stablecoins.map(s => s.pegged_asset).filter(Boolean))];
         console.log(`Updating peg prices for currencies: ${currencyCodes.join(', ')}`);
-        
+
         // Process each currency individually to get proper exchange rates
-        const updatePromises = stablecoins.map(async (stablecoin) => {
+        const updatePromises = stablecoins.map(async stablecoin => {
           const currencyCode = stablecoin.pegged_asset;
           if (!currencyCode) return null;
-          
+
           try {
             const rate = await currencyClient.getExchangeRate(currencyCode, 'USD');
             if (rate === null || rate === undefined) {
               console.warn(`No exchange rate found for ${currencyCode}`);
               return { id: stablecoin.id, error: `No exchange rate found for ${currencyCode}` };
             }
-            
+
             // Update the stablecoin with peg price
             const { error: updateError } = await supabase
               .from('stablecoins')
               .update({
                 peg_price: rate,
-                peg_price_updated_at: new Date().toISOString()
+                peg_price_updated_at: new Date().toISOString(),
               })
               .eq('id', stablecoin.id);
-            
+
             if (updateError) {
-              console.error(`Failed to update peg price for stablecoin ${stablecoin.id}:`, updateError);
+              console.error(
+                `Failed to update peg price for stablecoin ${stablecoin.id}:`,
+                updateError
+              );
               return { id: stablecoin.id, error: updateError.message };
             }
-            
+
             return { id: stablecoin.id, pegPrice: rate, currency: currencyCode };
           } catch (error) {
             console.error(`Error getting rate for ${currencyCode}:`, error);
-            return { id: stablecoin.id, error: error instanceof Error ? error.message : 'Unknown error' };
+            return {
+              id: stablecoin.id,
+              error: error instanceof Error ? error.message : 'Unknown error',
+            };
           }
         });
-        
+
         const results = await Promise.all(updatePromises);
         const successful = results.filter(r => r && !r.error);
         const errors = results.filter(r => r && r.error);
-        
+
         console.log(`Updated peg prices for ${successful.length} stablecoins`);
-        
+
         return res.json({
           message: `Updated peg prices for ${successful.length} stablecoins`,
           updated: successful.length,
           errors: errors,
-          results: successful
+          results: successful,
         });
-        
       } catch (error) {
         console.error('Error updating peg prices:', error);
         return res.status(500).json({
           error: 'Failed to update peg prices',
-          message: error instanceof Error ? error.message : 'Unknown error'
+          message: error instanceof Error ? error.message : 'Unknown error',
         });
       }
     }
 
     // Get peg price for a specific stablecoin
-    if (pathname.startsWith('/api/stablecoins/') && pathname.endsWith('/peg-price') && req.method === 'GET') {
+    if (
+      pathname.startsWith('/api/stablecoins/') &&
+      pathname.endsWith('/peg-price') &&
+      req.method === 'GET'
+    ) {
       try {
         const id = pathname.split('/')[3];
-        
+
         const { data: stablecoin, error } = await supabase
           .from('stablecoins')
           .select('id, pegged_asset, peg_price, peg_price_updated_at')
           .eq('id', parseInt(id))
           .single();
-        
+
         if (error) {
           return res.status(404).json({ error: 'Stablecoin not found' });
         }
-        
+
         if (!stablecoin.pegged_asset) {
           return res.json({
             stablecoinId: stablecoin.id,
             peggedAsset: null,
             pegPrice: null,
             pegPriceUpdatedAt: null,
-            message: 'No pegged asset specified'
+            message: 'No pegged asset specified',
           });
         }
-        
+
         return res.json({
           stablecoinId: stablecoin.id,
           peggedAsset: stablecoin.pegged_asset,
           pegPrice: stablecoin.peg_price,
-          pegPriceUpdatedAt: stablecoin.peg_price_updated_at
+          pegPriceUpdatedAt: stablecoin.peg_price_updated_at,
         });
-        
       } catch (error) {
         console.error('Error fetching peg price:', error);
         return res.status(500).json({
           error: 'Failed to fetch peg price',
-          message: error instanceof Error ? error.message : 'Unknown error'
+          message: error instanceof Error ? error.message : 'Unknown error',
         });
       }
     }

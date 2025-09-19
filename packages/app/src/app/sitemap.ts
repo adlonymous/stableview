@@ -3,11 +3,11 @@ import { fetchStablecoinsWithFallback } from '@/lib/api';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://stableview.vercel.app';
-  
+
   try {
     const stablecoins = await fetchStablecoinsWithFallback();
-    
-    const stablecoinPages = stablecoins.map((stablecoin) => ({
+
+    const stablecoinPages = stablecoins.map(stablecoin => ({
       url: `${baseUrl}/stablecoin/${stablecoin.slug}`,
       lastModified: new Date(stablecoin.updatedAt),
       changeFrequency: 'daily' as const,

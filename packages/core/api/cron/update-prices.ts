@@ -19,34 +19,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     console.log('🔄 Starting price update...');
-    
+
     // Import and run the update-prices script
     const { updatePrices } = await import('../../src/scripts/update-prices.js');
-    
+
     const result = await updatePrices();
-    
+
     if (result.success) {
       console.log('✅ Price update completed successfully');
-      return res.status(200).json({ 
-        success: true, 
+      return res.status(200).json({
+        success: true,
         message: 'Price update completed successfully',
         timestamp: new Date().toISOString(),
-        result 
+        result,
       });
     } else {
       console.error('❌ Price update failed:', result.error);
-      return res.status(500).json({ 
-        success: false, 
+      return res.status(500).json({
+        success: false,
         error: result.error,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
   } catch (error) {
     console.error('❌ Price update error:', error);
-    return res.status(500).json({ 
-      success: false, 
+    return res.status(500).json({
+      success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }

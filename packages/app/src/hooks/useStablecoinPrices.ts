@@ -35,7 +35,7 @@ export function useStablecoinPrices() {
 
   const formatPrice = (stablecoinId: number): string => {
     const price = getPrice(stablecoinId);
-    if (price === null || price === -1 || price === '-1') return 'N/A';
+    if (price === null || price === -1) return 'N/A';
     return `$${price}`;
   };
 

@@ -22,10 +22,10 @@ export function StablecoinsClient() {
     sortBy: 'marketCap',
     direction: 'desc',
   });
-  
+
   // Fetch all prices at once for better performance
   const { prices: allPrices, loading: pricesLoading } = useAllPrices();
-  
+
   // Fetch all peg prices at once for better performance
   const { pegPrices: allPegPrices } = usePegPrices();
 
@@ -130,38 +130,34 @@ export function StablecoinsClient() {
           <p className="text-neutral-400">
             Showing {sortedStablecoins.length} of {stablecoins.length} stablecoins
           </p>
-          {(filters.peggedAsset && filters.peggedAsset.length > 0) && (
-            <p className="text-sm text-blue-400">
-              Filtered by: {filters.peggedAsset.join(', ')}
-            </p>
+          {filters.peggedAsset && filters.peggedAsset.length > 0 && (
+            <p className="text-sm text-blue-400">Filtered by: {filters.peggedAsset.join(', ')}</p>
           )}
         </div>
 
         {/* Stablecoins Grid */}
         {sortedStablecoins.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                 {sortedStablecoins.map(stablecoin => {
-                   // Find the price data for this stablecoin
-                   const priceData = allPrices.find(p => p.stablecoinId === stablecoin.id);
-                   // Find the peg price data for this stablecoin
-                   const pegPriceData = allPegPrices.find(p => p.stablecoinId === stablecoin.id);
-                   return (
-                     <StablecoinCardWithPrice
-                       key={stablecoin.id}
-                       stablecoin={stablecoin}
-                       priceData={priceData}
-                       priceLoading={pricesLoading}
-                       pegPriceData={pegPriceData}
-                     />
-                   );
-                 })}
+            {sortedStablecoins.map(stablecoin => {
+              // Find the price data for this stablecoin
+              const priceData = allPrices.find(p => p.stablecoinId === stablecoin.id);
+              // Find the peg price data for this stablecoin
+              const pegPriceData = allPegPrices.find(p => p.stablecoinId === stablecoin.id);
+              return (
+                <StablecoinCardWithPrice
+                  key={stablecoin.id}
+                  stablecoin={stablecoin}
+                  priceData={priceData}
+                  priceLoading={pricesLoading}
+                  pegPriceData={pegPriceData}
+                />
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-12">
             <div className="text-neutral-500 text-lg mb-2">No stablecoins found</div>
-            <p className="text-neutral-600">
-              Try adjusting your filters to see more results.
-            </p>
+            <p className="text-neutral-600">Try adjusting your filters to see more results.</p>
           </div>
         )}
       </div>

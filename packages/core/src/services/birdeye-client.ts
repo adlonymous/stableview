@@ -32,13 +32,13 @@ export class BirdeyeClient {
   private async waitForRateLimit(): Promise<void> {
     const now = Date.now();
     const timeSinceLastRequest = now - this.lastRequestTime;
-    
+
     if (timeSinceLastRequest < this.minRequestInterval) {
       const delay = this.minRequestInterval - timeSinceLastRequest;
       console.log(`Rate limiting: waiting ${delay}ms before next request`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
-    
+
     this.lastRequestTime = Date.now();
   }
 
@@ -58,13 +58,13 @@ export class BirdeyeClient {
 
       // Wait for rate limit before making request
       await this.waitForRateLimit();
-      
+
       const response = await fetch(
         `${this.baseUrl}/defi/price?address=${tokenAddress}&ui_amount_mode=raw`,
         {
           method: 'GET',
           headers: {
-            'accept': 'application/json',
+            accept: 'application/json',
             'x-chain': 'solana',
             'X-API-KEY': this.apiKey,
           },
@@ -76,7 +76,7 @@ export class BirdeyeClient {
         return null;
       }
 
-      const data = await response.json() as BirdeyePriceResponse;
+      const data = (await response.json()) as BirdeyePriceResponse;
 
       if (!data.success || !data.data) {
         console.error('Birdeye API returned unsuccessful response:', data);
@@ -103,13 +103,13 @@ export class BirdeyeClient {
 
   async getMultipleTokenPrices(tokenAddresses: string[]): Promise<Map<string, PriceData>> {
     const priceMap = new Map<string, PriceData>();
-    
+
     console.log(`Processing ${tokenAddresses.length} token prices with rate limiting`);
-    
+
     // Process one at a time to avoid rate limiting
     for (let i = 0; i < tokenAddresses.length; i++) {
       const address = tokenAddresses[i];
-      
+
       try {
         console.log(`Fetching price for token ${i + 1}/${tokenAddresses.length}: ${address}`);
         const priceData = await this.getTokenPrice(address);
@@ -123,7 +123,7 @@ export class BirdeyeClient {
         console.warn(`Failed to fetch price for ${address}:`, error);
         // Continue with next token instead of failing completely
       }
-      
+
       // Additional delay between requests (rate limiting is already handled in getTokenPrice)
       if (i < tokenAddresses.length - 1) {
         const delay = 50; // Additional 50ms delay for extra safety
@@ -132,7 +132,9 @@ export class BirdeyeClient {
       }
     }
 
-    console.log(`Completed fetching prices. Got ${priceMap.size} valid prices out of ${tokenAddresses.length} requests`);
+    console.log(
+      `Completed fetching prices. Got ${priceMap.size} valid prices out of ${tokenAddresses.length} requests`
+    );
     return priceMap;
   }
 }

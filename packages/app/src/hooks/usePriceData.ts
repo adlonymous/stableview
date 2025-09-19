@@ -47,30 +47,34 @@ let isProcessingQueue = false;
 // Process the queue with rate limiting
 async function processPriceQueue() {
   if (isProcessingQueue || priceRequestQueue.length === 0) return;
-  
+
   isProcessingQueue = true;
-  
+
   while (priceRequestQueue.length > 0) {
     const now = Date.now();
     const timeSinceLastRequest = now - lastRequestTime;
-    
+
     if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
-      await new Promise(resolve => setTimeout(resolve, MIN_REQUEST_INTERVAL - timeSinceLastRequest));
+      await new Promise(resolve =>
+        setTimeout(resolve, MIN_REQUEST_INTERVAL - timeSinceLastRequest)
+      );
     }
-    
+
     const request = priceRequestQueue.shift();
     if (!request) break;
-    
+
     try {
       lastRequestTime = Date.now();
-      const response = await fetch(`${CORE_API_BASE_URL}/api/stablecoins/${request.stablecoinId}/price`);
-      
+      const response = await fetch(
+        `${CORE_API_BASE_URL}/api/stablecoins/${request.stablecoinId}/price`
+      );
+
       if (!response.ok) {
         throw new Error(`Failed to fetch price data: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
-      
+
       // Only resolve with data if price is not null
       if (data.price !== null && data.price !== undefined) {
         request.resolve(data);
@@ -81,7 +85,7 @@ async function processPriceQueue() {
       request.reject(error instanceof Error ? error : new Error('Failed to fetch price data'));
     }
   }
-  
+
   isProcessingQueue = false;
 }
 
@@ -113,13 +117,13 @@ export function usePriceData(stablecoinId: number): UsePriceDataReturn {
           resolve,
           reject,
         });
-        
+
         // Start processing queue if not already running
         processPriceQueue();
       });
 
       console.log(`Price data received for stablecoin ${stablecoinId}:`, data);
-      
+
       if (data) {
         console.log(`Setting price data for stablecoin ${stablecoinId}:`, data);
         // Cache the data
@@ -133,7 +137,7 @@ export function usePriceData(stablecoinId: number): UsePriceDataReturn {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch price data';
       setError(errorMessage);
       console.error('Error fetching price data:', err);
-      
+
       // Set price data to null to trigger fallback
       setPriceData(null);
     } finally {
@@ -171,9 +175,11 @@ export function useAllPrices(): UseAllPricesReturn {
       // Add delay to respect rate limits
       const now = Date.now();
       const timeSinceLastRequest = now - lastRequestTime;
-      
+
       if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
-        await new Promise(resolve => setTimeout(resolve, MIN_REQUEST_INTERVAL - timeSinceLastRequest));
+        await new Promise(resolve =>
+          setTimeout(resolve, MIN_REQUEST_INTERVAL - timeSinceLastRequest)
+        );
       }
 
       // Add timeout to prevent hanging
@@ -184,33 +190,33 @@ export function useAllPrices(): UseAllPricesReturn {
       const response = await fetch(`${CORE_API_BASE_URL}/api/stablecoins/prices`, {
         signal: controller.signal,
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch prices: ${response.statusText}`);
       }
 
       const data = await response.json();
       console.log('All prices data received:', data);
-      
+
       // Filter out prices with null values to avoid triggering fallbacks
-      const validPrices = (data.prices || []).filter((price: PriceData) => 
-        price.price !== null && price.price !== undefined
+      const validPrices = (data.prices || []).filter(
+        (price: PriceData) => price.price !== null && price.price !== undefined
       );
-      
+
       // Cache all valid prices
       validPrices.forEach((price: PriceData) => {
         priceCache.set(price.stablecoinId, { data: price, timestamp: Date.now() });
       });
-      
+
       console.log(`Setting ${validPrices.length} valid prices`);
       setPrices(validPrices);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch prices';
       setError(errorMessage);
       console.error('Error fetching prices:', err);
-      
+
       // Set prices to empty array to trigger fallback
       setPrices([]);
     } finally {

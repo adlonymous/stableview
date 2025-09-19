@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { formatCompactNumber } from '@/lib/utils';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronRight, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
 
 interface PriceData {
   stablecoinId: number;
@@ -42,14 +42,17 @@ interface StablecoinCardWithPriceProps {
   pegPriceData?: PegPriceData | null;
 }
 
-export function StablecoinCardWithPrice({ 
-  stablecoin, 
-  priceData, 
+export function StablecoinCardWithPrice({
+  stablecoin,
+  priceData,
   priceLoading = false,
-  pegPriceData
+  pegPriceData,
 }: StablecoinCardWithPriceProps) {
   // Use real-time price if available, otherwise fall back to static price
-  const staticPrice = (stablecoin.price === 'N/A' || stablecoin.price === '-1') ? null : parseFloat(stablecoin.price || '1.00');
+  const staticPrice =
+    stablecoin.price === 'N/A' || stablecoin.price === '-1'
+      ? null
+      : parseFloat(stablecoin.price || '1.00');
   const displayPrice = priceData?.price ?? staticPrice;
   const priceChange24h = priceData?.priceChange24h ?? 0;
   const isPriceLoading = priceLoading;
@@ -88,7 +91,7 @@ export function StablecoinCardWithPrice({
                 width={40}
                 height={40}
                 className="rounded-full"
-                onError={(e) => {
+                onError={e => {
                   // Fallback to token symbol if image fails to load
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
@@ -105,9 +108,7 @@ export function StablecoinCardWithPrice({
             )}
           </div>
           <div>
-            <CardTitle className="text-lg font-semibold text-white">
-              {stablecoin.name}
-            </CardTitle>
+            <CardTitle className="text-lg font-semibold text-white">{stablecoin.name}</CardTitle>
             <CardDescription className="text-sm text-neutral-400">
               {stablecoin.token}
             </CardDescription>
@@ -116,12 +117,12 @@ export function StablecoinCardWithPrice({
             {isPriceLoading ? (
               <div className="h-5 w-16 bg-neutral-700 animate-pulse rounded" />
             ) : (
-              <div className="text-lg font-bold text-white">
-                {formatPrice(displayPrice)}
-              </div>
+              <div className="text-lg font-bold text-white">{formatPrice(displayPrice)}</div>
             )}
             {priceChange24h !== 0 && !isPriceLoading && (
-              <div className={`flex items-center gap-1 text-sm ${getPriceChangeColor(priceChange24h)}`}>
+              <div
+                className={`flex items-center gap-1 text-sm ${getPriceChangeColor(priceChange24h)}`}
+              >
                 {getPriceChangeIcon(priceChange24h)}
                 <span>{formatPriceChange(priceChange24h)}</span>
               </div>
@@ -157,11 +158,15 @@ export function StablecoinCardWithPrice({
           <div className="space-y-1">
             <div className="text-sm text-neutral-400">Pegged to</div>
             <div className="flex items-center gap-2">
-              <div className="text-sm font-medium text-white">
-                {stablecoin.peggedAsset}
-              </div>
+              <div className="text-sm font-medium text-white">{stablecoin.peggedAsset}</div>
               <div className="text-sm text-neutral-300">
-                ({stablecoin.peggedAsset === 'USD' ? '$1.00' : pegPriceData?.pegPrice ? `$${pegPriceData.pegPrice}` : 'N/A'})
+                (
+                {stablecoin.peggedAsset === 'USD'
+                  ? '$1.00'
+                  : pegPriceData?.pegPrice
+                    ? `$${pegPriceData.pegPrice}`
+                    : 'N/A'}
+                )
               </div>
             </div>
           </div>

@@ -27,7 +27,7 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
   console.log(`StablecoinCard for ${stablecoin.token} (ID: ${stablecoin.id}):`, {
     priceData,
     priceLoading,
-    staticPrice: stablecoin.price
+    staticPrice: stablecoin.price,
   });
 
   const formatPrice = (price: number | string | null | undefined) => {
@@ -37,12 +37,15 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
 
   const getPriceDisplay = () => {
     // Show live price data if available and valid
-    if (priceData && priceData.price !== null && priceData.price !== undefined && priceData.price !== -1 && priceData.price !== '-1') {
+    if (
+      priceData &&
+      priceData.price !== null &&
+      priceData.price !== undefined &&
+      priceData.price !== -1
+    ) {
       return (
         <>
-          <p className="font-bold text-green-400 text-sm">
-            {formatPrice(priceData.price)}
-          </p>
+          <p className="font-bold text-green-400 text-sm">{formatPrice(priceData.price)}</p>
           {priceData.priceChange24h !== null && priceData.priceChange24h !== undefined && (
             <div className="flex items-center gap-1">
               {priceData.priceChange24h >= 0 ? (
@@ -154,9 +157,7 @@ export function StablecoinCard({ stablecoin }: StablecoinCardProps) {
             </div>
             <div className="text-right">
               <p className="text-xs text-neutral-500 mb-1">Live Price</p>
-              <div className="flex items-center gap-1 justify-end">
-                {getPriceDisplay()}
-              </div>
+              <div className="flex items-center gap-1 justify-end">{getPriceDisplay()}</div>
             </div>
           </div>
         </div>

@@ -3,7 +3,12 @@
 import { Button } from '@/components/ui/button';
 import { ArrowDownUp } from 'lucide-react';
 
-export type SortOption = 'name' | 'marketCap' | 'uniqueAddresses' | 'transactionVolume' | 'dailyTransactions';
+export type SortOption =
+  | 'name'
+  | 'marketCap'
+  | 'uniqueAddresses'
+  | 'transactionVolume'
+  | 'dailyTransactions';
 export type SortDirection = 'asc' | 'desc';
 
 export type StablecoinSort = {

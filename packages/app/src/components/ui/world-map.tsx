@@ -140,7 +140,7 @@ const getRegionShading = (geo: GeographyData, stablecoinData: CurrencyPegStablec
 
   // No stablecoins for this region
   return '#1f2937'; // Dark gray (same as background)
-});
+};
 
 // Function to get region type and currency for tooltip
 const getRegionInfo = (
@@ -175,78 +175,80 @@ const getRegionInfo = (
 };
 
 // Memoized Geography component for better performance
-const MemoizedGeography = memo(({ geo, stablecoinData }: { geo: GeographyData; stablecoinData: CurrencyPegStablecoins }) => {
-  const regionInfo = useMemo(() => getRegionInfo(geo, stablecoinData), [geo, stablecoinData]);
-  const hasStablecoins = regionInfo.hasStablecoins;
-  const fillColor = useMemo(() => getRegionShading(geo, stablecoinData), [geo, stablecoinData]);
+const MemoizedGeography = memo(
+  ({ geo, stablecoinData }: { geo: GeographyData; stablecoinData: CurrencyPegStablecoins }) => {
+    const regionInfo = useMemo(() => getRegionInfo(geo, stablecoinData), [geo, stablecoinData]);
+    const hasStablecoins = regionInfo.hasStablecoins;
+    const fillColor = useMemo(() => getRegionShading(geo, stablecoinData), [geo, stablecoinData]);
 
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Geography
-          geography={geo}
-          fill={fillColor}
-          stroke="#374151"
-          strokeWidth={0.5}
-          style={{
-            default: { outline: 'none' },
-            hover: {
-              fill: hasStablecoins
-                ? (() => {
-                    if (regionInfo.hasStablecoins && stablecoinData[regionInfo.currency]) {
-                      const stablecoinCount = stablecoinData[regionInfo.currency].length;
-                      const maxCount = Math.max(
-                        ...Object.values(stablecoinData).map(arr => arr.length)
-                      );
-                      const normalizedCount = stablecoinCount / maxCount;
-                      const lightness = Math.round(60 - normalizedCount * 30); // Inverted: more stablecoins = darker hover
-                      return `hsl(217, 91%, ${lightness}%)`;
-                    }
-                    return '#374151';
-                  })()
-                : '#374151',
-              outline: 'none',
-            },
-            pressed: { outline: 'none' },
-          }}
-          className={hasStablecoins ? 'cursor-pointer' : 'cursor-default'}
-        />
-      </TooltipTrigger>
-      {hasStablecoins && (
-        <TooltipContent className="max-w-xs bg-neutral-800 border border-neutral-600 rounded-lg shadow-xl p-3">
-          <div className="max-w-xs">
-            <h4 className="font-semibold text-white mb-2">
-              {regionInfo.currency} Stablecoins ({regionInfo.displayName})
-            </h4>
-            <div className="space-y-1 max-h-32 overflow-y-auto">
-              {stablecoinData[regionInfo.currency]
-                ?.sort((a, b) => {
-                  const supplyA = parseFloat(a.totalSupply || '0');
-                  const supplyB = parseFloat(b.totalSupply || '0');
-                  return supplyB - supplyA;
-                })
-                .map(stablecoin => (
-                  <div
-                    key={stablecoin.slug}
-                    className="flex justify-between items-center text-xs"
-                  >
-                    <span className="text-neutral-300">{stablecoin.name}</span>
-                    <span className="text-neutral-400 text-right">
-                      {stablecoin.token || stablecoin.slug}
-                    </span>
-                  </div>
-                ))}
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Geography
+            geography={geo}
+            fill={fillColor}
+            stroke="#374151"
+            strokeWidth={0.5}
+            style={{
+              default: { outline: 'none' },
+              hover: {
+                fill: hasStablecoins
+                  ? (() => {
+                      if (regionInfo.hasStablecoins && stablecoinData[regionInfo.currency]) {
+                        const stablecoinCount = stablecoinData[regionInfo.currency].length;
+                        const maxCount = Math.max(
+                          ...Object.values(stablecoinData).map(arr => arr.length)
+                        );
+                        const normalizedCount = stablecoinCount / maxCount;
+                        const lightness = Math.round(60 - normalizedCount * 30); // Inverted: more stablecoins = darker hover
+                        return `hsl(217, 91%, ${lightness}%)`;
+                      }
+                      return '#374151';
+                    })()
+                  : '#374151',
+                outline: 'none',
+              },
+              pressed: { outline: 'none' },
+            }}
+            className={hasStablecoins ? 'cursor-pointer' : 'cursor-default'}
+          />
+        </TooltipTrigger>
+        {hasStablecoins && (
+          <TooltipContent className="max-w-xs bg-neutral-800 border border-neutral-600 rounded-lg shadow-xl p-3">
+            <div className="max-w-xs">
+              <h4 className="font-semibold text-white mb-2">
+                {regionInfo.currency} Stablecoins ({regionInfo.displayName})
+              </h4>
+              <div className="space-y-1 max-h-32 overflow-y-auto">
+                {stablecoinData[regionInfo.currency]
+                  ?.sort((a, b) => {
+                    const supplyA = parseFloat(a.totalSupply || '0');
+                    const supplyB = parseFloat(b.totalSupply || '0');
+                    return supplyB - supplyA;
+                  })
+                  .map(stablecoin => (
+                    <div
+                      key={stablecoin.slug}
+                      className="flex justify-between items-center text-xs"
+                    >
+                      <span className="text-neutral-300">{stablecoin.name}</span>
+                      <span className="text-neutral-400 text-right">
+                        {stablecoin.token || stablecoin.slug}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+              <div className="text-xs text-neutral-500 mt-2">
+                {stablecoinData[regionInfo.currency]?.length || 0} stablecoin
+                {(stablecoinData[regionInfo.currency]?.length || 0) !== 1 ? 's' : ''}
+              </div>
             </div>
-            <div className="text-xs text-neutral-500 mt-2">
-              {stablecoinData[regionInfo.currency]?.length || 0} stablecoin
-              {(stablecoinData[regionInfo.currency]?.length || 0) !== 1 ? 's' : ''}
-            </div>
-          </div>
-        </TooltipContent>
-      )}
-    </Tooltip>
-  );
-});
+          </TooltipContent>
+        )}
+      </Tooltip>
+    );
+  }
+);
 
 MemoizedGeography.displayName = 'MemoizedGeography';
 
@@ -291,9 +293,9 @@ export const WorldMap = memo(({ className }: WorldMapProps) => {
         <div className="mb-4">
           <h3 className="text-lg font-semibold text-white mb-2">Global Stablecoin Coverage</h3>
           <p className="text-sm text-neutral-400">
-            Countries and regions with stablecoins pegged to their currencies. Darker blue
-            indicates more stablecoins pegged to that region&apos;s currency. Hover over regions to
-            explore available stablecoins and their market data.
+            Countries and regions with stablecoins pegged to their currencies. Darker blue indicates
+            more stablecoins pegged to that region&apos;s currency. Hover over regions to explore
+            available stablecoins and their market data.
           </p>
         </div>
 
@@ -310,11 +312,7 @@ export const WorldMap = memo(({ className }: WorldMapProps) => {
               <Geographies geography={geoUrl}>
                 {({ geographies }: { geographies: GeographyData[] }) =>
                   geographies.map((geo: GeographyData) => (
-                    <MemoizedGeography
-                      key={geo.rsmKey}
-                      geo={geo}
-                      stablecoinData={stablecoinData}
-                    />
+                    <MemoizedGeography key={geo.rsmKey} geo={geo} stablecoinData={stablecoinData} />
                   ))
                 }
               </Geographies>
@@ -323,27 +321,27 @@ export const WorldMap = memo(({ className }: WorldMapProps) => {
 
           {/* Legend */}
           <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-sm">
-              <div className="flex items-center space-x-2">
-                <div
-                  className="w-4 h-4 rounded"
-                  style={{ backgroundColor: 'hsl(217, 91%, 70%)' }}
-                ></div>
-                <span className="text-white">Fewer Stablecoins</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div
-                  className="w-4 h-4 rounded"
-                  style={{ backgroundColor: 'hsl(217, 91%, 50%)' }}
-                ></div>
-                <span className="text-white">More Stablecoins</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div
-                  className="w-4 h-4 rounded"
-                  style={{ backgroundColor: 'hsl(217, 91%, 30%)' }}
-                ></div>
-                <span className="text-white">Most Stablecoins</span>
-              </div>
+            <div className="flex items-center space-x-2">
+              <div
+                className="w-4 h-4 rounded"
+                style={{ backgroundColor: 'hsl(217, 91%, 70%)' }}
+              ></div>
+              <span className="text-white">Fewer Stablecoins</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div
+                className="w-4 h-4 rounded"
+                style={{ backgroundColor: 'hsl(217, 91%, 50%)' }}
+              ></div>
+              <span className="text-white">More Stablecoins</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div
+                className="w-4 h-4 rounded"
+                style={{ backgroundColor: 'hsl(217, 91%, 30%)' }}
+              ></div>
+              <span className="text-white">Most Stablecoins</span>
+            </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-[#1f2937] rounded border border-neutral-600"></div>
               <span className="text-white">No Stablecoins</span>

@@ -55,7 +55,6 @@ const CHART_TYPES = [
 export function StablecoinChart({
   supplyData,
   dauData,
-  title = 'Stablecoin Metrics',
   stablecoinName,
   onRangeChange,
   currentRange = '1M',
@@ -73,7 +72,8 @@ export function StablecoinChart({
 
   // Get current data based on chart type
   const currentData = chartType === 'supply' ? supplyData : dauData;
-  const currentTitle = chartType === 'supply' ? 'Total Supply Over Time' : 'Daily Active Users Over Time';
+  const currentTitle =
+    chartType === 'supply' ? 'Total Supply Over Time' : 'Daily Active Users Over Time';
 
   // Chart theme matching the dashboard
   const getChartTheme = () => ({
@@ -615,12 +615,15 @@ export function StablecoinChart({
                   {currentData[0]?.time} to {currentData[currentData.length - 1]?.time}
                 </span>
               </div>
-              <div className={`px-3 py-1.5 rounded-lg border ${
-                chartType === 'supply' 
-                  ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                  : 'bg-green-500/10 text-green-400 border-green-500/20'
-              }`}>
-                {chartType === 'supply' ? 'Supply' : 'DAU'} • {RANGE_OPTIONS.find(opt => opt.value === currentRange)?.label}
+              <div
+                className={`px-3 py-1.5 rounded-lg border ${
+                  chartType === 'supply'
+                    ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                    : 'bg-green-500/10 text-green-400 border-green-500/20'
+                }`}
+              >
+                {chartType === 'supply' ? 'Supply' : 'DAU'} •{' '}
+                {RANGE_OPTIONS.find(opt => opt.value === currentRange)?.label}
               </div>
             </div>
           </div>

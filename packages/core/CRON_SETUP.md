@@ -7,8 +7,8 @@ This document explains how to set up and configure the Vercel cron jobs for the 
 The application includes three automated cron jobs:
 
 1. **Daily Metrics Update** - Runs every day at midnight UTC
-2. **Price Updates** - Runs every 30 minutes
-3. **Peg Price Updates** - Runs every 30 minutes
+2. **Price Updates** - Runs every day at midnight UTC
+3. **Peg Price Updates** - Runs every day at midnight UTC
 
 ## Setup Instructions
 
@@ -34,7 +34,7 @@ The cron jobs are automatically configured in `vercel.json` and will be active o
       "schedule": "0 0 * * *"
     },
     {
-      "path": "/api/cron/update-prices", 
+      "path": "/api/cron/update-prices",
       "schedule": "*/30 * * * *"
     },
     {
@@ -56,23 +56,27 @@ After deployment, you can verify the cron jobs are working by:
 ## Cron Job Details
 
 ### Daily Metrics Update (`/api/cron/update-metrics`)
+
 - **Schedule**: `0 0 * * *` (Daily at midnight UTC)
 - **Duration**: Up to 5 minutes
 - **Purpose**: Updates stablecoin metrics including total supply, daily active users, and transaction data
 
 ### Price Updates (`/api/cron/update-prices`)
-- **Schedule**: `*/30 * * * *` (Every 30 minutes)
+
+- **Schedule**: `0 0 * * *` (Daily at midnight UTC)
 - **Duration**: Up to 5 minutes
 - **Purpose**: Updates current market prices for all stablecoins
 
 ### Peg Price Updates (`/api/cron/update-peg-prices`)
-- **Schedule**: `*/30 * * * *` (Every 30 minutes)
+
+- **Schedule**: `0 0 * * *` (Daily at midnight UTC)
 - **Duration**: Up to 5 minutes
 - **Purpose**: Updates peg prices for stablecoins based on their pegged assets
 
 ## Security
 
 All cron endpoints are protected by:
+
 - **Authentication**: Requires `CRON_SECRET` in Authorization header
 - **Method Restriction**: Only accepts POST requests
 - **Vercel Origin**: Only accessible from Vercel's cron system
@@ -80,6 +84,7 @@ All cron endpoints are protected by:
 ## Monitoring
 
 ### Success Response
+
 ```json
 {
   "success": true,
@@ -94,6 +99,7 @@ All cron endpoints are protected by:
 ```
 
 ### Error Response
+
 ```json
 {
   "success": false,
@@ -131,15 +137,16 @@ curl -X POST https://your-domain.vercel.app/api/cron/update-peg-prices \
 
 ## Schedule Reference
 
-| Job | Schedule | Description |
-|-----|----------|-------------|
-| Metrics | `0 0 * * *` | Daily at midnight UTC |
-| Prices | `*/30 * * * *` | Every 30 minutes |
-| Peg Prices | `*/30 * * * *` | Every 30 minutes |
+| Job        | Schedule    | Description           |
+| ---------- | ----------- | --------------------- |
+| Metrics    | `0 0 * * *` | Daily at midnight UTC |
+| Prices     | `0 0 * * *` | Daily at midnight UTC |
+| Peg Prices | `0 0 * * *` | Daily at midnight UTC |
 
 ## Dependencies
 
 The cron jobs require the following environment variables:
+
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `BIRDEYE_API_KEY`

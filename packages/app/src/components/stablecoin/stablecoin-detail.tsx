@@ -110,26 +110,33 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                           <span className="text-sm font-medium text-green-400">
                             ${priceData.price}
                           </span>
-                          {priceData.priceChange24h !== null && priceData.priceChange24h !== undefined && (
-                            <div className="flex items-center gap-1">
-                              {priceData.priceChange24h >= 0 ? (
-                                <TrendingUp className="h-3 w-3 text-green-400" />
-                              ) : (
-                                <TrendingDown className="h-3 w-3 text-red-400" />
-                              )}
-                              <span className={`text-xs ${
-                                priceData.priceChange24h >= 0 ? 'text-green-400' : 'text-red-400'
-                              }`}>
-                                {priceData.priceChange24h >= 0 ? '+' : ''}
-                                {priceData.priceChange24h * 100}%
-                              </span>
-                            </div>
-                          )}
+                          {priceData.priceChange24h !== null &&
+                            priceData.priceChange24h !== undefined && (
+                              <div className="flex items-center gap-1">
+                                {priceData.priceChange24h >= 0 ? (
+                                  <TrendingUp className="h-3 w-3 text-green-400" />
+                                ) : (
+                                  <TrendingDown className="h-3 w-3 text-red-400" />
+                                )}
+                                <span
+                                  className={`text-xs ${
+                                    priceData.priceChange24h >= 0
+                                      ? 'text-green-400'
+                                      : 'text-red-400'
+                                  }`}
+                                >
+                                  {priceData.priceChange24h >= 0 ? '+' : ''}
+                                  {priceData.priceChange24h * 100}%
+                                </span>
+                              </div>
+                            )}
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-green-400">
-                            {stablecoin.price === 'N/A' || stablecoin.price === '-1' ? 'N/A' : `$${stablecoin.price}`}
+                            {stablecoin.price === 'N/A' || stablecoin.price === '-1'
+                              ? 'N/A'
+                              : `$${stablecoin.price}`}
                           </span>
                           <span className="text-xs text-neutral-400">(Static)</span>
                         </div>
@@ -203,7 +210,6 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
         </div>
       </div>
 
-
       {/* Enhanced Tabs for different data sections */}
       <Tabs defaultValue="metrics" className="w-full">
         <TabsList className="grid grid-cols-2 bg-gradient-to-r from-neutral-900 to-neutral-950 border border-neutral-800 rounded-xl p-1">
@@ -236,9 +242,7 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
                     <div className="flex items-center gap-2">
                       <p className="text-white">{stablecoin.peggedAsset}</p>
                       {stablecoin.pegPrice && (
-                        <span className="text-sm text-neutral-300">
-                          (${stablecoin.pegPrice})
-                        </span>
+                        <span className="text-sm text-neutral-300">(${stablecoin.pegPrice})</span>
                       )}
                     </div>
                   </div>
@@ -426,7 +430,6 @@ export function StablecoinDetail({ stablecoin }: StablecoinDetailProps) {
           </Card>
         </TabsContent>
       </Tabs>
-
     </div>
   );
 }

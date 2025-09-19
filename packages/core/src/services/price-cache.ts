@@ -18,7 +18,7 @@ class PriceCache {
 
   get(tokenAddress: string): number | null {
     const entry = this.cache.get(tokenAddress);
-    
+
     if (!entry) {
       return null;
     }
@@ -34,7 +34,7 @@ class PriceCache {
 
   has(tokenAddress: string): boolean {
     const entry = this.cache.get(tokenAddress);
-    
+
     if (!entry) {
       return false;
     }

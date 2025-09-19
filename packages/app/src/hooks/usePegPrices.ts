@@ -25,12 +25,12 @@ export function usePegPrices() {
       try {
         setLoading(true);
         setError(null);
-        
+
         const response = await fetch(`${CORE_API_BASE_URL}/api/stablecoins/peg-prices`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data: PegPricesResponse = await response.json();
         setPegPrices(data.pegPrices || []);
       } catch (err) {

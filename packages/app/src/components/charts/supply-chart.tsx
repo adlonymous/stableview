@@ -54,7 +54,6 @@ export function SupplyChart({
   currentRange = '1M',
   loading = false,
 }: SupplyChartProps) {
-
   const chartContainerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chartRef = useRef<any>(null);

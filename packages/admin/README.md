@@ -27,7 +27,7 @@ src/
 ├── app/                    # Next.js App Router pages
 │   ├── api/               # API routes (if any)
 │   ├── stablecoins/       # Stablecoin management pages
-│   │   ├── [id]/          # Individual stablecoin editing
+│   │   ├── [slug]/        # Individual stablecoin editing
 │   │   └── new/           # Create new stablecoin
 │   ├── globals.css        # Global styles
 │   ├── layout.tsx         # Root layout

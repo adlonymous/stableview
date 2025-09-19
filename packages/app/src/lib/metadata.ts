@@ -3,14 +3,15 @@ import { Stablecoin } from '@/types/stablecoin';
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://stableview.vercel.app';
 const siteName = 'StableView';
-const siteDescription = 'A comprehensive dashboard for Solana stablecoins with real-time data, analytics, and insights.';
+const siteDescription =
+  'A comprehensive dashboard for Solana stablecoins with real-time data, analytics, and insights.';
 
 export function generateStablecoinMetadata(stablecoin: Stablecoin): Metadata {
   const title = `${stablecoin.name} (${stablecoin.token}) - ${siteName}`;
   const description = `Track ${stablecoin.name} (${stablecoin.token}) on Solana. Real-time price, supply data, transaction volume, and analytics. ${stablecoin.executiveSummary || `A ${stablecoin.peggedAsset}-pegged stablecoin on Solana.`}`;
-  
+
   const imageUrl = `${baseUrl}/api/og/stablecoin?slug=${stablecoin.slug}&name=${encodeURIComponent(stablecoin.name)}&token=${stablecoin.token}&supply=${stablecoin.totalSupply}&volume=${stablecoin.transactionVolume30d}`;
-  
+
   return {
     title,
     description,
@@ -25,7 +26,7 @@ export function generateStablecoinMetadata(stablecoin: Stablecoin): Metadata {
       stablecoin.peggedAsset,
       'price',
       'analytics',
-      'dashboard'
+      'dashboard',
     ],
     authors: [{ name: siteName }],
     creator: siteName,
@@ -84,9 +85,9 @@ export function generateStablecoinMetadata(stablecoin: Stablecoin): Metadata {
 export function generateDashboardMetadata(): Metadata {
   const title = `${siteName} - Solana Stablecoin Dashboard`;
   const description = `${siteDescription} Track real-time prices, supply data, transaction volumes, and analytics for all major stablecoins on Solana.`;
-  
+
   const imageUrl = `${baseUrl}/api/og/dashboard`;
-  
+
   return {
     title,
     description,
@@ -103,7 +104,7 @@ export function generateDashboardMetadata(): Metadata {
       'PYUSD',
       'FDUSD',
       'price tracking',
-      'market data'
+      'market data',
     ],
     authors: [{ name: siteName }],
     creator: siteName,
@@ -162,9 +163,9 @@ export function generateDashboardMetadata(): Metadata {
 export function generateStablecoinsListMetadata(): Metadata {
   const title = `All Stablecoins - ${siteName}`;
   const description = `Browse and compare all stablecoins on Solana. Real-time data, analytics, and insights for USDC, USDT, PYUSD, FDUSD, and more.`;
-  
+
   const imageUrl = `${baseUrl}/api/og/stablecoins`;
-  
+
   return {
     title,
     description,
@@ -181,7 +182,7 @@ export function generateStablecoinsListMetadata(): Metadata {
       'PYUSD',
       'FDUSD',
       'comparison',
-      'market data'
+      'market data',
     ],
     authors: [{ name: siteName }],
     creator: siteName,
@@ -243,7 +244,8 @@ export function generateStablecoinStructuredData(stablecoin: Stablecoin) {
     '@type': 'FinancialProduct',
     name: stablecoin.name,
     alternateName: stablecoin.token,
-    description: stablecoin.executiveSummary || `A ${stablecoin.peggedAsset}-pegged stablecoin on Solana`,
+    description:
+      stablecoin.executiveSummary || `A ${stablecoin.peggedAsset}-pegged stablecoin on Solana`,
     category: 'Cryptocurrency',
     provider: {
       '@type': 'Organization',
@@ -260,10 +262,7 @@ export function generateStablecoinStructuredData(stablecoin: Stablecoin) {
     transactionVolume30d: stablecoin.transactionVolume30d,
     url: `${baseUrl}/stablecoin/${stablecoin.slug}`,
     image: stablecoin.logoUrl,
-    sameAs: [
-      stablecoin.solscanLink,
-      stablecoin.artemisLink,
-    ].filter(Boolean),
+    sameAs: [stablecoin.solscanLink, stablecoin.artemisLink].filter(Boolean),
   };
 }
 

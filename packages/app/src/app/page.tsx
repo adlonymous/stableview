@@ -11,12 +11,11 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 export const metadata: Metadata = generateDashboardMetadata();
 
-
 // Loading skeleton for stablecoin cards
 function StablecoinCardsSkeleton() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-      {[1, 2, 3].map((i) => (
+      {[1, 2, 3].map(i => (
         <div key={i} className="bg-neutral-900 rounded-xl border border-neutral-800 p-6">
           <div className="flex items-center gap-4 mb-4">
             <Skeleton className="h-12 w-12 rounded-full" />
@@ -38,9 +37,19 @@ function StablecoinCardsSkeleton() {
 
 export default async function Home() {
   // Fetch data with better error handling
-  let stablecoins = [];
-  let dashboardStats = { stablecoinCount: 0, totalMarketCap: 0, totalTransactionVolume: { daily: 0, monthly: 0, yearly: 0 } };
-  
+  let stablecoins: any[] = [];
+  let dashboardStats = {
+    stablecoinCount: 0,
+    totalMarketCap: 0,
+    totalTransactionVolume: { daily: 0, monthly: 0, yearly: 0 },
+    dominantStablecoin: '',
+    dominantStablecoinShare: 0,
+    percentageOfSolanaVolume: 0,
+    yearOverYearGrowth: 0,
+    totalSupply: '0',
+    totalDailyTransactions: '0',
+  };
+
   try {
     [stablecoins, dashboardStats] = await Promise.all([
       fetchStablecoinsWithFallback(),
@@ -64,8 +73,14 @@ export default async function Home() {
   const popularStablecoins = sortedByMarketCap.slice(2, 5);
 
   // Calculate additional metrics from stablecoins data
-  const totalDailyActiveUsers = stablecoins.reduce((sum, coin) => sum + parseFloat(coin.dailyActiveUsers || '0'), 0);
-  const totalDailyTransactions = stablecoins.reduce((sum, coin) => sum + parseFloat(coin.transactionCountDaily || '0'), 0);
+  const totalDailyActiveUsers = stablecoins.reduce(
+    (sum, coin) => sum + parseFloat(coin.dailyActiveUsers || '0'),
+    0
+  );
+  const totalDailyTransactions = stablecoins.reduce(
+    (sum, coin) => sum + parseFloat(coin.transactionCountDaily || '0'),
+    0
+  );
   const currenciesSupported = new Set(stablecoins.map(coin => coin.peggedAsset)).size;
 
   return (
@@ -115,7 +130,7 @@ export default async function Home() {
                   <div className="text-sm text-neutral-400">Daily Volume</div>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-6">
                 <div className="text-center">
                   <div className="text-2xl sm:text-3xl font-bold text-cyan-400">
@@ -145,20 +160,25 @@ export default async function Home() {
             </div>
           </div>
 
-
           {/* Enhanced World Map Section - Lazy Loaded */}
-          <ErrorBoundary fallback={<div className="text-red-400 text-center">Failed to load world map</div>}>
-            <Suspense fallback={
-              <div className="space-y-6">
-                <div className="text-center space-y-2">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white">Global Distribution</h2>
-                  <p className="text-neutral-400">Loading stablecoin adoption data...</p>
+          <ErrorBoundary
+            fallback={<div className="text-red-400 text-center">Failed to load world map</div>}
+          >
+            <Suspense
+              fallback={
+                <div className="space-y-6">
+                  <div className="text-center space-y-2">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                      Global Distribution
+                    </h2>
+                    <p className="text-neutral-400">Loading stablecoin adoption data...</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-neutral-900 to-neutral-950 rounded-2xl border border-neutral-800 p-8">
+                    <Skeleton className="h-96 w-full" />
+                  </div>
                 </div>
-                <div className="bg-gradient-to-br from-neutral-900 to-neutral-950 rounded-2xl border border-neutral-800 p-8">
-                  <Skeleton className="h-96 w-full" />
-                </div>
-              </div>
-            }>
+              }
+            >
               <div className="space-y-6">
                 <div className="text-center space-y-2">
                   <h2 className="text-2xl sm:text-3xl font-bold text-white">Global Distribution</h2>
@@ -172,18 +192,22 @@ export default async function Home() {
           </ErrorBoundary>
 
           {/* Aggregated Charts */}
-          <ErrorBoundary fallback={<div className="text-red-400 text-center">Failed to load charts</div>}>
-            <Suspense fallback={
-              <div className="space-y-6">
-                <div className="text-center space-y-2">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white">Market Analytics</h2>
-                  <p className="text-neutral-400">Loading aggregated metrics...</p>
+          <ErrorBoundary
+            fallback={<div className="text-red-400 text-center">Failed to load charts</div>}
+          >
+            <Suspense
+              fallback={
+                <div className="space-y-6">
+                  <div className="text-center space-y-2">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white">Market Analytics</h2>
+                    <p className="text-neutral-400">Loading aggregated metrics...</p>
+                  </div>
+                  <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-8">
+                    <Skeleton className="h-96 w-full" />
+                  </div>
                 </div>
-                <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-8">
-                  <Skeleton className="h-96 w-full" />
-                </div>
-              </div>
-            }>
+              }
+            >
               <AggregatedCharts />
             </Suspense>
           </ErrorBoundary>

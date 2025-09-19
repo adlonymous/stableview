@@ -10,40 +10,40 @@ dotenv.config();
 export async function updatePrices() {
   console.log('Starting scheduled price update...');
   console.log(`Time: ${new Date().toISOString()}`);
-  
+
   try {
     const results = await priceUpdater.updateAllPrices();
-    
+
     const successCount = results.filter(r => r.success).length;
     const errorCount = results.filter(r => !r.success).length;
-    
+
     console.log(`Price update completed:`);
     console.log(`- Total: ${results.length}`);
     console.log(`- Successful: ${successCount}`);
     console.log(`- Failed: ${errorCount}`);
-    
+
     if (errorCount > 0) {
       console.log('Failed updates:');
       results
         .filter(r => !r.success)
         .forEach(r => console.log(`  - Stablecoin ${r.stablecoinId}: ${r.error}`));
     }
-    
+
     console.log('Scheduled price update finished');
-    return { 
-      success: true, 
+    return {
+      success: true,
       message: 'Price update completed successfully',
       results: {
         total: results.length,
         successful: successCount,
-        failed: errorCount
-      }
+        failed: errorCount,
+      },
     };
   } catch (error) {
     console.error('Error in scheduled price update:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }

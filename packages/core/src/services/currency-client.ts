@@ -48,20 +48,20 @@ class CurrencyClient {
     try {
       const url = `${this.baseUrl}/${this.apiKey}/latest/${baseCurrency}`;
       console.log(`Fetching exchange rate data from: ${url}`);
-      
+
       const response = await fetch(url, {
         headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'StableView/1.0'
-        }
+          Accept: 'application/json',
+          'User-Agent': 'StableView/1.0',
+        },
       });
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json() as ExchangeRateApiResponse;
-      
+      const data = (await response.json()) as ExchangeRateApiResponse;
+
       if (data.result !== 'success') {
         throw new Error(`API returned error: ${data.result}`);
       }
@@ -78,25 +78,27 @@ class CurrencyClient {
     try {
       const url = `${this.baseUrl}/${this.apiKey}/pair/${fromCurrency}/${toCurrency}`;
       console.log(`Fetching exchange rate pair from: ${url}`);
-      
+
       const response = await fetch(url, {
         headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'StableView/1.0'
-        }
+          Accept: 'application/json',
+          'User-Agent': 'StableView/1.0',
+        },
       });
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json() as ExchangeRatePairResponse;
-      
+      const data = (await response.json()) as ExchangeRatePairResponse;
+
       if (data.result !== 'success') {
         throw new Error(`API returned error: ${data.result}`);
       }
 
-      console.log(`Successfully fetched exchange rate pair ${fromCurrency}/${toCurrency}: ${data.conversion_rate}`);
+      console.log(
+        `Successfully fetched exchange rate pair ${fromCurrency}/${toCurrency}: ${data.conversion_rate}`
+      );
       return data.conversion_rate;
     } catch (error) {
       console.error(`Error fetching exchange rate pair ${fromCurrency}/${toCurrency}:`, error);
@@ -107,8 +109,8 @@ class CurrencyClient {
   private async fetchCurrencyData(baseCurrency: string): Promise<CurrencyExchangeResponse> {
     const cacheKey = `currency_${baseCurrency}`;
     const cached = this.cache.get(cacheKey);
-    
-    if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
+
+    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
       console.log(`Using cached currency data for ${baseCurrency}`);
       return cached.data;
     }
@@ -137,7 +139,7 @@ class CurrencyClient {
 
       // Use the pair endpoint for more efficient single rate fetching
       const rate = await this.fetchExchangeRatePair(normalizedFrom, normalizedTo);
-      
+
       console.log(`Exchange rate ${normalizedFrom} to ${normalizedTo}: ${rate}`);
       return rate;
     } catch (error) {
@@ -146,16 +148,19 @@ class CurrencyClient {
     }
   }
 
-  async getMultipleExchangeRates(fromCurrencies: string[], toCurrency: string = 'USD'): Promise<Record<string, number | null>> {
+  async getMultipleExchangeRates(
+    fromCurrencies: string[],
+    toCurrency: string = 'USD'
+  ): Promise<Record<string, number | null>> {
     const results: Record<string, number | null> = {};
-    
+
     // Process currencies in batches to avoid overwhelming the API
     const batchSize = 3; // Reduced batch size for Exchange Rate API
     for (let i = 0; i < fromCurrencies.length; i += batchSize) {
       const batch = fromCurrencies.slice(i, i + batchSize);
-      
+
       await Promise.all(
-        batch.map(async (currency) => {
+        batch.map(async currency => {
           try {
             const rate = await this.getExchangeRate(currency, toCurrency);
             results[currency] = rate;
@@ -183,7 +188,7 @@ class CurrencyClient {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      const data = await response.json() as ExchangeRateApiResponse;
+      const data = (await response.json()) as ExchangeRateApiResponse;
       if (data.result !== 'success') {
         throw new Error(`API returned error: ${data.result}`);
       }
